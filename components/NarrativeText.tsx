@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, StyleSheet, View, ScrollView, Animated, TouchableOpacity, Platform } from "react-native";
+import { Text, StyleSheet, View, Animated, TouchableOpacity, Platform } from "react-native";
 import { colors } from "@/constants/colors";
 import * as Haptics from "expo-haptics";
 import { Crown, Feather } from "lucide-react-native";
@@ -228,7 +228,7 @@ export default function NarrativeText({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: "100%",
   },
   textContainer: {
     backgroundColor: colors.narrativeBackground,

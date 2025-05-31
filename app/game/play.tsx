@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { colors } from "@/constants/colors";
@@ -13,6 +13,8 @@ import { generateInitialStory, generateNextSegment } from "@/services/aiService"
 import { User, ArrowLeft, MessageCircle, Crown, Feather } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function GamePlayScreen() {
   const router = useRouter();
@@ -148,6 +150,13 @@ What will you do to begin your chronicle?`,
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    
+    // Scroll to the bottom to show choices
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    }, 300);
   };
 
   const handleChoiceSelected = async (choiceId: string) => {
@@ -379,36 +388,35 @@ What will you do to begin your chronicle?`,
         </TouchableOpacity>
       </View>
       
-      {/* Main Content */}
+      {/* Main Content - Single ScrollView for both narrative and choices */}
       <View style={styles.content}>
         {currentGame.currentSegment ? (
-          <>
-            {/* Narrative Section */}
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.narrativeSection} 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.narrativeContent}
-            >
-              {/* Debug buttons for development */}
-              {__DEV__ && (
-                <View style={styles.debugButtonsContainer}>
-                  <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
-                    <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
-                    <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.debugButton} 
-                    onPress={() => setAnimationSpeed(prev => Math.max(5, prev - 5))}
-                  >
-                    <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              
-              {/* Narrative Text Component */}
+          <ScrollView 
+            ref={scrollViewRef}
+            style={styles.mainScrollView} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollViewContent}
+          >
+            {/* Debug buttons for development */}
+            {__DEV__ && (
+              <View style={styles.debugButtonsContainer}>
+                <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
+                  <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
+                  <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.debugButton} 
+                  onPress={() => setAnimationSpeed(prev => Math.max(5, prev - 5))}
+                >
+                  <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Narrative Text Component */}
+            <View style={styles.narrativeContainer}>
               <NarrativeText 
                 key={narrativeKey}
                 text={currentGame.currentSegment.text} 
@@ -416,12 +424,9 @@ What will you do to begin your chronicle?`,
                 animated={true}
                 speed={animationSpeed}
               />
-              
-              {/* Spacer to ensure good spacing between narrative and choices */}
-              <View style={styles.spacer} />
-            </ScrollView>
+            </View>
             
-            {/* Processing State */}
+            {/* Choices Section - Now part of the same ScrollView */}
             {processingChoice ? (
               <View style={styles.processingContainer}>
                 <Feather size={48} color={colors.primary} />
@@ -438,39 +443,34 @@ What will you do to begin your chronicle?`,
             ) : showChoices ? (
               /* Choices Section */
               <View style={styles.choicesSection}>
-                <ScrollView 
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.choicesContent}
+                {/* Custom Action Button */}
+                <TouchableOpacity 
+                  style={styles.customActionButton}
+                  onPress={() => setShowCustomInput(true)}
+                  activeOpacity={0.8}
                 >
-                  {/* Custom Action Button */}
-                  <TouchableOpacity 
-                    style={styles.customActionButton}
-                    onPress={() => setShowCustomInput(true)}
-                    activeOpacity={0.8}
-                  >
-                    <Feather size={28} color={colors.background} />
-                    <View style={styles.customActionContent}>
-                      <Text style={styles.customActionTitle}>Write Your Own Action</Text>
-                      <Text style={styles.customActionDescription}>
-                        Describe what you want to do
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  
-                  {/* Predefined Choices */}
-                  <Text style={styles.choicesTitle}>Or choose:</Text>
-                  {currentGame.currentSegment.choices.map((choice, index) => (
-                    <ChoiceButton
-                      key={choice.id}
-                      choice={choice}
-                      onSelect={handleChoiceSelected}
-                      index={index}
-                    />
-                  ))}
-                  
-                  {/* Extra space at bottom of choices */}
-                  <View style={styles.choicesBottomSpacer} />
-                </ScrollView>
+                  <Feather size={28} color={colors.background} />
+                  <View style={styles.customActionContent}>
+                    <Text style={styles.customActionTitle}>Write Your Own Action</Text>
+                    <Text style={styles.customActionDescription}>
+                      Describe what you want to do
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                
+                {/* Predefined Choices */}
+                <Text style={styles.choicesTitle}>Or choose:</Text>
+                {currentGame.currentSegment.choices.map((choice, index) => (
+                  <ChoiceButton
+                    key={choice.id}
+                    choice={choice}
+                    onSelect={handleChoiceSelected}
+                    index={index}
+                  />
+                ))}
+                
+                {/* Extra space at bottom of choices */}
+                <View style={styles.choicesBottomSpacer} />
               </View>
             ) : (
               /* Waiting for narrative to complete */
@@ -485,7 +485,7 @@ What will you do to begin your chronicle?`,
                 </TouchableOpacity>
               </View>
             )}
-          </>
+          </ScrollView>
         ) : (
           <View style={styles.noContentContainer}>
             <Crown size={48} color={colors.textMuted} />
@@ -649,27 +649,26 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  narrativeSection: {
+  mainScrollView: {
     flex: 1,
   },
-  narrativeContent: {
-    paddingBottom: 24, // Increased padding at the bottom for better spacing
+  scrollViewContent: {
+    paddingBottom: 24,
+  },
+  narrativeContainer: {
+    paddingHorizontal: 0,
+    paddingTop: 8,
   },
   spacer: {
-    height: 24, // Increased space between narrative and choices
+    height: 24,
   },
   choicesSection: {
-    maxHeight: 350,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface + "80",
-  },
-  choicesContent: {
-    padding: 16,
-    paddingBottom: 24, // Extra padding at bottom of choices
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   choicesBottomSpacer: {
-    height: 16, // Extra space at bottom of choices list
+    height: 16,
   },
   customActionButton: {
     flexDirection: "row",
@@ -711,9 +710,12 @@ const styles = StyleSheet.create({
   processingContainer: {
     padding: 40,
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    marginTop: 16,
+    marginHorizontal: 16,
     backgroundColor: colors.surface + "80",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   processingTitle: {
     color: colors.text,
@@ -732,11 +734,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   waitingContainer: {
-    padding: 24, // Increased padding
+    padding: 24,
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    marginTop: 16,
+    marginHorizontal: 16,
     backgroundColor: colors.surface + "80",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   waitingText: {
     color: colors.textSecondary,
