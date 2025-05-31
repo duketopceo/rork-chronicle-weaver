@@ -35,10 +35,6 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
         </TouchableOpacity>
       </View>
       
-      <Text style={styles.description}>
-        Describe what you want your character to do.
-      </Text>
-      
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.textInput}
@@ -107,12 +103,6 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 6,
-  },
-  description: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 16,
   },
   inputContainer: {
     marginBottom: 20,

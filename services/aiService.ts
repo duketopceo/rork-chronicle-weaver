@@ -56,6 +56,80 @@ const retryApiCall = async (apiCallFn: () => Promise<any>, retries = MAX_RETRIES
   }
 };
 
+// Validate AI response structure
+const validateAIResponse = (response: any, isInitial = false): boolean => {
+  if (!response) return false;
+  
+  if (isInitial) {
+    // Initial story validation
+    if (!response.backstory || typeof response.backstory !== 'string') {
+      logError("Missing or invalid backstory in AI response");
+      return false;
+    }
+    
+    if (!response.segment || typeof response.segment !== 'object') {
+      logError("Missing or invalid segment in AI response");
+      return false;
+    }
+    
+    if (!response.segment.text || typeof response.segment.text !== 'string') {
+      logError("Missing or invalid segment text in AI response");
+      return false;
+    }
+    
+    if (!Array.isArray(response.segment.choices) || response.segment.choices.length === 0) {
+      logError("Missing or invalid choices in AI response");
+      return false;
+    }
+    
+    return true;
+  } else {
+    // Next segment validation
+    if (!response.text || typeof response.text !== 'string') {
+      logError("Missing or invalid text in AI response");
+      return false;
+    }
+    
+    if (!Array.isArray(response.choices) || response.choices.length === 0) {
+      logError("Missing or invalid choices in AI response");
+      return false;
+    }
+    
+    return true;
+  }
+};
+
+// Clean and parse AI response
+const parseAIResponse = (rawResponse: string): any => {
+  try {
+    // Clean the response to ensure it's valid JSON
+    let cleanedCompletion = rawResponse.trim();
+    
+    // Remove any markdown code blocks if present
+    if (cleanedCompletion.startsWith("```json")) {
+      cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
+    }
+    if (cleanedCompletion.startsWith("```")) {
+      cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
+    }
+    
+    // Remove any leading/trailing text that isn't JSON
+    const jsonStart = cleanedCompletion.indexOf('{');
+    const jsonEnd = cleanedCompletion.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
+    }
+    
+    logDebug("Attempting to parse JSON...");
+    const parsedResponse = JSON.parse(cleanedCompletion);
+    logDebug("JSON parsed successfully");
+    return parsedResponse;
+  } catch (error) {
+    logError("Failed to parse AI response:", error);
+    throw new Error(`Failed to parse AI response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
   try {
     if (typeof global !== 'undefined') {
@@ -223,29 +297,13 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
 
     let parsedResponse;
     try {
-      // Clean the response to ensure it's valid JSON
-      let cleanedCompletion = data.completion.trim();
+      parsedResponse = parseAIResponse(data.completion);
       
-      // Remove any markdown code blocks if present
-      if (cleanedCompletion.startsWith("```json")) {
-        cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
-      }
-      if (cleanedCompletion.startsWith("```")) {
-        cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
+      // Validate the response structure
+      if (!validateAIResponse(parsedResponse, true)) {
+        throw new Error("Invalid AI response structure");
       }
       
-      // Remove any leading/trailing text that isn't JSON
-      const jsonStart = cleanedCompletion.indexOf('{');
-      const jsonEnd = cleanedCompletion.lastIndexOf('}');
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
-      }
-      
-      logDebug("🔧 Attempting to parse JSON...");
-      logDebug("Cleaned completion preview:", cleanedCompletion.substring(0, 500));
-      
-      parsedResponse = JSON.parse(cleanedCompletion);
-      logDebug("✅ JSON parsed successfully");
     } catch (parseError) {
       logError("❌ Failed to parse AI response:", data.completion);
       logError("Parse error:", parseError);
@@ -294,17 +352,6 @@ What path will you choose to begin this new chapter of your chronicle?`,
           customChoiceEnabled: true
         }
       };
-    }
-
-    // Validate the response structure
-    if (!parsedResponse.backstory || !parsedResponse.segment || !parsedResponse.segment.text) {
-      logError("❌ Incomplete response from AI:", parsedResponse);
-      throw new Error("Incomplete response from AI - missing backstory or segment text");
-    }
-
-    if (!parsedResponse.segment.choices || parsedResponse.segment.choices.length === 0) {
-      logError("❌ No choices in AI response:", parsedResponse);
-      throw new Error("Incomplete response from AI - missing choices");
     }
 
     // Ensure segment text is substantial
@@ -485,6 +532,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         messages: messages,
         selectedChoice: selectedChoice
       };
+      global.__CHRONICLE_DEBUG__.lastPrompt = userPrompt;
       global.__CHRONICLE_DEBUG__.apiCallHistory.push({
         timestamp: new Date().toISOString(),
         type: "next_segment",
@@ -521,7 +569,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       global.__CHRONICLE_DEBUG__.lastResponse = {
         timestamp: new Date().toISOString(),
         type: "next_segment",
-        data: data
+        data: data,
+        completionLength: data.completion?.length || 0
       };
       global.__CHRONICLE_DEBUG__.lastRawResponse = data.completion;
     }
@@ -533,27 +582,13 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
 
     let parsedResponse;
     try {
-      // Clean the response to ensure it's valid JSON
-      let cleanedCompletion = data.completion.trim();
+      parsedResponse = parseAIResponse(data.completion);
       
-      // Remove any markdown code blocks if present
-      if (cleanedCompletion.startsWith("```json")) {
-        cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
-      }
-      if (cleanedCompletion.startsWith("```")) {
-        cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
+      // Validate the response structure
+      if (!validateAIResponse(parsedResponse, false)) {
+        throw new Error("Invalid AI response structure");
       }
       
-      // Remove any leading/trailing text that isn't JSON
-      const jsonStart = cleanedCompletion.indexOf('{');
-      const jsonEnd = cleanedCompletion.lastIndexOf('}');
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
-      }
-      
-      logDebug("🔧 Parsing next segment JSON...");
-      parsedResponse = JSON.parse(cleanedCompletion);
-      logDebug("✅ Next segment JSON parsed successfully");
     } catch (parseError) {
       logError("❌ Failed to parse next segment response:", data.completion);
       logError("Parse error:", parseError);
@@ -589,12 +624,6 @@ What will you do next as this chronicle continues to unfold around you?`,
         ],
         customChoiceEnabled: true
       };
-    }
-
-    // Validate response
-    if (!parsedResponse.text || !parsedResponse.choices) {
-      logError("❌ Incomplete next segment response:", parsedResponse);
-      throw new Error("Incomplete response from AI");
     }
 
     const nextSegment: GameSegment = {

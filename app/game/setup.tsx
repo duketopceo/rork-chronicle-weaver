@@ -11,21 +11,21 @@ import { User, Palette, Crown, History, Shuffle } from "lucide-react-native";
 
 // Simplified examples
 const ERA_EXAMPLES = [
-  "Napoleon's France, 1799-1804",
-  "Viking exploration, 1000 AD",
-  "Medieval England, 1300s",
-  "Ancient Rome, 100 AD",
-  "Wild West, 1870s",
-  "Renaissance Italy, 1500s"
+  "Ancient Rome",
+  "Medieval Europe",
+  "Renaissance Italy",
+  "Wild West",
+  "Victorian London",
+  "Napoleonic Wars"
 ];
 
 const THEME_EXAMPLES = [
-  "Mystery and investigation",
-  "Political intrigue",
-  "Military campaigns",
-  "Trade and economics",
-  "Adventure and exploration",
-  "Romance and relationships"
+  "Mystery",
+  "Politics",
+  "Military",
+  "Trade",
+  "Adventure",
+  "Romance"
 ];
 
 export default function GameSetupScreen() {
@@ -113,15 +113,15 @@ export default function GameSetupScreen() {
           <>
             <View style={styles.stepHeader}>
               <History size={36} color={colors.primary} />
-              <Text style={styles.stepTitle}>Historical Setting</Text>
+              <Text style={styles.stepTitle}>Setting</Text>
             </View>
             <Text style={styles.stepDescription}>
-              Describe any time period or setting you wish to explore.
+              Choose any time period or setting.
             </Text>
             
             <View style={styles.inputContainer}>
               <View style={styles.inputHeader}>
-                <Text style={styles.inputLabel}>Setting & Era</Text>
+                <Text style={styles.inputLabel}>Era</Text>
                 <TouchableOpacity 
                   style={styles.randomButton}
                   onPress={() => handleRandomExample(ERA_EXAMPLES, setEra)}
@@ -143,7 +143,7 @@ export default function GameSetupScreen() {
               
               <View style={styles.examplesContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.examplesScroll}>
-                  {ERA_EXAMPLES.slice(0, 3).map((example, index) => (
+                  {ERA_EXAMPLES.map((example, index) => (
                     <TouchableOpacity 
                       key={index}
                       style={styles.exampleChip}
@@ -174,10 +174,10 @@ export default function GameSetupScreen() {
           <>
             <View style={styles.stepHeader}>
               <Palette size={36} color={colors.primary} />
-              <Text style={styles.stepTitle}>Theme & Mood</Text>
+              <Text style={styles.stepTitle}>Theme</Text>
             </View>
             <Text style={styles.stepDescription}>
-              What kind of experience do you want?
+              What kind of story do you want?
             </Text>
             
             <View style={styles.inputContainer}>
@@ -193,7 +193,7 @@ export default function GameSetupScreen() {
               </View>
               
               <TextInput
-                placeholder="Describe your theme and tone..."
+                placeholder="Describe your theme..."
                 value={gameSetup.theme}
                 onChangeText={setTheme}
                 error={errors.theme}
@@ -204,7 +204,7 @@ export default function GameSetupScreen() {
               
               <View style={styles.examplesContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.examplesScroll}>
-                  {THEME_EXAMPLES.slice(0, 3).map((example, index) => (
+                  {THEME_EXAMPLES.map((example, index) => (
                     <TouchableOpacity 
                       key={index}
                       style={styles.exampleChip}
@@ -224,14 +224,14 @@ export default function GameSetupScreen() {
           <>
             <View style={styles.stepHeader}>
               <User size={36} color={colors.primary} />
-              <Text style={styles.stepTitle}>Your Character</Text>
+              <Text style={styles.stepTitle}>Character</Text>
             </View>
             <Text style={styles.stepDescription}>
-              Choose a name for your character.
+              Name your character.
             </Text>
             
             <TextInput
-              label="Character Name"
+              label="Name"
               placeholder="Enter name..."
               value={gameSetup.characterName}
               onChangeText={setCharacterName}
@@ -259,7 +259,7 @@ export default function GameSetupScreen() {
             <View style={styles.summaryContainer}>
               <View style={styles.summaryHeader}>
                 <Crown size={20} color={colors.primary} />
-                <Text style={styles.summaryTitle}>Chronicle Setup</Text>
+                <Text style={styles.summaryTitle}>Summary</Text>
               </View>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Setting:</Text>

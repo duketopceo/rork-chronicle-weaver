@@ -24,6 +24,7 @@ export default function NarrativeText({
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [animationTimer, setAnimationTimer] = useState<NodeJS.Timeout | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
+  const [renderAttempt, setRenderAttempt] = useState(1);
 
   // Enhanced debug logging
   const addDebugLog = (message: string, data?: any) => {
@@ -55,10 +56,25 @@ export default function NarrativeText({
     }, 100);
   };
 
+  // Force re-render if text isn't showing
+  const forceRerender = () => {
+    addDebugLog("🔄 Forcing re-render, attempt #" + (renderAttempt + 1));
+    setRenderAttempt(prev => prev + 1);
+    setDisplayedText(text);
+    setIsComplete(true);
+    
+    // Call onComplete after a short delay
+    setTimeout(() => {
+      addDebugLog("✅ Calling onComplete after force re-render");
+      onComplete?.();
+    }, 100);
+  };
+
   useEffect(() => {
     addDebugLog("=== 📚 NARRATIVE TEXT COMPONENT MOUNTED ===");
     addDebugLog("Text length", text?.length || 0);
     addDebugLog("Animated", animated);
+    addDebugLog("Render attempt", renderAttempt);
     
     // Validate text
     if (!text || text.length === 0) {
@@ -135,7 +151,7 @@ export default function NarrativeText({
       addDebugLog("🧹 Cleaning up timer");
       if (timer) clearInterval(timer);
     };
-  }, [text, animated, speed, onComplete]);
+  }, [text, animated, speed, onComplete, renderAttempt]);
 
   // Ensure we have text to display
   if (!text || text.length === 0) {
@@ -158,6 +174,9 @@ export default function NarrativeText({
               {debugInfo.slice(0, 3).map((info, index) => (
                 <Text key={index} style={styles.debugText}>{info}</Text>
               ))}
+              <TouchableOpacity style={styles.debugButton} onPress={forceRerender}>
+                <Text style={styles.debugButtonText}>🔄 Force Re-render</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -197,6 +216,15 @@ export default function NarrativeText({
             <Text style={styles.debugText}>Complete: {isComplete ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Animated: {animated ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Skipped: {isSkipped ? "Yes" : "No"}</Text>
+            <Text style={styles.debugText}>Render Attempt: {renderAttempt}</Text>
+            
+            <TouchableOpacity style={styles.debugButton} onPress={forceRerender}>
+              <Text style={styles.debugButtonText}>🔄 Force Re-render</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.debugButton} onPress={skipAnimation}>
+              <Text style={styles.debugButtonText}>⏭️ Skip Animation</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -308,5 +336,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginBottom: 2,
     fontFamily: "monospace",
+  },
+  debugButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    padding: 8,
+    marginTop: 8,
+    alignItems: "center",
+  },
+  debugButtonText: {
+    color: colors.background,
+    fontSize: 11,
+    fontWeight: "600",
   },
 });

@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
-import { Scroll, Crown, Feather, History, Shield, Sword } from "lucide-react-native";
+import { Scroll, Crown, Feather, History } from "lucide-react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -35,12 +35,9 @@ export default function HomeScreen() {
               </View>
               <View style={styles.titleTextContainer}>
                 <Text style={styles.title}>Chronicle Weaver</Text>
-                <Text style={styles.subtitle}>Weave Your Own History</Text>
+                <Text style={styles.subtitle}>Shape Your History</Text>
               </View>
             </View>
-            <Text style={styles.description}>
-              Step into any era and shape history with your choices.
-            </Text>
           </View>
 
           <View style={styles.featuresContainer}>
@@ -48,42 +45,24 @@ export default function HomeScreen() {
               <History size={28} color={colors.primary} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Any Historical Era</Text>
-                <Text style={styles.featureText}>From ancient civilizations to distant futures</Text>
+                <Text style={styles.featureText}>Ancient to modern times</Text>
               </View>
             </View>
             
             <View style={styles.featureItem}>
               <Crown size={28} color={colors.primary} />
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Living Political Systems</Text>
-                <Text style={styles.featureText}>Navigate politics, forge alliances, shape nations</Text>
+                <Text style={styles.featureTitle}>Political Systems</Text>
+                <Text style={styles.featureText}>Navigate politics and alliances</Text>
               </View>
             </View>
             
             <View style={styles.featureItem}>
               <Feather size={28} color={colors.primary} />
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Write Your Own Actions</Text>
-                <Text style={styles.featureText}>Describe exactly what you want to do</Text>
+                <Text style={styles.featureTitle}>Custom Actions</Text>
+                <Text style={styles.featureText}>Write your own choices</Text>
               </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <Shield size={28} color={colors.primary} />
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Historical Authenticity</Text>
-                <Text style={styles.featureText}>Experience meticulously researched periods</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.examplesContainer}>
-            <Text style={styles.examplesTitle}>Chronicle Ideas</Text>
-            <View style={styles.exampleGrid}>
-              <Text style={styles.example}>"Rise through Napoleon's Grande Armée"</Text>
-              <Text style={styles.example}>"Navigate Renaissance Florence politics"</Text>
-              <Text style={styles.example}>"Lead a Viking expedition"</Text>
-              <Text style={styles.example}>"Build a trading empire in Venice"</Text>
             </View>
           </View>
 
@@ -104,12 +83,6 @@ export default function HomeScreen() {
                 style={styles.secondaryButton}
               />
             )}
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.freeTrialText}>
-              Free for your first 10 turns
-            </Text>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -166,14 +139,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: "italic",
   },
-  description: {
-    fontSize: 16,
-    color: colors.text,
-    textAlign: "center",
-    lineHeight: 24,
-    maxWidth: 300,
-    fontFamily: "serif",
-  },
   featuresContainer: {
     marginBottom: 32,
     gap: 16,
@@ -209,37 +174,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  examplesContainer: {
-    marginBottom: 32,
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-  },
-  examplesTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.text,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  exampleGrid: {
-    gap: 10,
-  },
-  example: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    backgroundColor: colors.surfaceLight,
-    padding: 12,
-    borderRadius: 10,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.primary,
-    fontStyle: "italic",
-    fontFamily: "serif",
-  },
   buttonContainer: {
     gap: 16,
     marginBottom: 32,
@@ -257,22 +191,5 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderRadius: 16,
     borderWidth: 2,
-  },
-  footer: {
-    alignItems: "center",
-    marginTop: "auto",
-    paddingTop: 24,
-  },
-  freeTrialText: {
-    fontSize: 14,
-    color: colors.primary,
-    textAlign: "center",
-    fontWeight: "600",
-    backgroundColor: colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.primary,
   },
 });

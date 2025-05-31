@@ -37,6 +37,7 @@ export default function GamePlayScreen() {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [forceShowUI, setForceShowUI] = useState(false);
   const [initializationAttempts, setInitializationAttempts] = useState(0);
+  const [narrativeVisible, setNarrativeVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Enhanced debug logging function
@@ -54,6 +55,7 @@ export default function GamePlayScreen() {
     setShowChoices(true);
     setInitializing(false);
     setProcessingChoice(false);
+    setNarrativeVisible(true);
   };
 
   // Retry initialization if it fails
@@ -148,6 +150,7 @@ export default function GamePlayScreen() {
           addDebugLog("🎬 Auto-showing UI after initialization");
           setInitializing(false);
           setShowChoices(true);
+          setNarrativeVisible(true);
         }, 1000);
         
       } catch (error) {
@@ -179,6 +182,7 @@ What will you do to begin your chronicle?`,
         updateGameSegment(fallbackSegment);
         setInitializing(false);
         setShowChoices(true);
+        setNarrativeVisible(true);
         setNarrativeKey(prev => prev + 1);
         
       } finally {
@@ -193,6 +197,7 @@ What will you do to begin your chronicle?`,
       });
       setInitializing(false);
       setShowChoices(true);
+      setNarrativeVisible(true);
       setNarrativeKey(prev => prev + 1);
     }
   };
@@ -279,6 +284,7 @@ What will you do to begin your chronicle?`,
       // Reset UI state for new segment and force narrative re-render
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
+      setNarrativeVisible(true);
       
       addDebugLog("✅ Choice processing complete");
       
@@ -347,6 +353,7 @@ What will you do to begin your chronicle?`,
       // Reset UI state for new segment and force narrative re-render
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
+      setNarrativeVisible(true);
       
       addDebugLog("✅ Custom action processing complete");
       
@@ -499,22 +506,47 @@ What will you do to begin your chronicle?`,
               style={styles.narrativeSection} 
               showsVerticalScrollIndicator={false}
             >
-              <NarrativeText 
-                key={narrativeKey}
-                text={currentGame.currentSegment.text} 
-                onComplete={handleNarrativeComplete}
-                animated={true}
-              />
-              
               {/* Debug buttons for development */}
               {__DEV__ && (
                 <View style={styles.debugButtonsContainer}>
+                  <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeVisible(true)}>
+                    <Text style={styles.debugButtonText}>🔄 Force Show Narrative</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
                     <Text style={styles.debugButtonText}>🎯 Force Show Choices</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.debugButton} onPress={forceShowUIElements}>
                     <Text style={styles.debugButtonText}>🔧 Force Show All UI</Text>
                   </TouchableOpacity>
+                </View>
+              )}
+              
+              {/* Narrative Text Component */}
+              {(narrativeVisible || forceShowUI) && (
+                <NarrativeText 
+                  key={narrativeKey}
+                  text={currentGame.currentSegment.text} 
+                  onComplete={handleNarrativeComplete}
+                  animated={true}
+                />
+              )}
+              
+              {/* Fallback if narrative isn't showing */}
+              {!narrativeVisible && !forceShowUI && (
+                <View style={styles.narrativeFallback}>
+                  <Crown size={48} color={colors.primary} />
+                  <Text style={styles.narrativeFallbackTitle}>Narrative Loading</Text>
+                  <Text style={styles.narrativeFallbackText}>
+                    If you don't see your story, tap the button below to reload it.
+                  </Text>
+                  <Button 
+                    title="Show Narrative" 
+                    onPress={() => {
+                      setNarrativeVisible(true);
+                      setNarrativeKey(prev => prev + 1);
+                    }}
+                    style={styles.narrativeFallbackButton}
+                  />
                 </View>
               )}
             </ScrollView>
@@ -719,6 +751,31 @@ const styles = StyleSheet.create({
   narrativeSection: {
     flex: 1,
   },
+  narrativeFallback: {
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+  },
+  narrativeFallbackTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 12,
+    fontFamily: "serif",
+  },
+  narrativeFallbackText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  narrativeFallbackButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+  },
   choicesSection: {
     maxHeight: 350,
     padding: 16,
@@ -855,6 +912,7 @@ const styles = StyleSheet.create({
   },
   debugButtonsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     padding: 16,
     gap: 12,
   },

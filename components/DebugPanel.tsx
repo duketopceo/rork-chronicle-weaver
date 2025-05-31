@@ -41,6 +41,25 @@ export default function DebugPanel() {
 
   const debugInfo = getDebugInfo();
 
+  // Force a new API call for testing
+  const forceRefreshAI = () => {
+    if (typeof global !== 'undefined') {
+      global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
+        callCount: 0,
+        apiCallHistory: []
+      };
+      global.__CHRONICLE_DEBUG__.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "manual_refresh",
+        message: "Manual refresh triggered from debug panel"
+      };
+    }
+    
+    // Force re-render
+    setIsExpanded(prev => !prev);
+    setTimeout(() => setIsExpanded(prev => !prev), 100);
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
@@ -123,6 +142,11 @@ export default function DebugPanel() {
               <Text style={styles.sectionTitle}>🤖 AI Debug Info</Text>
               <Text style={styles.debugText}>API Call Count: {debugInfo.callCount || 0}</Text>
               
+              <TouchableOpacity style={styles.refreshButton} onPress={forceRefreshAI}>
+                <RefreshCw size={14} color={colors.background} />
+                <Text style={styles.refreshButtonText}>Force Refresh AI</Text>
+              </TouchableOpacity>
+              
               {debugInfo.apiCallHistory && debugInfo.apiCallHistory.length > 0 && (
                 <View style={styles.subSection}>
                   <Text style={styles.subSectionTitle}>Recent API Calls:</Text>
@@ -161,6 +185,15 @@ export default function DebugPanel() {
                   {debugInfo.lastError.errorText && (
                     <Text style={styles.errorText}>Message: {debugInfo.lastError.errorText.substring(0, 100)}...</Text>
                   )}
+                </View>
+              )}
+
+              {showDetailedLogs && debugInfo.lastPrompt && (
+                <View style={styles.subSection}>
+                  <Text style={styles.subSectionTitle}>Last Prompt (First 200 chars):</Text>
+                  <Text style={styles.rawResponseText}>
+                    {debugInfo.lastPrompt.substring(0, 200)}...
+                  </Text>
                 </View>
               )}
 
@@ -283,6 +316,23 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     padding: 4,
+  },
+  refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 8,
+    marginBottom: 8,
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  refreshButtonText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: "600",
   },
   debugRow: {
     flexDirection: "row",
