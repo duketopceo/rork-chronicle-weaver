@@ -34,80 +34,51 @@ export default function GamePlayScreen() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [processingChoice, setProcessingChoice] = useState(false);
   const [narrativeKey, setNarrativeKey] = useState(0);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
-  const [forceShowUI, setForceShowUI] = useState(false);
-  const [initializationAttempts, setInitializationAttempts] = useState(0);
-  const [narrativeVisible, setNarrativeVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-
-  // Enhanced debug logging function
-  const addDebugLog = (message: string, data?: any) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = data ? `${message} | Data: ${JSON.stringify(data)}` : message;
-    console.log(`[PLAY DEBUG ${timestamp}] ${logMessage}`);
-    setDebugInfo(prev => [`${timestamp}: ${logMessage}`, ...prev.slice(0, 29)]);
-  };
 
   // Force show UI for debugging
   const forceShowUIElements = () => {
-    addDebugLog("🔧 FORCE SHOWING UI ELEMENTS");
-    setForceShowUI(true);
+    console.log("[PLAY] Force showing UI elements");
     setShowChoices(true);
     setInitializing(false);
     setProcessingChoice(false);
-    setNarrativeVisible(true);
   };
 
   // Retry initialization if it fails
   const retryInitialization = async () => {
-    addDebugLog("🔄 Retrying initialization, attempt #" + (initializationAttempts + 1));
-    setInitializationAttempts(prev => prev + 1);
+    console.log("[PLAY] Retrying initialization");
     setError(null);
     await initializeGame();
   };
 
   const initializeGame = async () => {
-    addDebugLog("=== 🚀 STARTING GAME INITIALIZATION ===");
+    console.log("[PLAY] Starting game initialization");
     
     if (!currentGame) {
-      addDebugLog("❌ No current game, redirecting to home");
+      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
     
     if (!currentGame.currentSegment) {
-      addDebugLog("📝 No current segment, generating initial story");
+      console.log("[PLAY] No current segment, generating initial story");
       try {
         setInitializing(true);
         setLoading(true);
         setError(null);
         
-        addDebugLog("🤖 Calling generateInitialStory", {
-          era: currentGame.era,
-          theme: currentGame.theme,
-          character: currentGame.character.name,
-          difficulty: currentGame.difficulty
-        });
+        console.log("[PLAY] Calling generateInitialStory");
         
         const { backstory, firstSegment } = await generateInitialStory(currentGame, gameSetup);
         
-        addDebugLog("✅ Generated content", {
+        console.log("[PLAY] Generated content", {
           backstoryLength: backstory.length,
           segmentTextLength: firstSegment.text.length,
           segmentChoicesCount: firstSegment.choices.length
         });
         
-        // Validate the generated content
-        if (!firstSegment.text || firstSegment.text.length < 100) {
-          throw new Error(`Generated segment text is too short: ${firstSegment.text.length} characters`);
-        }
-        
-        if (!firstSegment.choices || firstSegment.choices.length === 0) {
-          throw new Error("Generated segment has no choices");
-        }
-        
         // Set character backstory
-        addDebugLog("📚 Setting character backstory");
+        console.log("[PLAY] Setting character backstory");
         updateCharacterBackstory(backstory);
         
         // Add backstory to lore
@@ -119,7 +90,7 @@ export default function GamePlayScreen() {
           category: "character"
         });
         
-        addDebugLog("📖 Added backstory to lore");
+        console.log("[PLAY] Added backstory to lore");
         
         // Set first game segment with custom choice enabled
         const segmentWithCustom = {
@@ -127,7 +98,7 @@ export default function GamePlayScreen() {
           customChoiceEnabled: true
         };
         
-        addDebugLog("🎯 Updating game segment");
+        console.log("[PLAY] Updating game segment");
         updateGameSegment(segmentWithCustom);
         
         // Add first memory
@@ -139,27 +110,18 @@ export default function GamePlayScreen() {
           category: "event"
         });
         
-        addDebugLog("💭 Added initial memory");
+        console.log("[PLAY] Added initial memory");
         
         setError(null);
         setNarrativeKey(prev => prev + 1);
-        addDebugLog("=== ✅ GAME INITIALIZATION COMPLETE ===");
-        
-        // Show UI immediately after initialization
-        setTimeout(() => {
-          addDebugLog("🎬 Auto-showing UI after initialization");
-          setInitializing(false);
-          setShowChoices(true);
-          setNarrativeVisible(true);
-        }, 1000);
+        console.log("[PLAY] Game initialization complete");
         
       } catch (error) {
-        addDebugLog("❌ FAILED to initialize game", error);
-        console.error("Failed to initialize game:", error);
+        console.error("[PLAY] Failed to initialize game:", error);
         setError(`Failed to start your chronicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
         
         // Show fallback content for debugging
-        addDebugLog("🔧 Providing fallback content for debugging");
+        console.log("[PLAY] Providing fallback content for debugging");
         const fallbackSegment = {
           id: "fallback-segment-1",
           text: `Welcome to Chronicle Weaver, ${currentGame.character.name}. 
@@ -180,39 +142,34 @@ What will you do to begin your chronicle?`,
         };
         
         updateGameSegment(fallbackSegment);
-        setInitializing(false);
-        setShowChoices(true);
-        setNarrativeVisible(true);
-        setNarrativeKey(prev => prev + 1);
         
       } finally {
+        setInitializing(false);
         setLoading(false);
+        setShowChoices(true);
       }
     } else {
-      addDebugLog("📖 Game already has current segment, showing UI");
-      addDebugLog("Existing segment details", {
+      console.log("[PLAY] Game already has current segment, showing UI");
+      console.log("[PLAY] Existing segment details", {
         textLength: currentGame.currentSegment.text.length,
         choicesCount: currentGame.currentSegment.choices.length,
         customChoiceEnabled: currentGame.currentSegment.customChoiceEnabled
       });
       setInitializing(false);
       setShowChoices(true);
-      setNarrativeVisible(true);
       setNarrativeKey(prev => prev + 1);
     }
   };
 
   useEffect(() => {
-    addDebugLog("=== 🎮 GAME PLAY SCREEN MOUNTED ===");
-    addDebugLog("Current game exists", !!currentGame);
-    addDebugLog("Current game ID", currentGame?.id);
-    addDebugLog("Current segment exists", !!currentGame?.currentSegment);
-    addDebugLog("Current segment text length", currentGame?.currentSegment?.text?.length || 0);
-    addDebugLog("Current segment choices count", currentGame?.currentSegment?.choices?.length || 0);
-    addDebugLog("Game setup", { era: gameSetup.era, theme: gameSetup.theme, character: gameSetup.characterName });
+    console.log("[PLAY] Game play screen mounted");
+    console.log("[PLAY] Current game exists", !!currentGame);
+    console.log("[PLAY] Current game ID", currentGame?.id);
+    console.log("[PLAY] Current segment exists", !!currentGame?.currentSegment);
+    console.log("[PLAY] Current segment text length", currentGame?.currentSegment?.text?.length || 0);
     
     if (!currentGame) {
-      addDebugLog("❌ No current game, redirecting to home");
+      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
@@ -221,7 +178,7 @@ What will you do to begin your chronicle?`,
   }, [currentGame?.id]);
 
   const handleNarrativeComplete = () => {
-    addDebugLog("📚 Narrative animation complete, ensuring choices are visible");
+    console.log("[PLAY] Narrative animation complete, showing choices");
     setShowChoices(true);
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -230,15 +187,11 @@ What will you do to begin your chronicle?`,
 
   const handleChoiceSelected = async (choiceId: string) => {
     if (!currentGame || !currentGame.currentSegment || processingChoice) {
-      addDebugLog("❌ Cannot process choice - invalid state", {
-        hasGame: !!currentGame,
-        hasSegment: !!currentGame?.currentSegment,
-        isProcessing: processingChoice
-      });
+      console.log("[PLAY] Cannot process choice - invalid state");
       return;
     }
     
-    addDebugLog("🎯 Choice selected", choiceId);
+    console.log("[PLAY] Choice selected", choiceId);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -248,17 +201,17 @@ What will you do to begin your chronicle?`,
     );
     
     if (!selectedChoice) {
-      addDebugLog("❌ Selected choice not found");
+      console.log("[PLAY] Selected choice not found");
       setProcessingChoice(false);
       setShowChoices(true);
       return;
     }
     
     try {
-      addDebugLog("🤖 Generating next segment for choice", selectedChoice.text);
+      console.log("[PLAY] Generating next segment for choice", selectedChoice.text);
       const nextSegment = await generateNextSegment(currentGame, selectedChoice);
       
-      addDebugLog("✅ Generated next segment", {
+      console.log("[PLAY] Generated next segment", {
         textLength: nextSegment.text.length,
         choicesCount: nextSegment.choices.length
       });
@@ -284,24 +237,16 @@ What will you do to begin your chronicle?`,
       // Reset UI state for new segment and force narrative re-render
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
-      setNarrativeVisible(true);
       
-      addDebugLog("✅ Choice processing complete");
+      console.log("[PLAY] Choice processing complete");
       
-      // Show choices after a short delay
-      setTimeout(() => {
-        addDebugLog("🎬 Auto-showing choices after choice processing");
-        setShowChoices(true);
-        
-        // Scroll to top when new narrative is shown
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollTo({ y: 0, animated: true });
-        }
-      }, 1500);
+      // Scroll to top when new narrative is shown
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+      }
       
     } catch (error) {
-      addDebugLog("❌ Failed to generate next segment", error);
-      console.error("Failed to generate next segment:", error);
+      console.error("[PLAY] Failed to generate next segment:", error);
       Alert.alert(
         "Error", 
         "Failed to process your choice. Please check your connection and try again.",
@@ -315,11 +260,11 @@ What will you do to begin your chronicle?`,
 
   const handleCustomAction = async (customAction: string) => {
     if (!currentGame || processingChoice) {
-      addDebugLog("❌ Cannot process custom action - invalid state");
+      console.log("[PLAY] Cannot process custom action - invalid state");
       return;
     }
     
-    addDebugLog("✏️ Custom action submitted", customAction);
+    console.log("[PLAY] Custom action submitted", customAction);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -353,24 +298,16 @@ What will you do to begin your chronicle?`,
       // Reset UI state for new segment and force narrative re-render
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
-      setNarrativeVisible(true);
       
-      addDebugLog("✅ Custom action processing complete");
+      console.log("[PLAY] Custom action processing complete");
       
-      // Show choices after narrative completes
-      setTimeout(() => {
-        addDebugLog("🎬 Auto-showing choices after custom action");
-        setShowChoices(true);
-        
-        // Scroll to top when new narrative is shown
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollTo({ y: 0, animated: true });
-        }
-      }, 1500);
+      // Scroll to top when new narrative is shown
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+      }
       
     } catch (error) {
-      addDebugLog("❌ Failed to generate next segment for custom action", error);
-      console.error("Failed to generate next segment:", error);
+      console.error("[PLAY] Failed to generate next segment for custom action:", error);
       Alert.alert(
         "Error", 
         "Failed to process your action. Please check your connection and try again.",
@@ -415,7 +352,7 @@ What will you do to begin your chronicle?`,
     );
   }
 
-  if (initializing && !forceShowUI) {
+  if (initializing) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <DebugPanel />
@@ -434,9 +371,6 @@ What will you do to begin your chronicle?`,
               <TouchableOpacity style={styles.debugButton} onPress={forceShowUIElements}>
                 <Text style={styles.debugButtonText}>🔧 Force Show UI</Text>
               </TouchableOpacity>
-              {debugInfo.slice(0, 3).map((info, index) => (
-                <Text key={index} style={styles.debugText}>{info}</Text>
-              ))}
             </View>
           )}
         </View>
@@ -444,7 +378,7 @@ What will you do to begin your chronicle?`,
     );
   }
 
-  if (error && !forceShowUI) {
+  if (error) {
     return (
       <SafeAreaView style={styles.errorContainer}>
         <DebugPanel />
@@ -456,7 +390,6 @@ What will you do to begin your chronicle?`,
             title="Retry" 
             onPress={retryInitialization} 
             style={styles.retryButton} 
-            disabled={initializationAttempts >= 3}
           />
           <Button title="Return Home" onPress={navigateToHome} style={styles.errorButton} />
         </View>
@@ -505,50 +438,30 @@ What will you do to begin your chronicle?`,
               ref={scrollViewRef}
               style={styles.narrativeSection} 
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.narrativeContent}
             >
               {/* Debug buttons for development */}
               {__DEV__ && (
                 <View style={styles.debugButtonsContainer}>
-                  <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeVisible(true)}>
-                    <Text style={styles.debugButtonText}>🔄 Force Show Narrative</Text>
+                  <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
+                    <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
-                    <Text style={styles.debugButtonText}>🎯 Force Show Choices</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.debugButton} onPress={forceShowUIElements}>
-                    <Text style={styles.debugButtonText}>🔧 Force Show All UI</Text>
+                    <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
                   </TouchableOpacity>
                 </View>
               )}
               
               {/* Narrative Text Component */}
-              {(narrativeVisible || forceShowUI) && (
-                <NarrativeText 
-                  key={narrativeKey}
-                  text={currentGame.currentSegment.text} 
-                  onComplete={handleNarrativeComplete}
-                  animated={true}
-                />
-              )}
+              <NarrativeText 
+                key={narrativeKey}
+                text={currentGame.currentSegment.text} 
+                onComplete={handleNarrativeComplete}
+                animated={true}
+              />
               
-              {/* Fallback if narrative isn't showing */}
-              {!narrativeVisible && !forceShowUI && (
-                <View style={styles.narrativeFallback}>
-                  <Crown size={48} color={colors.primary} />
-                  <Text style={styles.narrativeFallbackTitle}>Narrative Loading</Text>
-                  <Text style={styles.narrativeFallbackText}>
-                    If you don't see your story, tap the button below to reload it.
-                  </Text>
-                  <Button 
-                    title="Show Narrative" 
-                    onPress={() => {
-                      setNarrativeVisible(true);
-                      setNarrativeKey(prev => prev + 1);
-                    }}
-                    style={styles.narrativeFallbackButton}
-                  />
-                </View>
-              )}
+              {/* Spacer to ensure good spacing between narrative and choices */}
+              <View style={styles.spacer} />
             </ScrollView>
             
             {/* Processing State */}
@@ -565,7 +478,7 @@ What will you do to begin your chronicle?`,
                 onCancel={() => setShowCustomInput(false)}
                 disabled={processingChoice}
               />
-            ) : (showChoices || forceShowUI) ? (
+            ) : showChoices ? (
               /* Choices Section */
               <View style={styles.choicesSection}>
                 <ScrollView showsVerticalScrollIndicator={false}>
@@ -751,34 +664,18 @@ const styles = StyleSheet.create({
   narrativeSection: {
     flex: 1,
   },
-  narrativeFallback: {
-    padding: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 40,
+  narrativeContent: {
+    paddingBottom: 20, // Add padding at the bottom for better spacing
   },
-  narrativeFallbackTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.text,
-    marginTop: 16,
-    marginBottom: 12,
-    fontFamily: "serif",
-  },
-  narrativeFallbackText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  narrativeFallbackButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 24,
+  spacer: {
+    height: 20, // Extra space between narrative and choices
   },
   choicesSection: {
     maxHeight: 350,
     padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface + "80",
   },
   customActionButton: {
     flexDirection: "row",
@@ -820,6 +717,9 @@ const styles = StyleSheet.create({
   processingContainer: {
     padding: 40,
     alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface + "80",
   },
   processingTitle: {
     color: colors.text,
@@ -834,14 +734,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   waitingContainer: {
-    padding: 40,
+    padding: 20,
     alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface + "80",
   },
   waitingText: {
     color: colors.textSecondary,
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   skipButton: {
     backgroundColor: colors.surface,
@@ -903,12 +806,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     marginBottom: 8,
-  },
-  debugText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginBottom: 4,
-    fontFamily: "monospace",
   },
   debugButtonsContainer: {
     flexDirection: "row",

@@ -11,7 +11,7 @@ type CoreMessage =
 
 // Enhanced logging for debugging
 const logDebug = (message: string, data?: any) => {
-  console.log(`[AI SERVICE DEBUG] ${message}`, data || '');
+  console.log(`[AI SERVICE] ${message}`, data || '');
 };
 
 const logError = (message: string, error?: any) => {
@@ -136,7 +136,7 @@ export async function generateInitialStory(gameState: GameState, gameSetup: Game
       global.__CHRONICLE_DEBUG__.callCount++;
     }
     
-    logDebug("=== 🚀 STARTING INITIAL STORY GENERATION ===");
+    logDebug("Starting initial story generation");
     logDebug("Game state:", {
       era: gameState.era,
       theme: gameState.theme,
@@ -228,7 +228,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       { role: "user", content: userPrompt }
     ];
 
-    logDebug("📤 Sending request to AI API...");
+    logDebug("Sending request to AI API...");
     logDebug("Request payload:", { 
       messagesCount: messages.length,
       systemPromptLength: systemPrompt.length,
@@ -272,11 +272,10 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return res;
     });
 
-    logDebug("📥 Response status:", response.status);
-    logDebug("Response headers:", Object.fromEntries(response.headers.entries()));
+    logDebug("Response status:", response.status);
 
     const data = await response.json();
-    logDebug("📦 Raw response received, length:", data.completion?.length || 0);
+    logDebug("Raw response received, length:", data.completion?.length || 0);
     
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.lastResponse = {
@@ -289,11 +288,11 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     }
     
     if (!data.completion) {
-      logError("❌ No completion in response:", data);
+      logError("No completion in response:", data);
       throw new Error("No completion received from API");
     }
 
-    logDebug("📖 Response preview:", data.completion.substring(0, 300) + "...");
+    logDebug("Response preview:", data.completion.substring(0, 300) + "...");
 
     let parsedResponse;
     try {
@@ -305,8 +304,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       }
       
     } catch (parseError) {
-      logError("❌ Failed to parse AI response:", data.completion);
-      logError("Parse error:", parseError);
+      logError("Failed to parse AI response:", parseError);
       
       if (typeof global !== 'undefined') {
         global.__CHRONICLE_DEBUG__.lastError = {
@@ -318,7 +316,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       }
       
       // Provide a comprehensive fallback for debugging
-      logDebug("🔧 Providing enhanced fallback response for debugging");
+      logDebug("Providing enhanced fallback response for debugging");
       return {
         backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
 
@@ -356,17 +354,16 @@ What path will you choose to begin this new chapter of your chronicle?`,
 
     // Ensure segment text is substantial
     if (parsedResponse.segment.text.length < 1000) {
-      logError("⚠️ Segment text shorter than expected:", parsedResponse.segment.text.length);
-      logError("Actual text:", parsedResponse.segment.text);
+      logError("Segment text shorter than expected:", parsedResponse.segment.text.length);
       // Don't throw error, but log warning
     }
 
     // Ensure backstory is substantial
     if (parsedResponse.backstory.length < 500) {
-      logError("⚠️ Backstory shorter than expected:", parsedResponse.backstory.length);
+      logError("Backstory shorter than expected:", parsedResponse.backstory.length);
     }
 
-    logDebug("✅ Validation passed");
+    logDebug("Validation passed");
     logDebug("Backstory length:", parsedResponse.backstory.length);
     logDebug("Segment text length:", parsedResponse.segment.text.length);
     logDebug("Choices count:", parsedResponse.segment.choices?.length || 0);
@@ -382,14 +379,13 @@ What path will you choose to begin this new chapter of your chronicle?`,
       customChoiceEnabled: true
     };
 
-    logDebug("✅ Successfully created first segment");
+    logDebug("Successfully created first segment");
     logDebug("Final segment text length:", firstSegment.text.length);
     logDebug("Final choices:", firstSegment.choices);
-    logDebug("=== ✅ INITIAL STORY GENERATION COMPLETE ===");
 
     return { backstory, firstSegment };
   } catch (error) {
-    logError("❌ Error in generateInitialStory:", error);
+    logError("Error in generateInitialStory:", error);
     
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.lastError = {
@@ -401,7 +397,7 @@ What path will you choose to begin this new chapter of your chronicle?`,
     }
     
     // Provide a comprehensive fallback response for debugging
-    logDebug("🔧 Providing comprehensive fallback response for debugging");
+    logDebug("Providing comprehensive fallback response for debugging");
     return {
       backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
 
@@ -444,7 +440,7 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
       global.__CHRONICLE_DEBUG__.callCount++;
     }
     
-    logDebug("=== 🎯 STARTING NEXT SEGMENT GENERATION ===");
+    logDebug("Starting next segment generation");
     logDebug("Selected choice:", selectedChoice.text);
 
     const { era, theme, difficulty, character, pastSegments, turnCount, memories } = gameState;
@@ -523,7 +519,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       { role: "user", content: userPrompt }
     ];
 
-    logDebug("📤 Sending request for next segment...");
+    logDebug("Sending request for next segment...");
 
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.lastApiCall = {
@@ -560,10 +556,10 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return res;
     });
 
-    logDebug("📥 Next segment response status:", response.status);
+    logDebug("Next segment response status:", response.status);
 
     const data = await response.json();
-    logDebug("📦 Next segment response received, length:", data.completion?.length || 0);
+    logDebug("Next segment response received, length:", data.completion?.length || 0);
     
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.lastResponse = {
@@ -576,7 +572,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     }
     
     if (!data.completion) {
-      logError("❌ No completion in response:", data);
+      logError("No completion in response:", data);
       throw new Error("No completion received from API");
     }
 
@@ -590,8 +586,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       }
       
     } catch (parseError) {
-      logError("❌ Failed to parse next segment response:", data.completion);
-      logError("Parse error:", parseError);
+      logError("Failed to parse next segment response:", parseError);
       
       if (typeof global !== 'undefined') {
         global.__CHRONICLE_DEBUG__.lastError = {
@@ -603,7 +598,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       }
       
       // Provide fallback for development
-      logDebug("🔧 Providing fallback next segment for development");
+      logDebug("Providing fallback next segment for development");
       return {
         id: `segment-${turnCount + 1}`,
         text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
@@ -636,13 +631,12 @@ What will you do next as this chronicle continues to unfold around you?`,
       customChoiceEnabled: true
     };
 
-    logDebug("✅ Next segment created successfully");
+    logDebug("Next segment created successfully");
     logDebug("Next segment text length:", nextSegment.text.length);
-    logDebug("=== ✅ NEXT SEGMENT GENERATION COMPLETE ===");
 
     return nextSegment;
   } catch (error) {
-    logError("❌ Error in generateNextSegment:", error);
+    logError("Error in generateNextSegment:", error);
     
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.lastError = {
@@ -654,7 +648,7 @@ What will you do next as this chronicle continues to unfold around you?`,
     }
     
     // Provide fallback for development
-    logDebug("🔧 Providing fallback next segment for development");
+    logDebug("Providing fallback next segment for development");
     return {
       id: `segment-${gameState.turnCount + 1}`,
       text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
@@ -680,7 +674,7 @@ What will you do next as this chronicle continues to unfold around you?`,
 
 export async function processKronosMessage(gameState: GameState, message: string): Promise<string> {
   try {
-    logDebug("🤖 Processing Kronos message:", message);
+    logDebug("Processing Kronos message:", message);
 
     const systemPrompt = `You are Kronos, the Weaver of Chronicles, the AI storyteller managing an interactive chronicle in Chronicle Weaver. The player is communicating directly with you to request changes, improvements, or clarifications about their story world.
 
@@ -703,7 +697,7 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
       { role: "user", content: message }
     ];
 
-    logDebug("📤 Sending Kronos message to API...");
+    logDebug("Sending Kronos message to API...");
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
@@ -725,11 +719,11 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
     });
 
     const data = await response.json();
-    logDebug("📥 Kronos response received");
+    logDebug("Kronos response received");
     
     return data.completion || "I apologize, but I'm having trouble responding right now. Please try again later.";
   } catch (error) {
-    logError("❌ Error processing Kronos message:", error);
+    logError("Error processing Kronos message:", error);
     return "I apologize, but I'm having trouble responding right now. Please try again later.";
   }
 }
