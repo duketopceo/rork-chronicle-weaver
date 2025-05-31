@@ -112,11 +112,11 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <History size={36} color={colors.primary} />
+              <History size={28} color={colors.primary} />
               <Text style={styles.stepTitle}>Setting</Text>
             </View>
             <Text style={styles.stepDescription}>
-              Choose any time period or setting.
+              Choose a time period or setting
             </Text>
             
             <View style={styles.inputContainer}>
@@ -126,18 +126,18 @@ export default function GameSetupScreen() {
                   style={styles.randomButton}
                   onPress={() => handleRandomExample(ERA_EXAMPLES, setEra)}
                 >
-                  <Shuffle size={16} color={colors.primary} />
+                  <Shuffle size={14} color={colors.primary} />
                   <Text style={styles.randomButtonText}>Random</Text>
                 </TouchableOpacity>
               </View>
               
               <TextInput
-                placeholder="Describe your world and time period..."
+                placeholder="Describe your world..."
                 value={gameSetup.era}
                 onChangeText={setEra}
                 error={errors.era}
                 multiline
-                numberOfLines={3}
+                numberOfLines={2}
                 style={styles.multilineInput}
               />
               
@@ -173,11 +173,11 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <Palette size={36} color={colors.primary} />
+              <Palette size={28} color={colors.primary} />
               <Text style={styles.stepTitle}>Theme</Text>
             </View>
             <Text style={styles.stepDescription}>
-              What kind of story do you want?
+              What kind of story?
             </Text>
             
             <View style={styles.inputContainer}>
@@ -187,7 +187,7 @@ export default function GameSetupScreen() {
                   style={styles.randomButton}
                   onPress={() => handleRandomExample(THEME_EXAMPLES, setTheme)}
                 >
-                  <Shuffle size={16} color={colors.primary} />
+                  <Shuffle size={14} color={colors.primary} />
                   <Text style={styles.randomButtonText}>Random</Text>
                 </TouchableOpacity>
               </View>
@@ -198,7 +198,7 @@ export default function GameSetupScreen() {
                 onChangeText={setTheme}
                 error={errors.theme}
                 multiline
-                numberOfLines={3}
+                numberOfLines={2}
                 style={styles.multilineInput}
               />
               
@@ -223,11 +223,11 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <User size={36} color={colors.primary} />
+              <User size={28} color={colors.primary} />
               <Text style={styles.stepTitle}>Character</Text>
             </View>
             <Text style={styles.stepDescription}>
-              Name your character.
+              Name your character
             </Text>
             
             <TextInput
@@ -258,7 +258,7 @@ export default function GameSetupScreen() {
             
             <View style={styles.summaryContainer}>
               <View style={styles.summaryHeader}>
-                <Crown size={20} color={colors.primary} />
+                <Crown size={18} color={colors.primary} />
                 <Text style={styles.summaryTitle}>Summary</Text>
               </View>
               <View style={styles.summaryItem}>
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: 20,
   },
   content: {
     flex: 1,
@@ -402,12 +402,12 @@ const styles = StyleSheet.create({
   stepHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    gap: 16,
+    marginBottom: 16,
+    gap: 12,
   },
   stepTitle: {
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 22,
+    fontWeight: "700",
     color: colors.text,
     flex: 1,
     fontFamily: "serif",
@@ -415,11 +415,11 @@ const styles = StyleSheet.create({
   stepDescription: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: 24,
-    lineHeight: 24,
+    marginBottom: 20,
+    lineHeight: 22,
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputHeader: {
     flexDirection: "row",
@@ -436,55 +436,55 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.primary,
-    gap: 6,
+    gap: 4,
   },
   randomButtonText: {
     color: colors.primary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
   },
   multilineInput: {
-    height: 100,
+    height: 80,
     textAlignVertical: "top",
   },
   examplesContainer: {
-    marginTop: 12,
+    marginTop: 8,
   },
   examplesScroll: {
     flexDirection: "row",
   },
   exampleChip: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginRight: 10,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
     borderWidth: 1,
     borderColor: colors.border,
   },
   exampleChipText: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
   },
   backstoryOption: {
     flexDirection: "row",
     alignItems: "flex-start",
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    gap: 12,
+    gap: 10,
   },
   backstoryCheckbox: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     borderRadius: 4,
     borderWidth: 2,
     borderColor: colors.primary,
@@ -502,52 +502,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backstoryTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   backstoryDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   summaryContainer: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
   summaryHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: 12,
+    gap: 6,
   },
   summaryTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: colors.text,
     fontFamily: "serif",
   },
   summaryItem: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 2,
     fontWeight: "500",
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.text,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   footer: {
-    padding: 24,
+    padding: 20,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.surface,
@@ -555,6 +555,6 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     backgroundColor: colors.primary,
-    borderRadius: 16,
+    borderRadius: 12,
   },
 });
