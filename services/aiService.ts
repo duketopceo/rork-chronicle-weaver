@@ -9,34 +9,96 @@ type CoreMessage =
   | { role: 'user'; content: string | Array<ContentPart>; }
   | { role: 'assistant'; content: string | Array<ContentPart>; };
 
-// Enhanced logging for debugging
-const logDebug = (message: string, data?: any) => {
+// --- TypeScript global typing for debug state ---
+declare global {
+  interface GlobalThis {
+    __CHRONICLE_DEBUG__?: {
+      lastApiCall?: any;
+      lastResponse?: any;
+      lastError?: any;
+      callCount: number;
+      lastPrompt?: string;
+      lastRawResponse?: string;
+      apiCallHistory: any[];
+    };
+  }
+}
+
+// --- Debugging Tools & Utilities ---
+// Use globalThis for cross-platform compatibility
+if (typeof globalThis !== 'undefined') {
+  if (!(globalThis as any).__CHRONICLE_DEBUG__) {
+    (globalThis as any).__CHRONICLE_DEBUG__ = {
+      callCount: 0,
+      apiCallHistory: []
+    };
+  }
+}
+
+// Debug mode flag (manual toggle only)
+let DEBUG_MODE = true;
+
+/**
+ * Enable or disable debug mode at runtime.
+ */
+export function setDebugMode(enabled: boolean) {
+  DEBUG_MODE = enabled;
+}
+
+/**
+ * Get the current debug state (deep clone to avoid mutation).
+ */
+export function getDebugState() {
+  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
+    return JSON.parse(JSON.stringify((globalThis as any).__CHRONICLE_DEBUG__));
+  }
+  return null;
+}
+
+/**
+ * Clear debug history and counters.
+ */
+export function clearDebugHistory() {
+  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
+    (globalThis as any).__CHRONICLE_DEBUG__.lastApiCall = undefined;
+    (globalThis as any).__CHRONICLE_DEBUG__.lastResponse = undefined;
+    (globalThis as any).__CHRONICLE_DEBUG__.lastError = undefined;
+    (globalThis as any).__CHRONICLE_DEBUG__.lastPrompt = undefined;
+    (globalThis as any).__CHRONICLE_DEBUG__.lastRawResponse = undefined;
+    (globalThis as any).__CHRONICLE_DEBUG__.callCount = 0;
+    (globalThis as any).__CHRONICLE_DEBUG__.apiCallHistory = [];
+  }
+}
+
+/**
+ * Standardized API call logging utility.
+ */
+export function logApiCall(type: string, payload: any) {
+  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
+    (globalThis as any).__CHRONICLE_DEBUG__.apiCallHistory.push({
+      timestamp: new Date().toISOString(),
+      type,
+      ...payload
+    });
+  }
+  if (DEBUG_MODE) {
+    _logDebug(`[API CALL] ${type}`, payload);
+  }
+}
+
+// Patch logDebug and logError to respect DEBUG_MODE
+const _logDebug = (message: string, data?: any) => {
   console.log(`[AI SERVICE DEBUG] ${message}`, data || '');
 };
-
-const logError = (message: string, error?: any) => {
+const _logError = (message: string, error?: any) => {
   console.error(`[AI SERVICE ERROR] ${message}`, error || '');
 };
-
-// Enhanced global debug state for tracking
-declare global {
-  var __CHRONICLE_DEBUG__: {
-    lastApiCall?: any;
-    lastResponse?: any;
-    lastError?: any;
-    callCount: number;
-    lastPrompt?: string;
-    lastRawResponse?: string;
-    apiCallHistory: any[];
-  };
+function logDebug(message: string, data?: any) {
+  if (DEBUG_MODE) _logDebug(message, data);
 }
-
-if (typeof global !== 'undefined') {
-  global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
-    callCount: 0,
-    apiCallHistory: []
-  };
-}
+function logError(message: string, error?: any) {
+  if (DEBUG_MODE) _logError(message, error);
+};
 
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
   try {
@@ -183,7 +245,12 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     });
 
     logDebug("📥 Response status:", response.status);
-    logDebug("Response headers:", Object.fromEntries(response.headers.entries()));
+    let headersObj: any = {};
+    // Feature detection for headers logging
+    if (typeof Object.fromEntries === 'function' && response.headers && typeof (response.headers as any).entries === 'function') {
+      headersObj = Object.fromEntries(Array.from((response.headers as any).entries()));
+    }
+    logDebug("Response headers:", headersObj);
 
     if (!response.ok) {
       const errorText = await response.text();
