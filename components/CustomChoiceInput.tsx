@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
-import { Send, X, Edit3, Feather } from "lucide-react-native";
+import { X, Feather } from "lucide-react-native";
 
 type CustomChoiceInputProps = {
   onSubmit: (customAction: string) => void;
@@ -27,16 +27,16 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
     >
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Feather size={24} color={colors.primary} />
+          <Feather size={20} color={colors.primary} />
           <Text style={styles.headerTitle}>Write Your Action</Text>
         </View>
         <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
-          <X size={24} color={colors.textMuted} />
+          <X size={20} color={colors.textMuted} />
         </TouchableOpacity>
       </View>
       
       <Text style={styles.description}>
-        Describe exactly what you want your character to do. Kronos will weave your action into the chronicle and respond with the consequences.
+        Describe what you want your character to do.
       </Text>
       
       <View style={styles.inputContainer}>
@@ -77,60 +77,60 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
-    borderRadius: 24,
-    padding: 24,
-    margin: 20,
-    borderWidth: 2,
-    borderColor: colors.primary + "30",
+    borderRadius: 16,
+    padding: 20,
+    margin: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: colors.text,
     fontFamily: "serif",
   },
   closeButton: {
-    padding: 8,
+    padding: 6,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 24,
-    marginBottom: 20,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   textInput: {
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
-    padding: 18,
-    fontSize: 17,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
     color: colors.text,
-    minHeight: 120,
-    maxHeight: 200,
+    minHeight: 100,
+    maxHeight: 150,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 16,
+    gap: 12,
   },
   cancelButton: {
     flex: 1,

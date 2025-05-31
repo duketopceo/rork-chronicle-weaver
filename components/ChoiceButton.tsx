@@ -25,18 +25,18 @@ export default function ChoiceButton({
   const opacityAnim = new Animated.Value(0);
 
   React.useEffect(() => {
-    // Staggered animation for choices with enhanced effects
+    // Staggered animation for choices
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 600,
-        delay: index * 150,
+        duration: 400,
+        delay: index * 100,
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
-        duration: 800,
-        delay: index * 150,
+        duration: 500,
+        delay: index * 100,
         useNativeDriver: true,
       })
     ]).start();
@@ -74,7 +74,7 @@ export default function ChoiceButton({
         disabled={disabled}
         activeOpacity={0.8}
       >
-        <Feather size={20} color={colors.primary} style={styles.icon} />
+        <Feather size={18} color={colors.primary} style={styles.icon} />
         <Text style={styles.text}>{choice.text}</Text>
       </TouchableOpacity>
     </Animated.View>
@@ -86,15 +86,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.choiceBackground,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 20,
-    padding: 24,
-    marginVertical: 12,
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 8,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
-    borderLeftWidth: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    borderLeftWidth: 3,
     borderLeftColor: colors.primary,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   icon: {
-    marginRight: 16,
+    marginRight: 12,
     marginTop: 2,
   },
   text: {
     color: colors.text,
-    fontSize: 17,
-    lineHeight: 28,
+    fontSize: 16,
+    lineHeight: 24,
     fontWeight: "500",
     flex: 1,
   },

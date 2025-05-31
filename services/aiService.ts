@@ -38,6 +38,24 @@ if (typeof global !== 'undefined') {
   };
 }
 
+// Maximum retries for API calls
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000; // ms
+
+// Helper function to retry API calls
+const retryApiCall = async (apiCallFn: () => Promise<any>, retries = MAX_RETRIES): Promise<any> => {
+  try {
+    return await apiCallFn();
+  } catch (error) {
+    if (retries > 0) {
+      logDebug(`Retrying API call, ${retries} attempts left`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return retryApiCall(apiCallFn, retries - 1);
+    }
+    throw error;
+  }
+};
+
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
   try {
     if (typeof global !== 'undefined') {
@@ -128,19 +146,6 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       {"id": "2", "text": "Second choice description"},
       {"id": "3", "text": "Third choice description"}
     ]
-  },
-  "worldSystems": {
-    "politics": [
-      {"name": "Faction Name", "description": "Brief description", "power": 7, "playerStanding": 0}
-    ],
-    "economics": {
-      "currency": "Currency Name",
-      "marketPrices": {"item": 10},
-      "tradeRoutes": ["Route description"]
-    },
-    "initialInventory": [
-      {"name": "Item Name", "description": "Item description", "quantity": 1, "value": 10, "category": "tool"}
-    ]
   }
 }`;
 
@@ -174,33 +179,27 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       });
     }
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
+    // Use retry logic for API call
+    const response = await retryApiCall(async () => {
+      const res = await fetch("https://toolkit.rork.com/text/llm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages }),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        logError("API error response:", errorText);
+        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
+      }
+      
+      return res;
     });
 
     logDebug("📥 Response status:", response.status);
     logDebug("Response headers:", Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logError("API error response:", errorText);
-      
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "api_error",
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText
-        };
-      }
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-    }
 
     const data = await response.json();
     logDebug("📦 Raw response received, length:", data.completion?.length || 0);
@@ -401,7 +400,7 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
     logDebug("=== 🎯 STARTING NEXT SEGMENT GENERATION ===");
     logDebug("Selected choice:", selectedChoice.text);
 
-    const { era, theme, difficulty, character, pastSegments, turnCount, memories, worldSystems } = gameState;
+    const { era, theme, difficulty, character, pastSegments, turnCount, memories } = gameState;
 
     const realismLevel = difficulty <= 0.2 ? "hyper-realistic" : 
                          difficulty <= 0.4 ? "historically accurate" :
@@ -420,27 +419,12 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
       `${memory.title}: ${memory.description}`
     ).join("\n");
 
-    const worldContext = `
-Politics: ${worldSystems.politics.map(f => `${f.name} (Power: ${f.power}, Standing: ${f.playerStanding})`).join(", ")}
-Economics: ${character.inventory.length} items, ${worldSystems.economics.playerWealth} ${worldSystems.economics.currency}
-Military: ${worldSystems.war.playerRole}, Experience: ${worldSystems.war.battleExperience}
-`;
-
     const systemPrompt = `You are Kronos, the Weaver of Chronicles, continuing an interactive chronicle in Chronicle Weaver. Maintain narrative consistency and character development while advancing the story based on the player's choice.
 
 Setting: ${era}
 Theme: ${theme}
 Realism Level: ${realismLevel}
 Character: ${character.name}
-
-Current Stats:
-- Influence: ${character.stats.influence}/10
-- Knowledge: ${character.stats.knowledge}/10  
-- Resources: ${character.stats.resources}/10
-- Reputation: ${character.stats.reputation}/10
-
-World Context:
-${worldContext}
 
 CRITICAL REQUIREMENTS:
 1. ALWAYS respond with ONLY valid JSON - no markdown, no extra text, no code blocks
@@ -477,13 +461,6 @@ Write the next segment that:
 - Ends with exactly 3 new meaningful choices that advance the story
 - Uses rich, literary language befitting a historical chronicle
 
-Also suggest:
-- Stat changes based on the choice and consequences (each stat can change by -2 to +2)
-- New inventory items if applicable
-- Political faction standing changes
-- Economic impacts
-- New lore discoveries
-
 Respond with ONLY this JSON structure (no markdown, no code blocks):
 {
   "text": "Next segment narrative here (5-7 substantial paragraphs)...",
@@ -491,31 +468,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     {"id": "1", "text": "First choice description"},
     {"id": "2", "text": "Second choice description"},
     {"id": "3", "text": "Third choice description"}
-  ],
-  "consequences": {
-    "statChanges": {
-      "influence": 0,
-      "knowledge": 0,
-      "resources": 0,
-      "reputation": 0
-    },
-    "newInventory": [
-      {"name": "Item", "description": "Description", "quantity": 1, "value": 10, "category": "tool"}
-    ],
-    "politicalChanges": [
-      {"factionName": "Name", "standingChange": 1}
-    ],
-    "economicChanges": {
-      "wealthChange": 0,
-      "newPrices": {"item": 15}
-    },
-    "newLore": [
-      {"title": "Discovery", "content": "Lore content", "category": "historical"}
-    ],
-    "newMemories": [
-      {"title": "Event", "description": "Memory description", "category": "event"}
-    ]
-  }
+  ]
 }`;
 
     const messages: CoreMessage[] = [
@@ -540,31 +493,26 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       });
     }
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
+    // Use retry logic for API call
+    const response = await retryApiCall(async () => {
+      const res = await fetch("https://toolkit.rork.com/text/llm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages }),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        logError("API error response:", errorText);
+        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
+      }
+      
+      return res;
     });
 
     logDebug("📥 Next segment response status:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logError("API error response:", errorText);
-      
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "api_error",
-          status: response.status,
-          errorText: errorText
-        };
-      }
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-    }
 
     const data = await response.json();
     logDebug("📦 Next segment response received, length:", data.completion?.length || 0);
@@ -728,17 +676,24 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
 
     logDebug("📤 Sending Kronos message to API...");
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
+    // Use retry logic for API call
+    const response = await retryApiCall(async () => {
+      const res = await fetch("https://toolkit.rork.com/text/llm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages }),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        logError("API error response:", errorText);
+        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
+      }
+      
+      return res;
     });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-    }
 
     const data = await response.json();
     logDebug("📥 Kronos response received");
