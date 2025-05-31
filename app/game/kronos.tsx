@@ -65,7 +65,7 @@ export default function KronosScreen() {
           <View style={styles.headerContent}>
             <Text style={styles.title}>Speak with Kronos</Text>
             <Text style={styles.subtitle}>
-              Request changes, improvements, or ask questions about your chronicle
+              Request changes or ask questions
             </Text>
           </View>
         </View>
@@ -76,17 +76,13 @@ export default function KronosScreen() {
               <MessageCircle size={64} color={colors.textMuted} />
               <Text style={styles.emptyTitle}>Direct Line to Kronos</Text>
               <Text style={styles.emptyText}>
-                Ask me to enhance your world with deeper politics, economics, or any other systems. 
-                I can also explain story elements or modify how things work in your chronicle.
+                Ask me to enhance your world with deeper politics, economics, or any other systems.
               </Text>
               <View style={styles.exampleContainer}>
-                <Text style={styles.exampleTitle}>Example requests:</Text>
-                <Text style={styles.example}>• "Kronos, add more types of merchants to the marketplace"</Text>
-                <Text style={styles.example}>• "Can we have a credit system for wealthy traders?"</Text>
-                <Text style={styles.example}>• "Add political factions competing for power"</Text>
-                <Text style={styles.example}>• "What horses are the enemy cavalry riding?"</Text>
-                <Text style={styles.example}>• "Make the economics more detailed with banking"</Text>
-                <Text style={styles.example}>• "Add a battle system with multiple turns"</Text>
+                <Text style={styles.exampleTitle}>Examples:</Text>
+                <Text style={styles.example}>• "Add political factions"</Text>
+                <Text style={styles.example}>• "Create a credit system"</Text>
+                <Text style={styles.example}>• "Add battle mechanics"</Text>
               </View>
             </View>
           ) : (
@@ -171,27 +167,27 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 28,
+    padding: 24,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
   headerIcon: {
-    marginRight: 20,
+    marginRight: 16,
   },
   headerContent: {
     flex: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   messagesContainer: {
     flex: 1,
@@ -200,26 +196,26 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 40,
+    padding: 32,
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
   },
   emptyTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     color: colors.text,
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 20,
+    marginBottom: 12,
     textAlign: "center",
   },
   emptyText: {
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textSecondary,
     textAlign: "center",
-    lineHeight: 26,
-    marginBottom: 32,
+    lineHeight: 24,
+    marginBottom: 24,
   },
   exampleContainer: {
     width: "100%",
@@ -228,13 +224,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   example: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 12,
-    lineHeight: 22,
+    marginBottom: 8,
+    lineHeight: 20,
     paddingLeft: 8,
   },
   messagesList: {
@@ -246,7 +242,7 @@ const styles = StyleSheet.create({
   userMessage: {
     backgroundColor: colors.primary,
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     alignSelf: "flex-end",
     maxWidth: "80%",
     borderBottomRightRadius: 8,
@@ -254,7 +250,7 @@ const styles = StyleSheet.create({
   kronosMessage: {
     backgroundColor: colors.surface,
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     alignSelf: "flex-start",
     maxWidth: "80%",
     borderBottomLeftRadius: 8,
@@ -264,7 +260,7 @@ const styles = StyleSheet.create({
   kronosHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 10,
     gap: 8,
   },
   kronosName: {
@@ -286,7 +282,7 @@ const styles = StyleSheet.create({
   loadingMessage: {
     backgroundColor: colors.surface,
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     alignSelf: "flex-start",
     maxWidth: "80%",
     borderBottomLeftRadius: 8,
@@ -311,7 +307,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    padding: 20,
+    padding: 16,
     gap: 12,
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -319,14 +315,14 @@ const styles = StyleSheet.create({
   },
   messageInput: {
     flex: 1,
-    maxHeight: 120,
+    maxHeight: 100,
   },
   sendButton: {
     alignSelf: "flex-end",
     minWidth: 80,
   },
   footer: {
-    padding: 20,
+    padding: 16,
     backgroundColor: colors.surface,
   },
   backButton: {

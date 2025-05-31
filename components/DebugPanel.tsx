@@ -41,18 +41,37 @@ export default function DebugPanel() {
 
   const debugInfo = getDebugInfo();
 
+  // Force a new API call for testing
+  const forceRefreshAI = () => {
+    if (typeof global !== 'undefined') {
+      global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
+        callCount: 0,
+        apiCallHistory: []
+      };
+      global.__CHRONICLE_DEBUG__.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "manual_refresh",
+        message: "Manual refresh triggered from debug panel"
+      };
+    }
+    
+    // Force re-render
+    setIsExpanded(prev => !prev);
+    setTimeout(() => setIsExpanded(prev => !prev), 100);
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
         style={styles.header}
         onPress={() => setIsExpanded(!isExpanded)}
       >
-        <Crown size={20} color={colors.primary} />
-        <Text style={styles.headerText}>Chronicle Weaver Debug</Text>
+        <Bug size={18} color={colors.primary} />
+        <Text style={styles.headerText}>Debug</Text>
         {isExpanded ? (
-          <ChevronUp size={20} color={colors.primary} />
+          <ChevronUp size={18} color={colors.primary} />
         ) : (
-          <ChevronDown size={20} color={colors.primary} />
+          <ChevronDown size={18} color={colors.primary} />
         )}
       </TouchableOpacity>
       
@@ -75,7 +94,7 @@ export default function DebugPanel() {
             </View>
             <View style={styles.debugRow}>
               {getStatusIcon(!!currentGame)}
-              <Text style={styles.debugText}>Current Game Exists: {currentGame ? "✅ Yes" : "❌ No"}</Text>
+              <Text style={styles.debugText}>Current Game: {currentGame ? "✅ Yes" : "❌ No"}</Text>
             </View>
             <Text style={styles.debugText}>Game ID: {currentGame?.id || "None"}</Text>
             <Text style={styles.debugText}>Turn Count: {currentGame?.turnCount || 0}</Text>
@@ -86,7 +105,6 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>Segment ID: {currentGame?.currentSegment?.id || "None"}</Text>
             <Text style={styles.debugText}>Segment Text Length: {currentGame?.currentSegment?.text?.length || 0}</Text>
             <Text style={styles.debugText}>Choices Count: {currentGame?.currentSegment?.choices?.length || 0}</Text>
-            <Text style={styles.debugText}>Custom Choice Enabled: {currentGame?.currentSegment?.customChoiceEnabled ? "✅ Yes" : "❌ No"}</Text>
           </View>
 
           <View style={styles.section}>
@@ -105,7 +123,6 @@ export default function DebugPanel() {
             </View>
             <Text style={styles.debugText}>Setup Step: {gameSetup.setupStep}</Text>
             <Text style={styles.debugText}>Difficulty: {gameSetup.difficulty}</Text>
-            <Text style={styles.debugText}>Generate Backstory: {gameSetup.generateBackstory ? "✅ Yes" : "❌ No"}</Text>
           </View>
 
           <View style={styles.section}>
@@ -125,12 +142,17 @@ export default function DebugPanel() {
               <Text style={styles.sectionTitle}>🤖 AI Debug Info</Text>
               <Text style={styles.debugText}>API Call Count: {debugInfo.callCount || 0}</Text>
               
+              <TouchableOpacity style={styles.refreshButton} onPress={forceRefreshAI}>
+                <RefreshCw size={14} color={colors.background} />
+                <Text style={styles.refreshButtonText}>Force Refresh AI</Text>
+              </TouchableOpacity>
+              
               {debugInfo.apiCallHistory && debugInfo.apiCallHistory.length > 0 && (
                 <View style={styles.subSection}>
                   <Text style={styles.subSectionTitle}>Recent API Calls:</Text>
                   {debugInfo.apiCallHistory.slice(0, 3).map((call, index) => (
                     <Text key={index} style={styles.debugText}>
-                      {call.timestamp}: {call.type} - {call.era || call.choice || "N/A"}
+                      {call.timestamp?.substring(11, 19) || "N/A"}: {call.type} - {call.era || call.choice || "N/A"}
                     </Text>
                   ))}
                 </View>
@@ -139,7 +161,7 @@ export default function DebugPanel() {
               {debugInfo.lastApiCall && (
                 <View style={styles.subSection}>
                   <Text style={styles.subSectionTitle}>Last API Call:</Text>
-                  <Text style={styles.debugText}>Time: {debugInfo.lastApiCall.timestamp}</Text>
+                  <Text style={styles.debugText}>Time: {debugInfo.lastApiCall.timestamp?.substring(11, 19) || "N/A"}</Text>
                   <Text style={styles.debugText}>Type: {debugInfo.lastApiCall.type || "initial_story"}</Text>
                   <Text style={styles.debugText}>Messages: {debugInfo.lastApiCall.messages?.length || 0}</Text>
                 </View>
@@ -148,7 +170,7 @@ export default function DebugPanel() {
               {debugInfo.lastResponse && (
                 <View style={styles.subSection}>
                   <Text style={styles.subSectionTitle}>Last Response:</Text>
-                  <Text style={styles.debugText}>Time: {debugInfo.lastResponse.timestamp}</Text>
+                  <Text style={styles.debugText}>Time: {debugInfo.lastResponse.timestamp?.substring(11, 19) || "N/A"}</Text>
                   <Text style={styles.debugText}>Completion Length: {debugInfo.lastResponse.completionLength || 0}</Text>
                   <Text style={styles.debugText}>Type: {debugInfo.lastResponse.type || "initial_story"}</Text>
                 </View>
@@ -157,7 +179,7 @@ export default function DebugPanel() {
               {debugInfo.lastError && (
                 <View style={styles.subSection}>
                   <Text style={styles.subSectionTitle}>Last Error:</Text>
-                  <Text style={styles.errorText}>Time: {debugInfo.lastError.timestamp}</Text>
+                  <Text style={styles.errorText}>Time: {debugInfo.lastError.timestamp?.substring(11, 19) || "N/A"}</Text>
                   <Text style={styles.errorText}>Type: {debugInfo.lastError.type || "unknown"}</Text>
                   <Text style={styles.errorText}>Status: {debugInfo.lastError.status || "N/A"}</Text>
                   {debugInfo.lastError.errorText && (
@@ -166,20 +188,20 @@ export default function DebugPanel() {
                 </View>
               )}
 
-              {showDetailedLogs && debugInfo.lastRawResponse && (
+              {showDetailedLogs && debugInfo.lastPrompt && (
                 <View style={styles.subSection}>
-                  <Text style={styles.subSectionTitle}>Raw AI Response (Last 500 chars):</Text>
+                  <Text style={styles.subSectionTitle}>Last Prompt (First 200 chars):</Text>
                   <Text style={styles.rawResponseText}>
-                    {debugInfo.lastRawResponse.substring(0, 500)}...
+                    {debugInfo.lastPrompt.substring(0, 200)}...
                   </Text>
                 </View>
               )}
 
-              {showDetailedLogs && debugInfo.lastPrompt && (
+              {showDetailedLogs && debugInfo.lastRawResponse && (
                 <View style={styles.subSection}>
-                  <Text style={styles.subSectionTitle}>Last Prompt (First 300 chars):</Text>
+                  <Text style={styles.subSectionTitle}>Raw AI Response (First 300 chars):</Text>
                   <Text style={styles.rawResponseText}>
-                    {debugInfo.lastPrompt.substring(0, 300)}...
+                    {debugInfo.lastRawResponse.substring(0, 300)}...
                   </Text>
                 </View>
               )}
@@ -191,10 +213,10 @@ export default function DebugPanel() {
               <Text style={styles.sectionTitle}>📖 Current Segment</Text>
               <Text style={styles.debugText}>Segment ID: {currentGame.currentSegment.id}</Text>
               <Text style={styles.debugText}>Text Length: {currentGame.currentSegment.text.length}</Text>
-              <Text style={styles.debugText}>Text Preview: {currentGame.currentSegment.text.substring(0, 150)}...</Text>
+              <Text style={styles.debugText}>Text Preview: {currentGame.currentSegment.text.substring(0, 100)}...</Text>
               <Text style={styles.debugText}>Choices:</Text>
               {currentGame.currentSegment.choices.map((choice, index) => (
-                <Text key={index} style={styles.choiceText}>  {index + 1}. {choice.text.substring(0, 50)}...</Text>
+                <Text key={index} style={styles.choiceText}>  {index + 1}. {choice.text.substring(0, 40)}...</Text>
               ))}
             </View>
           )}
@@ -202,35 +224,13 @@ export default function DebugPanel() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>👤 Character Data</Text>
             <Text style={styles.debugText}>Name: {currentGame?.character?.name || "None"}</Text>
-            <Text style={styles.debugText}>Archetype: {currentGame?.character?.archetype || "None"}</Text>
             <View style={styles.debugRow}>
               {getStatusIcon(!!currentGame?.character?.backstory && currentGame.character.backstory.length > 0)}
-              <Text style={styles.debugText}>Backstory Exists: {currentGame?.character?.backstory && currentGame.character.backstory.length > 0 ? "✅ Yes" : "❌ No"}</Text>
+              <Text style={styles.debugText}>Backstory: {currentGame?.character?.backstory && currentGame.character.backstory.length > 0 ? "✅ Yes" : "❌ No"}</Text>
             </View>
             <Text style={styles.debugText}>Backstory Length: {currentGame?.character?.backstory?.length || 0}</Text>
-            <Text style={styles.debugText}>Stats: I:{currentGame?.character?.stats?.influence || 0} K:{currentGame?.character?.stats?.knowledge || 0} R:{currentGame?.character?.stats?.resources || 0} Rep:{currentGame?.character?.stats?.reputation || 0}</Text>
-            <Text style={styles.debugText}>Inventory Items: {currentGame?.character?.inventory?.length || 0}</Text>
             <Text style={styles.debugText}>Lore Entries: {currentGame?.lore?.length || 0}</Text>
             <Text style={styles.debugText}>Memories: {currentGame?.memories?.length || 0}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🌍 World Systems</Text>
-            <Text style={styles.debugText}>Political Factions: {currentGame?.worldSystems?.politics?.length || 0}</Text>
-            <Text style={styles.debugText}>Currency: {currentGame?.worldSystems?.economics?.currency || "None"}</Text>
-            <Text style={styles.debugText}>Player Wealth: {currentGame?.worldSystems?.economics?.playerWealth || 0}</Text>
-            <Text style={styles.debugText}>Military Role: {currentGame?.worldSystems?.war?.playerRole || "None"}</Text>
-            <Text style={styles.debugText}>Active Conflicts: {currentGame?.worldSystems?.war?.activeConflicts?.length || 0}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔧 Technical Info</Text>
-            <Text style={styles.debugText}>Environment: {__DEV__ ? "Development" : "Production"}</Text>
-            <Text style={styles.debugText}>Platform: {require("react-native").Platform.OS}</Text>
-            <Text style={styles.debugText}>Timestamp: {new Date().toLocaleTimeString()}</Text>
-            <Text style={styles.debugText}>Global Debug Available: {typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__ ? "✅ Yes" : "❌ No"}</Text>
-            <Text style={styles.debugText}>App Name: Chronicle Weaver</Text>
-            <Text style={styles.debugText}>AI Name: Kronos, Weaver of Chronicles</Text>
           </View>
         </ScrollView>
       )}
@@ -245,21 +245,21 @@ const styles = StyleSheet.create({
     right: 10,
     backgroundColor: colors.surface + "F0",
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.primary,
-    maxWidth: 380,
-    maxHeight: 700,
+    maxWidth: 350,
+    maxHeight: 600,
     zIndex: 1000,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    padding: 10,
     gap: 8,
     backgroundColor: colors.primary + "20",
     borderTopLeftRadius: 10,
@@ -272,14 +272,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    maxHeight: 600,
-    padding: 12,
+    maxHeight: 500,
+    padding: 10,
   },
   section: {
-    marginBottom: 16,
+    marginBottom: 12,
     backgroundColor: colors.background + "E0",
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -287,21 +287,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   headerButtons: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
   },
   subSection: {
-    marginTop: 8,
-    marginLeft: 8,
-    paddingLeft: 8,
+    marginTop: 6,
+    marginLeft: 6,
+    paddingLeft: 6,
     borderLeftWidth: 2,
     borderLeftColor: colors.border,
   },
@@ -317,38 +317,55 @@ const styles = StyleSheet.create({
   toggleButton: {
     padding: 4,
   },
+  refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 8,
+    marginBottom: 8,
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  refreshButtonText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: "600",
+  },
   debugRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
+    gap: 6,
+    marginBottom: 3,
   },
   debugText: {
     color: colors.textSecondary,
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
     fontFamily: "monospace",
     flex: 1,
   },
   errorText: {
     color: colors.error,
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
     fontFamily: "monospace",
   },
   choiceText: {
     color: colors.textMuted,
-    fontSize: 11,
-    marginLeft: 16,
+    fontSize: 10,
+    marginLeft: 12,
     marginBottom: 2,
     fontFamily: "monospace",
   },
   rawResponseText: {
     color: colors.textMuted,
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "monospace",
     backgroundColor: colors.surface,
-    padding: 8,
+    padding: 6,
     borderRadius: 4,
     marginTop: 4,
   },

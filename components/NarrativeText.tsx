@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, View, ScrollView, Animated } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { Text, StyleSheet, View, ScrollView, Animated, TouchableOpacity } from "react-native";
 import { colors } from "@/constants/colors";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
@@ -20,26 +20,40 @@ export default function NarrativeText({
 }: NarrativeTextProps) {
   const [displayedText, setDisplayedText] = useState(animated ? "" : text);
   const [isComplete, setIsComplete] = useState(!animated);
-  const fadeAnim = new Animated.Value(0);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [animationTimer, setAnimationTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isSkipped, setIsSkipped] = useState(false);
 
-  // Enhanced debug logging
-  const addDebugLog = (message: string, data?: any) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = data ? `${message} | ${JSON.stringify(data)}` : message;
-    console.log(`[NARRATIVE DEBUG ${timestamp}] ${logMessage}`);
-    setDebugInfo(prev => [`${timestamp}: ${logMessage}`, ...prev.slice(0, 9)]);
+  // Skip animation and show full text
+  const skipAnimation = () => {
+    console.log("[NarrativeText] Animation skipped by user");
+    setIsSkipped(true);
+    
+    // Clear any existing animation timer
+    if (animationTimer) {
+      clearInterval(animationTimer);
+      setAnimationTimer(null);
+    }
+    
+    // Set full text immediately
+    setDisplayedText(text);
+    setIsComplete(true);
+    
+    // Call onComplete after a short delay
+    setTimeout(() => {
+      console.log("[NarrativeText] Calling onComplete after skip");
+      onComplete?.();
+    }, 100);
   };
 
   useEffect(() => {
-    addDebugLog("=== 📚 NARRATIVE TEXT COMPONENT MOUNTED ===");
-    addDebugLog("Text length", text.length);
-    addDebugLog("Animated", animated);
-    addDebugLog("Text preview", text.substring(0, 100) + "...");
+    console.log("[NarrativeText] Component mounted or text changed");
+    console.log("[NarrativeText] Text length:", text?.length || 0);
+    console.log("[NarrativeText] Animated:", animated);
     
     // Validate text
     if (!text || text.length === 0) {
-      addDebugLog("❌ NO TEXT PROVIDED!");
+      console.error("[NarrativeText] NO TEXT PROVIDED!");
       setDisplayedText("No narrative text available. Please check the game state.");
       setIsComplete(true);
       onComplete?.();
@@ -49,6 +63,7 @@ export default function NarrativeText({
     // Reset state when text changes
     setDisplayedText(animated ? "" : text);
     setIsComplete(!animated);
+    setIsSkipped(false);
     
     // Fade in animation
     Animated.timing(fadeAnim, {
@@ -58,25 +73,31 @@ export default function NarrativeText({
     }).start();
 
     if (!animated) {
-      addDebugLog("📖 Not animated, setting text immediately");
+      console.log("[NarrativeText] Not animated, setting text immediately");
       setDisplayedText(text);
       setIsComplete(true);
       // Call onComplete after a short delay to ensure UI updates
       setTimeout(() => {
-        addDebugLog("✅ Calling onComplete for non-animated text");
+        console.log("[NarrativeText] Calling onComplete for non-animated text");
         onComplete?.();
       }, 100);
       return;
     }
 
-    addDebugLog("🎬 Starting typewriter animation");
+    console.log("[NarrativeText] Starting typewriter animation");
     let index = 0;
+    
+    // Clear any existing timer
+    if (animationTimer) {
+      clearInterval(animationTimer);
+    }
+    
     const timer = setInterval(() => {
       if (index < text.length) {
         setDisplayedText((current) => {
           const newText = current + text.charAt(index);
-          if (index % 50 === 0) { // Log progress every 50 characters
-            addDebugLog(`Progress: ${index + 1}/${text.length} characters`);
+          if (index % 100 === 0) { // Log progress every 100 characters
+            console.log(`[NarrativeText] Progress: ${index + 1}/${text.length} characters`);
           }
           return newText;
         });
@@ -88,8 +109,9 @@ export default function NarrativeText({
         
         index++;
       } else {
-        addDebugLog("✅ Animation complete, calling onComplete");
+        console.log("[NarrativeText] Animation complete, calling onComplete");
         clearInterval(timer);
+        setAnimationTimer(null);
         setIsComplete(true);
         // Ensure onComplete is called
         setTimeout(() => {
@@ -97,19 +119,18 @@ export default function NarrativeText({
         }, 100);
       }
     }, speed);
+    
+    setAnimationTimer(timer);
 
     return () => {
-      addDebugLog("🧹 Cleaning up timer");
-      clearInterval(timer);
+      console.log("[NarrativeText] Cleaning up timer");
+      if (timer) clearInterval(timer);
     };
   }, [text, animated, speed, onComplete]);
 
-  addDebugLog("🎨 Rendering with displayed text length", displayedText.length);
-  addDebugLog("Is complete", isComplete);
-
   // Ensure we have text to display
   if (!text || text.length === 0) {
-    addDebugLog("❌ No text provided, showing error message");
+    console.log("[NarrativeText] No text provided, showing error message");
     return (
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.textContainer}>
@@ -125,9 +146,10 @@ export default function NarrativeText({
           {__DEV__ && (
             <View style={styles.debugContainer}>
               <Text style={styles.debugTitle}>Debug Info:</Text>
-              {debugInfo.slice(0, 3).map((info, index) => (
-                <Text key={index} style={styles.debugText}>{info}</Text>
-              ))}
+              <Text style={styles.debugText}>Text prop is empty or undefined</Text>
+              <TouchableOpacity style={styles.debugButton} onPress={() => console.log("Force re-render")}>
+                <Text style={styles.debugButtonText}>🔄 Force Re-render</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -137,34 +159,51 @@ export default function NarrativeText({
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.textContainer}>
-          {/* Historical Header */}
-          <View style={styles.narrativeHeader}>
-            <Feather size={20} color={colors.primary} />
-            <Text style={styles.narrativeTitle}>Chronicle Entry</Text>
-          </View>
+      <View style={styles.textContainer}>
+        {/* Header */}
+        <View style={styles.narrativeHeader}>
+          <Feather size={20} color={colors.primary} />
+          <Text style={styles.narrativeTitle}>Chronicle Entry</Text>
           
-          <Text style={styles.text}>{displayedText}</Text>
-          
-          {!isComplete && animated && (
-            <Animated.View style={styles.cursor} />
-          )}
-          
-          {/* Debug info for development */}
-          {__DEV__ && (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugTitle}>Narrative Debug:</Text>
-              <Text style={styles.debugText}>Text Length: {displayedText.length}/{text.length}</Text>
-              <Text style={styles.debugText}>Complete: {isComplete ? "Yes" : "No"}</Text>
-              <Text style={styles.debugText}>Animated: {animated ? "Yes" : "No"}</Text>
-              {debugInfo.slice(0, 2).map((info, index) => (
-                <Text key={index} style={styles.debugText}>{info}</Text>
-              ))}
-            </View>
+          {/* Skip button */}
+          {animated && !isComplete && !isSkipped && (
+            <TouchableOpacity style={styles.skipButton} onPress={skipAnimation}>
+              <Text style={styles.skipButtonText}>Skip</Text>
+            </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+        
+        {/* Narrative text */}
+        <Text style={styles.text}>{displayedText}</Text>
+        
+        {/* Animated cursor */}
+        {!isComplete && animated && !isSkipped && (
+          <Animated.View style={styles.cursor} />
+        )}
+        
+        {/* Debug info for development */}
+        {__DEV__ && (
+          <View style={styles.debugContainer}>
+            <Text style={styles.debugTitle}>Narrative Debug:</Text>
+            <Text style={styles.debugText}>Text Length: {displayedText.length}/{text.length}</Text>
+            <Text style={styles.debugText}>Complete: {isComplete ? "Yes" : "No"}</Text>
+            <Text style={styles.debugText}>Animated: {animated ? "Yes" : "No"}</Text>
+            <Text style={styles.debugText}>Skipped: {isSkipped ? "Yes" : "No"}</Text>
+            
+            <TouchableOpacity style={styles.debugButton} onPress={() => {
+              setDisplayedText(text);
+              setIsComplete(true);
+              onComplete?.();
+            }}>
+              <Text style={styles.debugButtonText}>🔄 Force Complete</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.debugButton} onPress={skipAnimation}>
+              <Text style={styles.debugButtonText}>⏭️ Skip Animation</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </Animated.View>
   );
 }
@@ -173,44 +212,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   textContainer: {
     backgroundColor: colors.narrativeBackground,
-    borderRadius: 20,
-    padding: 28,
-    margin: 20,
-    borderWidth: 2,
-    borderColor: colors.primary + "30",
+    borderRadius: 16,
+    padding: 24,
+    margin: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    borderLeftWidth: 4,
+    shadowRadius: 8,
+    elevation: 4,
+    borderLeftWidth: 3,
     borderLeftColor: colors.primary,
     minHeight: 200,
   },
   narrativeHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    gap: 12,
+    marginBottom: 16,
+    gap: 8,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.primary + "30",
+    borderBottomColor: colors.border,
   },
   narrativeTitle: {
     color: colors.primary,
     fontSize: 16,
     fontWeight: "600",
     fontFamily: "serif",
+    flex: 1,
+  },
+  skipButton: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  skipButtonText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "600",
   },
   text: {
     color: colors.text,
-    fontSize: 19,
-    lineHeight: 32,
+    fontSize: 18,
+    lineHeight: 28,
     fontFamily: Platform.select({
       ios: "Georgia",
       android: "serif",
@@ -262,5 +312,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginBottom: 2,
     fontFamily: "monospace",
+  },
+  debugButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    padding: 8,
+    marginTop: 8,
+    alignItems: "center",
+  },
+  debugButtonText: {
+    color: colors.background,
+    fontSize: 11,
+    fontWeight: "600",
   },
 });
