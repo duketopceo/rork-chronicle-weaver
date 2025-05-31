@@ -10,6 +10,106 @@ type CoreMessage =
   | { role: 'user'; content: string | ContentPart[] }
   | { role: 'assistant'; content: string | ContentPart[] };
 
+interface ApiResponse {
+  timestamp: string;
+  type: string;
+  data: unknown;
+  completionLength?: number;
+}
+
+interface ApiError {
+  timestamp: string;
+  type: string;
+  status?: number;
+  statusText?: string;
+  errorText?: string;
+  error?: unknown;
+  stack?: string;
+  rawCompletion?: string;
+}
+
+interface ApiCall {
+  timestamp: string;
+  type: string;
+  messages?: CoreMessage[];
+  gameState?: GameState;
+  gameSetup?: GameSetupState;
+  selectedChoice?: GameChoice;
+  choice?: string;
+  turnCount?: number;
+  era?: string;
+  theme?: string;
+  character?: string;
+}
+
+interface ApiCompletion<T = unknown> {
+  completion?: string;
+  data?: T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface InitialStoryResponse {
+  backstory: string;
+  segment: {
+    text: string;
+    choices: Array<{ id: string; text: string; }>;
+  };
+  worldSystems: {
+    politics: Array<{ name: string; description: string; power: number; playerStanding: number; }>;
+    economics: {
+      currency: string;
+      marketPrices: Record<string, number>;
+      tradeRoutes: string[];
+    };
+    initialInventory: Array<{
+      name: string;
+      description: string;
+      quantity: number;
+      value: number;
+      category: string;
+    }>;
+  };
+}
+
+interface NextSegmentResponse {
+  text: string;
+  choices: Array<{ id: string; text: string; }>;
+  consequences: {
+    statChanges: {
+      influence: number;
+      knowledge: number;
+      resources: number;
+      reputation: number;
+    };
+    newInventory: Array<{
+      name: string;
+      description: string;
+      quantity: number;
+      value: number;
+      category: string;
+    }>;
+    politicalChanges: Array<{
+      factionName: string;
+      standingChange: number;
+    }>;
+    economicChanges: {
+      wealthChange: number;
+      newPrices: Record<string, number>;
+    };
+    newLore: Array<{
+      title: string;
+      content: string;
+      category: string;
+    }>;
+    newMemories: Array<{
+      title: string;
+      description: string;
+      category: string;
+    }>;
+  };
+}
+
 // --- Interface definitions ---
 interface ApiCall {
   timestamp: string;
@@ -84,19 +184,15 @@ function isError(error: unknown): error is Error {
   return error instanceof Error || (typeof error === 'object' && error !== null && 'message' in error);
 }
 
-function hasDebugState(): boolean {
-  return typeof globalThis !== 'undefined' && '__CHRONICLE_DEBUG__' in globalThis;
-}
-
-// --- Debug state management ---
 function ensureDebugState(): ChronicleDebugState {
-  if (!hasDebugState()) {
-    (globalThis as unknown as GlobalWithDebug).__CHRONICLE_DEBUG__ = {
+  const g = globalThis as typeof globalThis & GlobalWithDebug;
+  if (!g.__CHRONICLE_DEBUG__) {
+    g.__CHRONICLE_DEBUG__ = {
       callCount: 0,
       apiCallHistory: []
     };
   }
-  return (globalThis as unknown as GlobalWithDebug).__CHRONICLE_DEBUG__!;
+  return g.__CHRONICLE_DEBUG__;
 }
 
 // --- Logging utilities ---
@@ -154,54 +250,135 @@ export function logApiCall(type: string, payload: unknown): void {
 function safeGetHeaders(headers: Headers): Record<string, string> {
   const result: Record<string, string> = {};
   
-  // Try modern Headers.entries() first
-  if (typeof headers.entries === 'function') {
-    try {
-      for (const [key, value] of headers.entries()) {
-        result[key] = value;
-      }
-      return result;
-    } catch (error) {
-      logError('Headers.entries() failed', error);
-    }
-  }
-  
-  // Fallback to forEach if available
+  // ES2019 compatible Headers handling
   try {
-    headers.forEach((value, key) => {
+    // Use Headers.entries() which returns an iterator
+    const entries = headers.entries();
+    for (const entry of entries) {
+      const [key, value] = entry;
       result[key] = value;
-    });
+    }
   } catch (error) {
-    logError('Headers.forEach() failed', error);
+    // Fallback to forEach for older environments
+    try {
+      headers.forEach((value, key) => {
+        result[key] = value;
+      });
+    } catch (fallbackError) {
+      logError('Failed to process headers', { error, fallbackError });
+    }
   }
   
   return result;
 }
 
+// --- API request handling ---
+async function makeApiRequest<T>(
+  messages: CoreMessage[],
+  requestType: string,
+  maxRetries = 3,
+  retryDelay = 1000
+): Promise<ApiCompletion<T>> {
+  const debugState = ensureDebugState();
+  let lastError: Error | undefined;
 
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      logDebug(`📤 Sending ${requestType} request (attempt ${attempt}/${maxRetries})...`);
 
-// Helper function for safer header logging
-function getHeadersObject(headers: Headers): Record<string, string> {
-  const headersObj: Record<string, string> = {};
-  try {
-    // Feature detection for Headers.entries
-    if (typeof headers.entries === 'function') {
-      for (const [key, value] of headers.entries()) {
-        headersObj[key] = value;
+      const response = await fetch("https://toolkit.rork.com/text/llm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages }),
+      });
+
+      const headers = safeGetHeaders(response.headers);
+      logDebug(`📥 ${requestType} response status:`, response.status);
+      logDebug("Response headers:", headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data: ApiCompletion<T> = await response.json();
+      
+      if (!data.completion) {
+        throw new Error("No completion received from API");
+      }
+
+      debugState.lastResponse = {
+        timestamp: new Date().toISOString(),
+        type: requestType,
+        data,
+        completionLength: data.completion.length
+      };
+      debugState.lastRawResponse = data.completion;
+
+      return data;
+
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: `${requestType}_error`,
+        error: lastError,
+        stack: lastError.stack
+      };
+
+      if (attempt < maxRetries) {
+        logDebug(`Retrying ${requestType} request after error:`, lastError);
+        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
       }
     }
-  } catch (error) {
-    logError('Failed to process headers', error);
   }
-  return headersObj;
+
+  throw lastError || new Error(`Failed to complete ${requestType} request after ${maxRetries} attempts`);
+}
+
+async function parseApiResponse<T>(completion: string | undefined, type: string): Promise<T> {
+  if (!completion) {
+    throw new Error(`No completion received from API for ${type}`);
+  }
+  
+  try {
+    // Clean the response to ensure it's valid JSON
+    let cleanedCompletion = completion.trim();
+    
+    // Remove any markdown code blocks if present
+    if (cleanedCompletion.startsWith("```json")) {
+      cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
+    }
+    if (cleanedCompletion.startsWith("```")) {
+      cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
+    }
+    
+    // Remove any leading/trailing text that isn't JSON
+    const jsonStart = cleanedCompletion.indexOf('{');
+    const jsonEnd = cleanedCompletion.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
+    }
+    
+    logDebug(`🔧 Parsing ${type} JSON...`);
+    const parsed = JSON.parse(cleanedCompletion) as T;
+    logDebug(`✅ ${type} JSON parsed successfully`);
+    return parsed;
+  } catch (error) {
+    const parseError = error as Error;
+    logError(`❌ Failed to parse ${type} response:`, completion);
+    throw new Error(`Failed to parse API response: ${parseError.message}`);
+  }
 }
 
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
   const debugState = ensureDebugState();
-  
-  try {
-    debugState.callCount++;
+  debugState.callCount++;
 
+  try {
     logDebug("=== 🚀 STARTING INITIAL STORY GENERATION ===");
     logDebug("Game state:", {
       era: gameState.era,
@@ -331,85 +508,21 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       character: gameState.character.name
     });
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
-    });
-
-    logDebug("📥 Response status:", response.status);
-    const headers = safeGetHeaders(response.headers);
-    logDebug("Response headers:", headers);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logError("API error response:", errorText);
-      
-      debugState.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "api_error",
-        status: response.status,
-        statusText: response.statusText,
-        errorText
-      };
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    logDebug("📦 Raw response received, length:", data.completion?.length || 0);
-    
-    debugState.lastResponse = {
-      timestamp: new Date().toISOString(),
-      type: "initial_story",
-      data,
-      completionLength: data.completion?.length || 0
-    };
-    debugState.lastRawResponse = data.completion;
-    
-    if (!data.completion) {
-      logError("❌ No completion in response:", data);
-      throw new Error("No completion received from API");
-    }
-
-    logDebug("📖 Response preview:", data.completion.substring(0, 300) + "...");
+    const response = await makeApiRequest<InitialStoryResponse>(messages, "initial_story");
+    logDebug("📖 Response preview:", response.completion?.substring(0, 300) + "...");
 
     let parsedResponse;
     try {
-      // Clean the response to ensure it's valid JSON
-      let cleanedCompletion = data.completion.trim();
-      
-      // Remove any markdown code blocks if present
-      if (cleanedCompletion.startsWith("```json")) {
-        cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
-      }
-      if (cleanedCompletion.startsWith("```")) {
-        cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
-      }
-      
-      // Remove any leading/trailing text that isn't JSON
-      const jsonStart = cleanedCompletion.indexOf('{');
-      const jsonEnd = cleanedCompletion.lastIndexOf('}');
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
-      }
-      
-      logDebug("🔧 Attempting to parse JSON...");
-      logDebug("Cleaned completion preview:", cleanedCompletion.substring(0, 500));
-      
-      parsedResponse = JSON.parse(cleanedCompletion);
-      logDebug("✅ JSON parsed successfully");
+      parsedResponse = await parseApiResponse<InitialStoryResponse>(response.completion, "initial story");
     } catch (parseError) {
-      logError("❌ Failed to parse AI response:", data.completion);
+      logError("❌ Failed to parse AI response:", response.completion);
       logError("Parse error:", parseError);
       
       debugState.lastError = {
         timestamp: new Date().toISOString(),
         type: "parse_error",
         error: parseError,
-        rawCompletion: data.completion
+        rawCompletion: response.completion
       };
       
       throw new Error("Failed to parse API response");
@@ -447,7 +560,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     const firstSegment: GameSegment = {
       id: "segment-1",
       text: parsedResponse.segment.text,
-      choices: parsedResponse.segment.choices.map((choice: any, index: number) => ({
+      choices: parsedResponse.segment.choices.map((choice, index) => ({
         id: choice.id || (index + 1).toString(),
         text: choice.text
       })),
@@ -621,77 +734,21 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       turnCount
     });
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
-    });
-
-    logDebug("📥 Next segment response status:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logError("API error response:", errorText);
-      
-      debugState.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "api_error",
-        status: response.status,
-        errorText
-      };
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    logDebug("📦 Next segment response received, length:", data.completion?.length || 0);
-    
-    debugState.lastResponse = {
-      timestamp: new Date().toISOString(),
-      type: "next_segment",
-      data
-    };
-    debugState.lastRawResponse = data.completion;
-    
-    if (!data.completion) {
-      logError("❌ No completion in response:", data);
-      throw new Error("No completion received from API");
-    }
+    const response = await makeApiRequest<NextSegmentResponse>(messages, "next_segment");
+    logDebug("📖 Next segment response preview:", response.completion?.substring(0, 300) + "...");
 
     let parsedResponse;
     try {
-      // Clean the response to ensure it's valid JSON
-      let cleanedCompletion = data.completion.trim();
-      
-      // Remove any markdown code blocks if present
-      if (cleanedCompletion.startsWith("```json")) {
-        cleanedCompletion = cleanedCompletion.replace(/```json\s*/, "").replace(/```\s*$/, "");
-      }
-      if (cleanedCompletion.startsWith("```")) {
-        cleanedCompletion = cleanedCompletion.replace(/```\s*/, "").replace(/```\s*$/, "");
-      }
-      
-      // Remove any leading/trailing text that isn't JSON
-      const jsonStart = cleanedCompletion.indexOf('{');
-      const jsonEnd = cleanedCompletion.lastIndexOf('}');
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleanedCompletion = cleanedCompletion.substring(jsonStart, jsonEnd + 1);
-      }
-      
-      logDebug("🔧 Parsing next segment JSON...");
-      parsedResponse = JSON.parse(cleanedCompletion);
-      logDebug("✅ Next segment JSON parsed successfully");
+      parsedResponse = await parseApiResponse<NextSegmentResponse>(response.completion, "next segment");
     } catch (parseError) {
-      logError("❌ Failed to parse next segment response:", data.completion);
+      logError("❌ Failed to parse AI response:", response.completion);
       logError("Parse error:", parseError);
       
       debugState.lastError = {
         timestamp: new Date().toISOString(),
         type: "parse_error",
         error: parseError,
-        rawCompletion: data.completion
+        rawCompletion: response.completion
       };
       
       throw new Error("Failed to parse API response");
@@ -706,7 +763,7 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     const nextSegment: GameSegment = {
       id: `segment-${turnCount + 1}`,
       text: parsedResponse.text,
-      choices: parsedResponse.choices.map((choice: any, index: number) => ({
+      choices: parsedResponse.choices.map((choice, index) => ({
         id: choice.id || (index + 1).toString(),
         text: choice.text
       })),
@@ -768,39 +825,8 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
 
     logDebug("📤 Sending Kronos message to API...");
 
-    const response = await fetch("https://toolkit.rork.com/text/llm/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      logError("API error response:", errorText);
-      
-      debugState.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "api_error",
-        status: response.status,
-        statusText: response.statusText,
-        errorText
-      };
-      
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    logDebug("📥 Kronos response received");
-    
-    debugState.lastResponse = {
-      timestamp: new Date().toISOString(),
-      type: "kronos_message",
-      data
-    };
-    
-    return data.completion || "I apologize, but I'm having trouble responding right now. Please try again later.";
+    const response = await makeApiRequest<{ completion: string }>(messages, "kronos_message");
+    return response.completion || "I apologize, but I'm having trouble responding right now. Please try again later.";
   } catch (error) {
     logError("❌ Error processing Kronos message:", error);
     
