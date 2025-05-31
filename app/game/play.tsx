@@ -34,11 +34,11 @@ export default function GamePlayScreen() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [processingChoice, setProcessingChoice] = useState(false);
   const [narrativeKey, setNarrativeKey] = useState(0);
+  const [animationSpeed, setAnimationSpeed] = useState(20); // Faster animation speed
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Force show UI for debugging
   const forceShowUIElements = () => {
-    console.log("[PLAY] Force showing UI elements");
     setShowChoices(true);
     setInitializing(false);
     setProcessingChoice(false);
@@ -46,39 +46,25 @@ export default function GamePlayScreen() {
 
   // Retry initialization if it fails
   const retryInitialization = async () => {
-    console.log("[PLAY] Retrying initialization");
     setError(null);
     await initializeGame();
   };
 
   const initializeGame = async () => {
-    console.log("[PLAY] Starting game initialization");
-    
     if (!currentGame) {
-      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
     
     if (!currentGame.currentSegment) {
-      console.log("[PLAY] No current segment, generating initial story");
       try {
         setInitializing(true);
         setLoading(true);
         setError(null);
         
-        console.log("[PLAY] Calling generateInitialStory");
-        
         const { backstory, firstSegment } = await generateInitialStory(currentGame, gameSetup);
         
-        console.log("[PLAY] Generated content", {
-          backstoryLength: backstory.length,
-          segmentTextLength: firstSegment.text.length,
-          segmentChoicesCount: firstSegment.choices.length
-        });
-        
         // Set character backstory
-        console.log("[PLAY] Setting character backstory");
         updateCharacterBackstory(backstory);
         
         // Add backstory to lore
@@ -90,15 +76,12 @@ export default function GamePlayScreen() {
           category: "character"
         });
         
-        console.log("[PLAY] Added backstory to lore");
-        
         // Set first game segment with custom choice enabled
         const segmentWithCustom = {
           ...firstSegment,
           customChoiceEnabled: true
         };
         
-        console.log("[PLAY] Updating game segment");
         updateGameSegment(segmentWithCustom);
         
         // Add first memory
@@ -110,18 +93,14 @@ export default function GamePlayScreen() {
           category: "event"
         });
         
-        console.log("[PLAY] Added initial memory");
-        
         setError(null);
         setNarrativeKey(prev => prev + 1);
-        console.log("[PLAY] Game initialization complete");
         
       } catch (error) {
-        console.error("[PLAY] Failed to initialize game:", error);
+        console.error("Failed to initialize game:", error);
         setError(`Failed to start your chronicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
         
         // Show fallback content for debugging
-        console.log("[PLAY] Providing fallback content for debugging");
         const fallbackSegment = {
           id: "fallback-segment-1",
           text: `Welcome to Chronicle Weaver, ${currentGame.character.name}. 
@@ -149,12 +128,6 @@ What will you do to begin your chronicle?`,
         setShowChoices(true);
       }
     } else {
-      console.log("[PLAY] Game already has current segment, showing UI");
-      console.log("[PLAY] Existing segment details", {
-        textLength: currentGame.currentSegment.text.length,
-        choicesCount: currentGame.currentSegment.choices.length,
-        customChoiceEnabled: currentGame.currentSegment.customChoiceEnabled
-      });
       setInitializing(false);
       setShowChoices(true);
       setNarrativeKey(prev => prev + 1);
@@ -162,14 +135,7 @@ What will you do to begin your chronicle?`,
   };
 
   useEffect(() => {
-    console.log("[PLAY] Game play screen mounted");
-    console.log("[PLAY] Current game exists", !!currentGame);
-    console.log("[PLAY] Current game ID", currentGame?.id);
-    console.log("[PLAY] Current segment exists", !!currentGame?.currentSegment);
-    console.log("[PLAY] Current segment text length", currentGame?.currentSegment?.text?.length || 0);
-    
     if (!currentGame) {
-      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
@@ -178,7 +144,6 @@ What will you do to begin your chronicle?`,
   }, [currentGame?.id]);
 
   const handleNarrativeComplete = () => {
-    console.log("[PLAY] Narrative animation complete, showing choices");
     setShowChoices(true);
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -187,11 +152,9 @@ What will you do to begin your chronicle?`,
 
   const handleChoiceSelected = async (choiceId: string) => {
     if (!currentGame || !currentGame.currentSegment || processingChoice) {
-      console.log("[PLAY] Cannot process choice - invalid state");
       return;
     }
     
-    console.log("[PLAY] Choice selected", choiceId);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -201,20 +164,13 @@ What will you do to begin your chronicle?`,
     );
     
     if (!selectedChoice) {
-      console.log("[PLAY] Selected choice not found");
       setProcessingChoice(false);
       setShowChoices(true);
       return;
     }
     
     try {
-      console.log("[PLAY] Generating next segment for choice", selectedChoice.text);
       const nextSegment = await generateNextSegment(currentGame, selectedChoice);
-      
-      console.log("[PLAY] Generated next segment", {
-        textLength: nextSegment.text.length,
-        choicesCount: nextSegment.choices.length
-      });
       
       // Add memory of the choice
       addMemory({
@@ -238,15 +194,13 @@ What will you do to begin your chronicle?`,
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
       
-      console.log("[PLAY] Choice processing complete");
-      
       // Scroll to top when new narrative is shown
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ y: 0, animated: true });
       }
       
     } catch (error) {
-      console.error("[PLAY] Failed to generate next segment:", error);
+      console.error("Failed to generate next segment:", error);
       Alert.alert(
         "Error", 
         "Failed to process your choice. Please check your connection and try again.",
@@ -260,11 +214,9 @@ What will you do to begin your chronicle?`,
 
   const handleCustomAction = async (customAction: string) => {
     if (!currentGame || processingChoice) {
-      console.log("[PLAY] Cannot process custom action - invalid state");
       return;
     }
     
-    console.log("[PLAY] Custom action submitted", customAction);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -299,15 +251,13 @@ What will you do to begin your chronicle?`,
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
       
-      console.log("[PLAY] Custom action processing complete");
-      
       // Scroll to top when new narrative is shown
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ y: 0, animated: true });
       }
       
     } catch (error) {
-      console.error("[PLAY] Failed to generate next segment for custom action:", error);
+      console.error("Failed to generate next segment for custom action:", error);
       Alert.alert(
         "Error", 
         "Failed to process your action. Please check your connection and try again.",
@@ -449,6 +399,12 @@ What will you do to begin your chronicle?`,
                   <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
                     <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.debugButton} 
+                    onPress={() => setAnimationSpeed(prev => Math.max(5, prev - 5))}
+                  >
+                    <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
+                  </TouchableOpacity>
                 </View>
               )}
               
@@ -458,6 +414,7 @@ What will you do to begin your chronicle?`,
                 text={currentGame.currentSegment.text} 
                 onComplete={handleNarrativeComplete}
                 animated={true}
+                speed={animationSpeed}
               />
               
               {/* Spacer to ensure good spacing between narrative and choices */}
@@ -481,11 +438,15 @@ What will you do to begin your chronicle?`,
             ) : showChoices ? (
               /* Choices Section */
               <View style={styles.choicesSection}>
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView 
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.choicesContent}
+                >
                   {/* Custom Action Button */}
                   <TouchableOpacity 
                     style={styles.customActionButton}
                     onPress={() => setShowCustomInput(true)}
+                    activeOpacity={0.8}
                   >
                     <Feather size={28} color={colors.background} />
                     <View style={styles.customActionContent}>
@@ -506,13 +467,20 @@ What will you do to begin your chronicle?`,
                       index={index}
                     />
                   ))}
+                  
+                  {/* Extra space at bottom of choices */}
+                  <View style={styles.choicesBottomSpacer} />
                 </ScrollView>
               </View>
             ) : (
               /* Waiting for narrative to complete */
               <View style={styles.waitingContainer}>
                 <Text style={styles.waitingText}>Reading your chronicle...</Text>
-                <TouchableOpacity style={styles.skipButton} onPress={() => setShowChoices(true)}>
+                <TouchableOpacity 
+                  style={styles.skipButton} 
+                  onPress={() => setShowChoices(true)}
+                  activeOpacity={0.7}
+                >
                   <Text style={styles.skipButtonText}>Skip to Choices</Text>
                 </TouchableOpacity>
               </View>
@@ -540,12 +508,20 @@ What will you do to begin your chronicle?`,
       
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton} onPress={navigateToCharacter}>
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToCharacter}
+          activeOpacity={0.7}
+        >
           <User size={18} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Character</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.navButton} onPress={navigateToLore}>
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToLore}
+          activeOpacity={0.7}
+        >
           <Feather size={18} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Chronicle</Text>
         </TouchableOpacity>
@@ -577,7 +553,11 @@ const styles = StyleSheet.create({
     marginTop: 28,
     marginBottom: 20,
     textAlign: "center",
-    fontFamily: "serif",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   loadingText: {
     color: colors.textSecondary,
@@ -585,7 +565,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 26,
     marginBottom: 28,
-    fontFamily: "serif",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   loadingSpinner: {
     marginTop: 20,
@@ -649,7 +633,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 18,
     fontWeight: "700",
-    fontFamily: "serif",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   turnText: {
     color: colors.textSecondary,
@@ -665,17 +653,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   narrativeContent: {
-    paddingBottom: 20, // Add padding at the bottom for better spacing
+    paddingBottom: 24, // Increased padding at the bottom for better spacing
   },
   spacer: {
-    height: 20, // Extra space between narrative and choices
+    height: 24, // Increased space between narrative and choices
   },
   choicesSection: {
     maxHeight: 350,
-    padding: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.surface + "80",
+  },
+  choicesContent: {
+    padding: 16,
+    paddingBottom: 24, // Extra padding at bottom of choices
+  },
+  choicesBottomSpacer: {
+    height: 16, // Extra space at bottom of choices list
   },
   customActionButton: {
     flexDirection: "row",
@@ -728,13 +722,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 16,
     textAlign: "center",
-    fontFamily: "serif",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   processingSpinner: {
     marginTop: 16,
   },
   waitingContainer: {
-    padding: 20,
+    padding: 24, // Increased padding
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -747,12 +745,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   skipButton: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.primary + "20",
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.primary,
   },
   skipButtonText: {
     color: colors.primary,

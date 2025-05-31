@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, StyleSheet, View, ScrollView, Animated, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, ScrollView, Animated, TouchableOpacity, Platform } from "react-native";
 import { colors } from "@/constants/colors";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { Crown, Feather } from "lucide-react-native";
 
 type NarrativeTextProps = {
@@ -15,7 +14,7 @@ type NarrativeTextProps = {
 export default function NarrativeText({
   text,
   animated = false,
-  speed = 25,
+  speed = 30, // Slightly faster default speed
   onComplete,
 }: NarrativeTextProps) {
   const [displayedText, setDisplayedText] = useState(animated ? "" : text);
@@ -23,37 +22,34 @@ export default function NarrativeText({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [animationTimer, setAnimationTimer] = useState<NodeJS.Timeout | null>(null);
   const [isSkipped, setIsSkipped] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(animated);
+  const animationRef = useRef({ charIndex: 0 });
 
   // Skip animation and show full text
   const skipAnimation = () => {
-    console.log("[NarrativeText] Animation skipped by user");
-    setIsSkipped(true);
-    
-    // Clear any existing animation timer
     if (animationTimer) {
       clearInterval(animationTimer);
       setAnimationTimer(null);
     }
     
-    // Set full text immediately
     setDisplayedText(text);
     setIsComplete(true);
+    setIsAnimating(false);
+    
+    // Provide haptic feedback when skipping
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     
     // Call onComplete after a short delay
     setTimeout(() => {
-      console.log("[NarrativeText] Calling onComplete after skip");
       onComplete?.();
-    }, 100);
+    }, 50);
   };
 
   useEffect(() => {
-    console.log("[NarrativeText] Component mounted or text changed");
-    console.log("[NarrativeText] Text length:", text?.length || 0);
-    console.log("[NarrativeText] Animated:", animated);
-    
     // Validate text
     if (!text || text.length === 0) {
-      console.error("[NarrativeText] NO TEXT PROVIDED!");
       setDisplayedText("No narrative text available. Please check the game state.");
       setIsComplete(true);
       onComplete?.();
@@ -64,73 +60,73 @@ export default function NarrativeText({
     setDisplayedText(animated ? "" : text);
     setIsComplete(!animated);
     setIsSkipped(false);
+    setIsAnimating(animated);
+    animationRef.current.charIndex = 0;
     
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 600,
+      duration: 400, // Faster fade-in
       useNativeDriver: true,
     }).start();
 
     if (!animated) {
-      console.log("[NarrativeText] Not animated, setting text immediately");
       setDisplayedText(text);
       setIsComplete(true);
-      // Call onComplete after a short delay to ensure UI updates
       setTimeout(() => {
-        console.log("[NarrativeText] Calling onComplete for non-animated text");
         onComplete?.();
-      }, 100);
+      }, 50);
       return;
     }
 
-    console.log("[NarrativeText] Starting typewriter animation");
-    let index = 0;
-    
     // Clear any existing timer
     if (animationTimer) {
       clearInterval(animationTimer);
     }
     
+    // Improved animation logic with batch updates for better performance
+    const batchSize = 3; // Process multiple characters per frame for smoother appearance
     const timer = setInterval(() => {
-      if (index < text.length) {
+      if (animationRef.current.charIndex < text.length) {
         setDisplayedText((current) => {
-          const newText = current + text.charAt(index);
-          if (index % 100 === 0) { // Log progress every 100 characters
-            console.log(`[NarrativeText] Progress: ${index + 1}/${text.length} characters`);
+          let newText = current;
+          // Process multiple characters per frame for smoother animation
+          for (let i = 0; i < batchSize; i++) {
+            if (animationRef.current.charIndex < text.length) {
+              newText += text.charAt(animationRef.current.charIndex);
+              
+              // Add subtle haptic feedback at punctuation marks (less frequent)
+              if (Platform.OS !== "web" && 
+                  ['.', '!', '?'].includes(text.charAt(animationRef.current.charIndex)) && 
+                  Math.random() > 0.5) { // Only trigger haptics 50% of the time for punctuation
+                Haptics.selectionAsync();
+              }
+              
+              animationRef.current.charIndex++;
+            }
           }
           return newText;
         });
-        
-        // Add subtle haptic feedback at punctuation marks
-        if (Platform.OS !== "web" && index > 0 && ['.', '!', '?'].includes(text.charAt(index))) {
-          Haptics.selectionAsync();
-        }
-        
-        index++;
       } else {
-        console.log("[NarrativeText] Animation complete, calling onComplete");
         clearInterval(timer);
         setAnimationTimer(null);
         setIsComplete(true);
-        // Ensure onComplete is called
+        setIsAnimating(false);
         setTimeout(() => {
           onComplete?.();
-        }, 100);
+        }, 50);
       }
     }, speed);
     
     setAnimationTimer(timer);
 
     return () => {
-      console.log("[NarrativeText] Cleaning up timer");
       if (timer) clearInterval(timer);
     };
   }, [text, animated, speed, onComplete]);
 
   // Ensure we have text to display
   if (!text || text.length === 0) {
-    console.log("[NarrativeText] No text provided, showing error message");
     return (
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.textContainer}>
@@ -165,21 +161,34 @@ export default function NarrativeText({
           <Feather size={20} color={colors.primary} />
           <Text style={styles.narrativeTitle}>Chronicle Entry</Text>
           
-          {/* Skip button */}
+          {/* Skip button - more prominent */}
           {animated && !isComplete && !isSkipped && (
-            <TouchableOpacity style={styles.skipButton} onPress={skipAnimation}>
+            <TouchableOpacity 
+              style={styles.skipButton} 
+              onPress={skipAnimation}
+              activeOpacity={0.7}
+            >
               <Text style={styles.skipButtonText}>Skip</Text>
             </TouchableOpacity>
           )}
         </View>
         
-        {/* Narrative text */}
-        <Text style={styles.text}>{displayedText}</Text>
-        
-        {/* Animated cursor */}
-        {!isComplete && animated && !isSkipped && (
-          <Animated.View style={styles.cursor} />
-        )}
+        {/* Narrative text with improved paragraph spacing */}
+        <Text style={styles.text}>
+          {displayedText}
+          {/* Animated cursor that blinks */}
+          {isAnimating && !isComplete && !isSkipped && (
+            <Animated.Text 
+              style={[
+                styles.cursor,
+                {opacity: fadeAnim.interpolate({
+                  inputRange: [0, 0.5, 1],
+                  outputRange: [0, 1, 0]
+                })}
+              ]}
+            >|</Animated.Text>
+          )}
+        </Text>
         
         {/* Debug info for development */}
         {__DEV__ && (
@@ -189,18 +198,27 @@ export default function NarrativeText({
             <Text style={styles.debugText}>Complete: {isComplete ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Animated: {animated ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Skipped: {isSkipped ? "Yes" : "No"}</Text>
+            <Text style={styles.debugText}>Speed: {speed}ms</Text>
             
-            <TouchableOpacity style={styles.debugButton} onPress={() => {
-              setDisplayedText(text);
-              setIsComplete(true);
-              onComplete?.();
-            }}>
-              <Text style={styles.debugButtonText}>🔄 Force Complete</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.debugButton} onPress={skipAnimation}>
-              <Text style={styles.debugButtonText}>⏭️ Skip Animation</Text>
-            </TouchableOpacity>
+            <View style={styles.debugButtonsRow}>
+              <TouchableOpacity 
+                style={[styles.debugButton, styles.debugButtonSmall]} 
+                onPress={() => {
+                  setDisplayedText(text);
+                  setIsComplete(true);
+                  onComplete?.();
+                }}
+              >
+                <Text style={styles.debugButtonText}>Complete</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.debugButton, styles.debugButtonSmall]} 
+                onPress={skipAnimation}
+              >
+                <Text style={styles.debugButtonText}>Skip</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
@@ -231,7 +249,7 @@ const styles = StyleSheet.create({
   narrativeHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 20, // Increased spacing
     gap: 8,
     paddingBottom: 12,
     borderBottomWidth: 1,
@@ -241,31 +259,36 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 16,
     fontWeight: "600",
-    fontFamily: "serif",
-    flex: 1,
-  },
-  skipButton: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  skipButtonText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  text: {
-    color: colors.text,
-    fontSize: 18,
-    lineHeight: 28,
     fontFamily: Platform.select({
       ios: "Georgia",
       android: "serif",
       default: "serif",
     }),
+    flex: 1,
+  },
+  skipButton: {
+    backgroundColor: colors.primary + "20",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  skipButtonText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  text: {
+    color: colors.text,
+    fontSize: 18,
+    lineHeight: 30, // Increased line height for better readability
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
+    textAlign: "left",
   },
   errorHeader: {
     flexDirection: "row",
@@ -286,18 +309,15 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   cursor: {
-    width: 3,
-    height: 24,
-    backgroundColor: colors.primary,
-    opacity: 0.8,
-    marginLeft: 4,
-    marginTop: 6,
+    color: colors.primary,
+    fontSize: 18,
+    fontWeight: "bold",
   },
   debugContainer: {
     backgroundColor: colors.surface + "80",
     borderRadius: 8,
     padding: 12,
-    marginTop: 16,
+    marginTop: 24, // Increased spacing
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -313,12 +333,22 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     fontFamily: "monospace",
   },
+  debugButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+    gap: 8,
+  },
   debugButton: {
     backgroundColor: colors.primary,
     borderRadius: 6,
     padding: 8,
     marginTop: 8,
     alignItems: "center",
+  },
+  debugButtonSmall: {
+    flex: 1,
+    paddingVertical: 6,
   },
   debugButtonText: {
     color: colors.background,
