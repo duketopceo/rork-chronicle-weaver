@@ -1,111 +1,207 @@
-import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState } from "@/types/game";
+import type { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState } from "@/types/game";
 
+// --- Type definitions ---
 type ContentPart = 
-  | { type: 'text'; text: string; }
+  | { type: 'text'; text: string }
   | { type: 'image'; image: string };
 
 type CoreMessage = 
-  | { role: 'system'; content: string; }  
-  | { role: 'user'; content: string | Array<ContentPart>; }
-  | { role: 'assistant'; content: string | Array<ContentPart>; };
+  | { role: 'system'; content: string }  
+  | { role: 'user'; content: string | ContentPart[] }
+  | { role: 'assistant'; content: string | ContentPart[] };
 
-// --- TypeScript global typing for debug state ---
-declare global {
-  interface GlobalThis {
-    __CHRONICLE_DEBUG__?: {
-      lastApiCall?: any;
-      lastResponse?: any;
-      lastError?: any;
-      callCount: number;
-      lastPrompt?: string;
-      lastRawResponse?: string;
-      apiCallHistory: any[];
-    };
-  }
+// --- Interface definitions ---
+interface ApiCall {
+  timestamp: string;
+  type: string;
+  messages?: CoreMessage[];
+  gameState?: GameState;
+  gameSetup?: GameSetupState;
+  selectedChoice?: GameChoice;
+  choice?: string;
+  turnCount?: number;
+  era?: string;
+  theme?: string;
+  character?: string;
 }
 
-// --- Debugging Tools & Utilities ---
-// Use globalThis for cross-platform compatibility
-if (typeof globalThis !== 'undefined') {
-  if (!(globalThis as any).__CHRONICLE_DEBUG__) {
-    (globalThis as any).__CHRONICLE_DEBUG__ = {
+interface ApiResponse {
+  timestamp: string;
+  type: string;
+  data: unknown;
+  completionLength?: number;
+}
+
+interface ApiError {
+  timestamp: string;
+  type: string;
+  status?: number;
+  statusText?: string;
+  errorText?: string;
+  error?: unknown;
+  stack?: string;
+  rawCompletion?: string;
+}
+
+interface ApiCompletion {
+  completion?: string;
+  [key: string]: unknown;
+}
+
+interface ChronicleDebugState {
+  lastApiCall?: ApiCall;
+  lastResponse?: ApiResponse;
+  lastError?: ApiError;
+  callCount: number;
+  lastPrompt?: string;
+  lastRawResponse?: string;
+  apiCallHistory: ApiCall[];
+}
+
+// --- Global type declarations ---
+interface GlobalWithDebug {
+  __CHRONICLE_DEBUG__?: ChronicleDebugState;
+}
+
+declare global {
+  interface Headers {
+    entries(): IterableIterator<[string, string]>;
+    forEach(callback: (value: string, key: string) => void): void;
+  }
+  
+  var __CHRONICLE_DEBUG__: ChronicleDebugState | undefined;
+}
+
+// --- Debug state configuration ---
+let DEBUG_MODE = false;
+
+// --- Type guards ---
+function isApiCompletion(data: unknown): data is ApiCompletion {
+  return typeof data === 'object' && data !== null && 'completion' in data;
+}
+
+function isError(error: unknown): error is Error {
+  return error instanceof Error || (typeof error === 'object' && error !== null && 'message' in error);
+}
+
+function hasDebugState(): boolean {
+  return typeof globalThis !== 'undefined' && '__CHRONICLE_DEBUG__' in globalThis;
+}
+
+// --- Debug state management ---
+function ensureDebugState(): ChronicleDebugState {
+  if (!hasDebugState()) {
+    (globalThis as unknown as GlobalWithDebug).__CHRONICLE_DEBUG__ = {
       callCount: 0,
       apiCallHistory: []
     };
   }
+  return (globalThis as unknown as GlobalWithDebug).__CHRONICLE_DEBUG__!;
 }
 
-// Debug mode flag (manual toggle only)
-let DEBUG_MODE = true;
-
-/**
- * Enable or disable debug mode at runtime.
- */
-export function setDebugMode(enabled: boolean) {
-  DEBUG_MODE = enabled;
-}
-
-/**
- * Get the current debug state (deep clone to avoid mutation).
- */
-export function getDebugState() {
-  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
-    return JSON.parse(JSON.stringify((globalThis as any).__CHRONICLE_DEBUG__));
-  }
-  return null;
-}
-
-/**
- * Clear debug history and counters.
- */
-export function clearDebugHistory() {
-  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
-    (globalThis as any).__CHRONICLE_DEBUG__.lastApiCall = undefined;
-    (globalThis as any).__CHRONICLE_DEBUG__.lastResponse = undefined;
-    (globalThis as any).__CHRONICLE_DEBUG__.lastError = undefined;
-    (globalThis as any).__CHRONICLE_DEBUG__.lastPrompt = undefined;
-    (globalThis as any).__CHRONICLE_DEBUG__.lastRawResponse = undefined;
-    (globalThis as any).__CHRONICLE_DEBUG__.callCount = 0;
-    (globalThis as any).__CHRONICLE_DEBUG__.apiCallHistory = [];
-  }
-}
-
-/**
- * Standardized API call logging utility.
- */
-export function logApiCall(type: string, payload: any) {
-  if (typeof globalThis !== 'undefined' && (globalThis as any).__CHRONICLE_DEBUG__) {
-    (globalThis as any).__CHRONICLE_DEBUG__.apiCallHistory.push({
-      timestamp: new Date().toISOString(),
-      type,
-      ...payload
-    });
-  }
-  if (DEBUG_MODE) {
-    _logDebug(`[API CALL] ${type}`, payload);
-  }
-}
-
-// Patch logDebug and logError to respect DEBUG_MODE
-const _logDebug = (message: string, data?: any) => {
+// --- Logging utilities ---
+const _logDebug = (message: string, data?: unknown): void => {
   console.log(`[AI SERVICE DEBUG] ${message}`, data || '');
 };
-const _logError = (message: string, error?: any) => {
+
+const _logError = (message: string, error?: unknown): void => {
   console.error(`[AI SERVICE ERROR] ${message}`, error || '');
 };
-function logDebug(message: string, data?: any) {
+
+export function logDebug(message: string, data?: unknown): void {
   if (DEBUG_MODE) _logDebug(message, data);
 }
-function logError(message: string, error?: any) {
-  if (DEBUG_MODE) _logError(message, error);
-};
+
+export function logError(message: string, error?: unknown): void {
+  _logError(message, error);
+}
+
+export function setDebugMode(enabled: boolean): void {
+  DEBUG_MODE = enabled;
+  logDebug('Debug mode set to:', enabled);
+}
+
+export function getDebugState(): ChronicleDebugState | null {
+  const debug = ensureDebugState();
+  return debug ? JSON.parse(JSON.stringify(debug)) : null;
+}
+
+export function clearDebugHistory(): void {
+  const debug = ensureDebugState();
+  debug.lastApiCall = undefined;
+  debug.lastResponse = undefined;
+  debug.lastError = undefined;
+  debug.lastPrompt = undefined;
+  debug.lastRawResponse = undefined;
+  debug.callCount = 0;
+  debug.apiCallHistory = [];
+  logDebug('Debug history cleared');
+}
+
+export function logApiCall(type: string, payload: unknown): void {
+  const debug = ensureDebugState();
+  const apiCall: ApiCall = {
+    timestamp: new Date().toISOString(),
+    type,
+    ...(payload as object)
+  };
+  debug.apiCallHistory.push(apiCall);
+  debug.lastApiCall = apiCall;
+  logDebug(`[API CALL] ${type}`, payload);
+}
+
+// --- Headers helper ---
+function safeGetHeaders(headers: Headers): Record<string, string> {
+  const result: Record<string, string> = {};
+  
+  // Try modern Headers.entries() first
+  if (typeof headers.entries === 'function') {
+    try {
+      for (const [key, value] of headers.entries()) {
+        result[key] = value;
+      }
+      return result;
+    } catch (error) {
+      logError('Headers.entries() failed', error);
+    }
+  }
+  
+  // Fallback to forEach if available
+  try {
+    headers.forEach((value, key) => {
+      result[key] = value;
+    });
+  } catch (error) {
+    logError('Headers.forEach() failed', error);
+  }
+  
+  return result;
+}
+
+
+
+// Helper function for safer header logging
+function getHeadersObject(headers: Headers): Record<string, string> {
+  const headersObj: Record<string, string> = {};
+  try {
+    // Feature detection for Headers.entries
+    if (typeof headers.entries === 'function') {
+      for (const [key, value] of headers.entries()) {
+        headersObj[key] = value;
+      }
+    }
+  } catch (error) {
+    logError('Failed to process headers', error);
+  }
+  return headersObj;
+}
 
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
+  const debugState = ensureDebugState();
+  
   try {
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.callCount++;
-    }
-    
+    debugState.callCount++;
+
     logDebug("=== 🚀 STARTING INITIAL STORY GENERATION ===");
     logDebug("Game state:", {
       era: gameState.era,
@@ -218,23 +314,22 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       userPromptLength: userPrompt.length
     });
 
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastApiCall = {
-        timestamp: new Date().toISOString(),
-        type: "initial_story",
-        messages: messages,
-        gameState: gameState,
-        gameSetup: gameSetup
-      };
-      global.__CHRONICLE_DEBUG__.lastPrompt = userPrompt;
-      global.__CHRONICLE_DEBUG__.apiCallHistory.push({
-        timestamp: new Date().toISOString(),
-        type: "initial_story",
-        era: gameState.era,
-        theme: gameState.theme,
-        character: gameState.character.name
-      });
-    }
+    debugState.lastApiCall = {
+      timestamp: new Date().toISOString(),
+      type: "initial_story",
+      messages,
+      gameState,
+      gameSetup
+    };
+    
+    debugState.lastPrompt = userPrompt;
+    debugState.apiCallHistory.push({
+      timestamp: new Date().toISOString(),
+      type: "initial_story",
+      era: gameState.era,
+      theme: gameState.theme,
+      character: gameState.character.name
+    });
 
     const response = await fetch("https://toolkit.rork.com/text/llm/", {
       method: "POST",
@@ -245,26 +340,20 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     });
 
     logDebug("📥 Response status:", response.status);
-    let headersObj: any = {};
-    // Feature detection for headers logging
-    if (typeof Object.fromEntries === 'function' && response.headers && typeof (response.headers as any).entries === 'function') {
-      headersObj = Object.fromEntries(Array.from((response.headers as any).entries()));
-    }
-    logDebug("Response headers:", headersObj);
+    const headers = safeGetHeaders(response.headers);
+    logDebug("Response headers:", headers);
 
     if (!response.ok) {
       const errorText = await response.text();
       logError("API error response:", errorText);
       
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "api_error",
-          status: response.status,
-          statusText: response.statusText,
-          errorText: errorText
-        };
-      }
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "api_error",
+        status: response.status,
+        statusText: response.statusText,
+        errorText
+      };
       
       throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
@@ -272,15 +361,13 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     const data = await response.json();
     logDebug("📦 Raw response received, length:", data.completion?.length || 0);
     
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastResponse = {
-        timestamp: new Date().toISOString(),
-        type: "initial_story",
-        data: data,
-        completionLength: data.completion?.length || 0
-      };
-      global.__CHRONICLE_DEBUG__.lastRawResponse = data.completion;
-    }
+    debugState.lastResponse = {
+      timestamp: new Date().toISOString(),
+      type: "initial_story",
+      data,
+      completionLength: data.completion?.length || 0
+    };
+    debugState.lastRawResponse = data.completion;
     
     if (!data.completion) {
       logError("❌ No completion in response:", data);
@@ -318,50 +405,14 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       logError("❌ Failed to parse AI response:", data.completion);
       logError("Parse error:", parseError);
       
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "parse_error",
-          error: parseError,
-          rawCompletion: data.completion
-        };
-      }
-      
-      // Provide a comprehensive fallback for debugging
-      logDebug("🔧 Providing enhanced fallback response for debugging");
-      return {
-        backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
-
-Through years of experience and careful observation, ${gameState.character.name} has developed a keen understanding of how power flows through the corridors of influence in their world. They have witnessed the rise and fall of leaders, the ebb and flow of economic fortunes, and the constant struggle between tradition and progress that defines their era.
-
-Their journey has been marked by both triumph and adversity, each experience adding another layer to their complex character. The theme of ${gameState.theme} has been a constant companion, influencing their decisions and shaping their worldview in ways both subtle and profound.
-
-Now, standing at this crucial juncture in their life, ${gameState.character.name} finds themselves uniquely positioned to influence the course of events. Their background has prepared them for the challenges ahead, and their understanding of the world's complexities gives them an advantage that few others possess.
-
-The choices they make in the coming days will not only determine their own fate but may well influence the broader currents of history itself. The stage is set, the players are in position, and the chronicle of ${gameState.character.name} is about to begin in earnest.`,
-        firstSegment: {
-          id: "segment-1",
-          text: `The year unfolds within the era of ${gameState.era}, and you are ${gameState.character.name}, standing at the crossroads of destiny. The world around you pulses with the energy of ${gameState.theme}, a force that shapes every decision and colors every interaction in this complex tapestry of human experience.
-
-The morning sun casts long shadows across the landscape as you find yourself in a position of significant consequence. The air is thick with possibility and tension, as the political undercurrents of your time swirl around you like invisible currents in a vast ocean. You can feel the weight of history pressing down upon your shoulders, yet also sense the opportunity to shape the future through your actions.
-
-Around you, the economic systems of your era function with their own rhythm and logic. Merchants hawk their wares, coins change hands, and the great machinery of commerce continues its eternal dance. You understand that wealth and resources are tools of power, and that your financial decisions will ripple outward to affect not just your own circumstances, but the broader community in which you live.
-
-The social fabric of your world is complex and nuanced, woven from threads of tradition, innovation, conflict, and cooperation. You recognize the faces of those who hold power, those who seek it, and those who are content to live their lives in the shadows of greater events. Your reputation precedes you in some circles, while in others you remain an unknown quantity, full of potential for both great achievement and spectacular failure.
-
-As you contemplate your next move, you realize that this moment represents a crucial juncture in your personal chronicle. The choices you make here will set in motion a chain of events that will define not only your immediate future, but potentially the legacy you leave behind. The theme of ${gameState.theme} resonates through every option before you, reminding you that your actions carry weight far beyond their immediate consequences.
-
-The world watches and waits, ready to respond to your decisions with all the complexity and unpredictability that defines this remarkable period in history. Your chronicle begins now, with this single moment of choice that will echo through time.
-
-What path will you choose to begin this new chapter of your chronicle?`,
-          choices: [
-            { id: "1", text: "Seek out the local centers of power and attempt to establish yourself within existing political structures" },
-            { id: "2", text: "Focus on building economic relationships and establishing a network of trade connections" },
-            { id: "3", text: "Take time to observe and gather information before making any significant commitments" }
-          ],
-          customChoiceEnabled: true
-        }
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "parse_error",
+        error: parseError,
+        rawCompletion: data.completion
       };
+      
+      throw new Error("Failed to parse API response");
     }
 
     // Validate the response structure
@@ -412,58 +463,22 @@ What path will you choose to begin this new chapter of your chronicle?`,
   } catch (error) {
     logError("❌ Error in generateInitialStory:", error);
     
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "generation_error",
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      };
-    }
-    
-    // Provide a comprehensive fallback response for debugging
-    logDebug("🔧 Providing comprehensive fallback response for debugging");
-    return {
-      backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
-
-Through years of experience and careful observation, ${gameState.character.name} has developed a keen understanding of how power flows through the corridors of influence in their world. They have witnessed the rise and fall of leaders, the ebb and flow of economic fortunes, and the constant struggle between tradition and progress that defines their era.
-
-Their journey has been marked by both triumph and adversity, each experience adding another layer to their complex character. The theme of ${gameState.theme} has been a constant companion, influencing their decisions and shaping their worldview in ways both subtle and profound.
-
-Now, standing at this crucial juncture in their life, ${gameState.character.name} finds themselves uniquely positioned to influence the course of events. Their background has prepared them for the challenges ahead, and their understanding of the world's complexities gives them an advantage that few others possess.
-
-The choices they make in the coming days will not only determine their own fate but may well influence the broader currents of history itself. The stage is set, the players are in position, and the chronicle of ${gameState.character.name} is about to begin in earnest.`,
-      firstSegment: {
-        id: "segment-1",
-        text: `The year unfolds within the era of ${gameState.era}, and you are ${gameState.character.name}, standing at the crossroads of destiny. The world around you pulses with the energy of ${gameState.theme}, a force that shapes every decision and colors every interaction in this complex tapestry of human experience.
-
-The morning sun casts long shadows across the landscape as you find yourself in a position of significant consequence. The air is thick with possibility and tension, as the political undercurrents of your time swirl around you like invisible currents in a vast ocean. You can feel the weight of history pressing down upon your shoulders, yet also sense the opportunity to shape the future through your actions.
-
-Around you, the economic systems of your era function with their own rhythm and logic. Merchants hawk their wares, coins change hands, and the great machinery of commerce continues its eternal dance. You understand that wealth and resources are tools of power, and that your financial decisions will ripple outward to affect not just your own circumstances, but the broader community in which you live.
-
-The social fabric of your world is complex and nuanced, woven from threads of tradition, innovation, conflict, and cooperation. You recognize the faces of those who hold power, those who seek it, and those who are content to live their lives in the shadows of greater events. Your reputation precedes you in some circles, while in others you remain an unknown quantity, full of potential for both great achievement and spectacular failure.
-
-As you contemplate your next move, you realize that this moment represents a crucial juncture in your personal chronicle. The choices you make here will set in motion a chain of events that will define not only your immediate future, but potentially the legacy you leave behind. The theme of ${gameState.theme} resonates through every option before you, reminding you that your actions carry weight far beyond their immediate consequences.
-
-The world watches and waits, ready to respond to your decisions with all the complexity and unpredictability that defines this remarkable period in history. Your chronicle begins now, with this single moment of choice that will echo through time.
-
-What path will you choose to begin this new chapter of your chronicle?`,
-        choices: [
-          { id: "1", text: "Seek out the local centers of power and attempt to establish yourself within existing political structures" },
-          { id: "2", text: "Focus on building economic relationships and establishing a network of trade connections" },
-          { id: "3", text: "Take time to observe and gather information before making any significant commitments" }
-        ],
-        customChoiceEnabled: true
-      }
+    debugState.lastError = {
+      timestamp: new Date().toISOString(),
+      type: "generation_error",
+      error,
+      stack: error instanceof Error ? error.stack : undefined
     };
+    
+    throw error;
   }
 }
 
 export async function generateNextSegment(gameState: GameState, selectedChoice: GameChoice): Promise<GameSegment> {
+  const debugState = ensureDebugState();
+  
   try {
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.callCount++;
-    }
+    debugState.callCount++;
     
     logDebug("=== 🎯 STARTING NEXT SEGMENT GENERATION ===");
     logDebug("Selected choice:", selectedChoice.text);
@@ -591,21 +606,20 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     ];
 
     logDebug("📤 Sending request for next segment...");
+    
+    debugState.lastApiCall = {
+      timestamp: new Date().toISOString(),
+      type: "next_segment",
+      messages,
+      selectedChoice
+    };
 
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastApiCall = {
-        timestamp: new Date().toISOString(),
-        type: "next_segment",
-        messages: messages,
-        selectedChoice: selectedChoice
-      };
-      global.__CHRONICLE_DEBUG__.apiCallHistory.push({
-        timestamp: new Date().toISOString(),
-        type: "next_segment",
-        choice: selectedChoice.text,
-        turnCount: turnCount
-      });
-    }
+    debugState.apiCallHistory.push({
+      timestamp: new Date().toISOString(),
+      type: "next_segment",
+      choice: selectedChoice.text,
+      turnCount
+    });
 
     const response = await fetch("https://toolkit.rork.com/text/llm/", {
       method: "POST",
@@ -621,14 +635,12 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       const errorText = await response.text();
       logError("API error response:", errorText);
       
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "api_error",
-          status: response.status,
-          errorText: errorText
-        };
-      }
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "api_error",
+        status: response.status,
+        errorText
+      };
       
       throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
@@ -636,14 +648,12 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     const data = await response.json();
     logDebug("📦 Next segment response received, length:", data.completion?.length || 0);
     
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastResponse = {
-        timestamp: new Date().toISOString(),
-        type: "next_segment",
-        data: data
-      };
-      global.__CHRONICLE_DEBUG__.lastRawResponse = data.completion;
-    }
+    debugState.lastResponse = {
+      timestamp: new Date().toISOString(),
+      type: "next_segment",
+      data
+    };
+    debugState.lastRawResponse = data.completion;
     
     if (!data.completion) {
       logError("❌ No completion in response:", data);
@@ -677,37 +687,14 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       logError("❌ Failed to parse next segment response:", data.completion);
       logError("Parse error:", parseError);
       
-      if (typeof global !== 'undefined') {
-        global.__CHRONICLE_DEBUG__.lastError = {
-          timestamp: new Date().toISOString(),
-          type: "parse_error",
-          error: parseError,
-          rawCompletion: data.completion
-        };
-      }
-      
-      // Provide fallback for development
-      logDebug("🔧 Providing fallback next segment for development");
-      return {
-        id: `segment-${turnCount + 1}`,
-        text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
-
-The consequences of your decision begin to manifest as the world around you responds to your actions. The theme of ${gameState.theme} becomes more apparent as you navigate the complexities of this historical period, and you find yourself facing new challenges that test your resolve and wisdom.
-
-Your choice has set in motion a series of events that ripple through the political, economic, and social systems of your world. You can feel the weight of these changes as they begin to take shape, affecting not only your immediate circumstances but also your long-term prospects in this complex environment.
-
-As you observe the results of your actions, you realize that each decision in this world carries significant weight. The path forward requires careful consideration of your goals, your resources, and the potential consequences of your next move. The theme of ${gameState.theme} continues to influence every aspect of your journey.
-
-The world around you continues to evolve and respond to your presence, creating new opportunities and challenges that will shape the next chapter of your chronicle. Your reputation and relationships are beginning to form, and the choices you make now will have lasting impacts on your future.
-
-What will you do next as this chronicle continues to unfold around you?`,
-        choices: [
-          { id: "1", text: "Take a cautious approach to the new situation and gather more information" },
-          { id: "2", text: "Act boldly to seize the opportunities that have emerged" },
-          { id: "3", text: "Seek allies and build relationships to strengthen your position" }
-        ],
-        customChoiceEnabled: true
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "parse_error",
+        error: parseError,
+        rawCompletion: data.completion
       };
+      
+      throw new Error("Failed to parse API response");
     }
 
     // Validate response
@@ -734,41 +721,20 @@ What will you do next as this chronicle continues to unfold around you?`,
   } catch (error) {
     logError("❌ Error in generateNextSegment:", error);
     
-    if (typeof global !== 'undefined') {
-      global.__CHRONICLE_DEBUG__.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "generation_error",
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      };
-    }
-    
-    // Provide fallback for development
-    logDebug("🔧 Providing fallback next segment for development");
-    return {
-      id: `segment-${gameState.turnCount + 1}`,
-      text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
-
-The consequences of your decision begin to manifest as the world around you responds to your actions. The theme of ${gameState.theme} becomes more apparent as you navigate the complexities of this historical period, and you find yourself facing new challenges that test your resolve and wisdom.
-
-Your choice has set in motion a series of events that ripple through the political, economic, and social systems of your world. You can feel the weight of these changes as they begin to take shape, affecting not only your immediate circumstances but also your long-term prospects in this complex environment.
-
-As you observe the results of your actions, you realize that each decision in this world carries significant weight. The path forward requires careful consideration of your goals, your resources, and the potential consequences of your next move. The theme of ${gameState.theme} continues to influence every aspect of your journey.
-
-The world around you continues to evolve and respond to your presence, creating new opportunities and challenges that will shape the next chapter of your chronicle. Your reputation and relationships are beginning to form, and the choices you make now will have lasting impacts on your future.
-
-What will you do next as this chronicle continues to unfold around you?`,
-      choices: [
-        { id: "1", text: "Take a cautious approach to the new situation and gather more information" },
-        { id: "2", text: "Act boldly to seize the opportunities that have emerged" },
-        { id: "3", text: "Seek allies and build relationships to strengthen your position" }
-      ],
-      customChoiceEnabled: true
+    debugState.lastError = {
+      timestamp: new Date().toISOString(),
+      type: "generation_error",
+      error,
+      stack: error instanceof Error ? error.stack : undefined
     };
+    
+    throw error;
   }
 }
 
 export async function processKronosMessage(gameState: GameState, message: string): Promise<string> {
+  const debugState = ensureDebugState();
+  
   try {
     logDebug("🤖 Processing Kronos message:", message);
 
@@ -793,6 +759,13 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
       { role: "user", content: message }
     ];
 
+    debugState.lastApiCall = {
+      timestamp: new Date().toISOString(),
+      type: "kronos_message",
+      messages,
+      gameState
+    };
+
     logDebug("📤 Sending Kronos message to API...");
 
     const response = await fetch("https://toolkit.rork.com/text/llm/", {
@@ -804,15 +777,40 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      logError("API error response:", errorText);
+      
+      debugState.lastError = {
+        timestamp: new Date().toISOString(),
+        type: "api_error",
+        status: response.status,
+        statusText: response.statusText,
+        errorText
+      };
+      
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     logDebug("📥 Kronos response received");
     
+    debugState.lastResponse = {
+      timestamp: new Date().toISOString(),
+      type: "kronos_message",
+      data
+    };
+    
     return data.completion || "I apologize, but I'm having trouble responding right now. Please try again later.";
   } catch (error) {
     logError("❌ Error processing Kronos message:", error);
+    
+    debugState.lastError = {
+      timestamp: new Date().toISOString(),
+      type: "generation_error",
+      error,
+      stack: error instanceof Error ? error.stack : undefined
+    };
+    
     return "I apologize, but I'm having trouble responding right now. Please try again later.";
   }
 }
