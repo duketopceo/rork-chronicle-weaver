@@ -36,7 +36,7 @@ export default function GamePlayScreen() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [processingChoice, setProcessingChoice] = useState(false);
   const [narrativeKey, setNarrativeKey] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(5); // Much faster animation speed (lower is faster)
+  const [animationSpeed, setAnimationSpeed] = useState(1); // Much faster animation speed (lower is faster)
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Force show UI for debugging
@@ -286,6 +286,10 @@ What will you do to begin your chronicle?`,
     router.push("/game/lore");
   };
 
+  const navigateToSystems = () => {
+    router.push("/game/systems");
+  };
+
   const navigateToKronos = () => {
     router.push("/game/kronos");
   };
@@ -525,6 +529,15 @@ What will you do to begin your chronicle?`,
           <Feather size={18} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Chronicle</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToSystems}
+          activeOpacity={0.7}
+        >
+          <Crown size={18} color={colors.textMuted} />
+          <Text style={styles.navButtonText}>Systems</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -659,6 +672,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingTop: 8,
     width: "100%", // Ensure full width
+    minHeight: SCREEN_HEIGHT * 0.5, // Ensure narrative takes up at least half the screen
   },
   spacer: {
     height: 24,

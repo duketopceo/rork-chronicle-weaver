@@ -14,7 +14,7 @@ type NarrativeTextProps = {
 export default function NarrativeText({
   text,
   animated = false,
-  speed = 5, // Much faster default speed (lower is faster)
+  speed = 1, // Much faster default speed (lower is faster)
   onComplete,
 }: NarrativeTextProps) {
   const [displayedText, setDisplayedText] = useState(animated ? "" : text);
@@ -85,7 +85,7 @@ export default function NarrativeText({
     }
     
     // Improved animation logic with larger batch updates for much faster appearance
-    const batchSize = 15; // Process many more characters per frame for much faster appearance
+    const batchSize = 50; // Process many more characters per frame for much faster appearance
     const timer = setInterval(() => {
       if (animationRef.current.charIndex < text.length) {
         setDisplayedText((current) => {
@@ -98,7 +98,7 @@ export default function NarrativeText({
               // Add subtle haptic feedback at punctuation marks (less frequent)
               if (Platform.OS !== "web" && 
                   ['.', '!', '?'].includes(text.charAt(animationRef.current.charIndex)) && 
-                  Math.random() > 0.8) { // Only trigger haptics 20% of the time for punctuation
+                  Math.random() > 0.9) { // Only trigger haptics 10% of the time for punctuation
                 Haptics.selectionAsync();
               }
               
