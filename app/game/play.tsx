@@ -36,7 +36,7 @@ export default function GamePlayScreen() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [processingChoice, setProcessingChoice] = useState(false);
   const [narrativeKey, setNarrativeKey] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(20); // Faster animation speed
+  const [animationSpeed, setAnimationSpeed] = useState(5); // Much faster animation speed (lower is faster)
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Force show UI for debugging
@@ -408,14 +408,14 @@ What will you do to begin your chronicle?`,
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.debugButton} 
-                  onPress={() => setAnimationSpeed(prev => Math.max(5, prev - 5))}
+                  onPress={() => setAnimationSpeed(prev => Math.max(1, prev - 1))}
                 >
                   <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
                 </TouchableOpacity>
               </View>
             )}
             
-            {/* Narrative Text Component */}
+            {/* Narrative Text Component - Full width */}
             <View style={styles.narrativeContainer}>
               <NarrativeText 
                 key={narrativeKey}
@@ -426,7 +426,7 @@ What will you do to begin your chronicle?`,
               />
             </View>
             
-            {/* Choices Section - Now part of the same ScrollView */}
+            {/* Choices Section - Now clearly below narrative */}
             {processingChoice ? (
               <View style={styles.processingContainer}>
                 <Feather size={48} color={colors.primary} />
@@ -658,6 +658,7 @@ const styles = StyleSheet.create({
   narrativeContainer: {
     paddingHorizontal: 0,
     paddingTop: 8,
+    width: "100%", // Ensure full width
   },
   spacer: {
     height: 24,
@@ -666,6 +667,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
+    width: "100%", // Ensure full width
   },
   choicesBottomSpacer: {
     height: 16,
