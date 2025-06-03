@@ -1,53 +1,64 @@
 export const colors = {
-  // Enhanced dark theme with rich historical accents inspired by ancient manuscripts and royal courts
-  background: "#0A0A0A", // Deep charcoal black
-  surface: "#1A1612", // Warm dark brown with golden undertones
-  surfaceLight: "#2D2520", // Lighter warm brown
+  // Sophisticated dark theme inspired by ancient libraries and illuminated manuscripts
+  background: "#0F0E0D", // Rich charcoal with warm undertones
+  surface: "#1C1A17", // Deep warm brown like aged leather
+  surfaceLight: "#2A2621", // Lighter warm brown like old parchment
   
-  // Primary colors - rich amber gold inspired by candlelight and illuminated manuscripts
-  primary: "#D4A574", // Warm amber gold
-  primaryLight: "#E6B885", // Light amber
-  primaryDark: "#B8935F", // Dark amber
+  // Primary colors - refined copper and gold inspired by illuminated manuscripts
+  primary: "#CD7F32", // Rich copper bronze
+  primaryLight: "#E6A85C", // Light bronze
+  primaryDark: "#B8722C", // Dark bronze
   
-  // Secondary colors - deep burgundy inspired by medieval manuscripts and royal robes
-  secondary: "#8B4513", // Saddle brown
-  secondaryLight: "#A0522D", // Sienna
+  // Secondary colors - deep forest green like ancient book bindings
+  secondary: "#2F4F2F", // Dark olive green
+  secondaryLight: "#556B2F", // Olive drab
   
-  // Accent colors - deep crimson for important elements
-  accent: "#8B0000", // Dark red
-  accentLight: "#CD5C5C", // Indian red
+  // Accent colors - royal sapphire for important elements
+  accent: "#1E3A8A", // Royal blue
+  accentLight: "#3B82F6", // Bright blue
   
-  // Text colors - warm off-whites like aged parchment and vellum
-  text: "#F5F5DC", // Beige - main text
-  textSecondary: "#D2B48C", // Tan - secondary text
-  textMuted: "#BC9A6A", // Dark khaki - muted text
+  // Text colors - warm ivory and cream like aged manuscript pages
+  text: "#FAF7F0", // Warm ivory - main text
+  textSecondary: "#E5DDD1", // Warm beige - secondary text
+  textMuted: "#C4B5A0", // Muted tan - subtle text
   
-  // Semantic colors with historical inspiration
-  success: "#228B22", // Forest green - like medieval heraldry
-  error: "#DC143C", // Crimson - like royal seals
-  warning: "#DAA520", // Goldenrod - like illuminated warnings
+  // Semantic colors with rich, sophisticated tones
+  success: "#166534", // Deep forest green
+  error: "#991B1B", // Deep crimson
+  warning: "#B45309", // Rich amber
   
-  // UI colors with historical depth
-  border: "#3C3530", // Dark brown border
-  borderLight: "#4A453E", // Medium brown border
+  // UI colors with sophisticated depth
+  border: "#3A342C", // Warm dark border
+  borderLight: "#4A453A", // Medium warm border
   
-  // Special colors for narrative elements with manuscript inspiration
-  narrativeBackground: "#1A1814", // Slightly warmer than surface for text areas
-  choiceBackground: "#252017", // Warm dark background for choices
-  memoryAccent: "#9370DB", // Medium purple - like royal ink
-  loreAccent: "#4682B4", // Steel blue - like ancient knowledge
+  // Special colors for narrative elements with literary inspiration
+  narrativeBackground: "#1A1815", // Slightly warmer reading background
+  choiceBackground: "#252118", // Warm choice background
+  memoryAccent: "#7C3AED", // Rich violet for memories
+  loreAccent: "#0F766E", // Deep teal for ancient knowledge
   
-  // System colors with historical inspiration
-  politicsAccent: "#800080", // Purple for nobility and politics
-  economicsAccent: "#DAA520", // Goldenrod for commerce and trade
-  warAccent: "#8B0000", // Dark red for war and conflict
-  relationshipAccent: "#CD853F", // Peru for relationships and diplomacy
-  inventoryAccent: "#8B4513", // Saddle brown for possessions and inventory
+  // System colors with sophisticated historical inspiration
+  politicsAccent: "#7C2D92", // Royal purple for nobility and politics
+  economicsAccent: "#CA8A04", // Rich gold for commerce and trade
+  warAccent: "#DC2626", // Bold red for war and conflict
+  relationshipAccent: "#EA580C", // Warm orange for relationships
+  inventoryAccent: "#92400E", // Rich brown for possessions
   
-  // Additional historical UI elements
-  scrollAccent: "#D2691E", // Chocolate for scroll-like elements
-  crownAccent: "#FFD700", // Gold for royal/important elements
-  parchmentAccent: "#F5DEB3", // Wheat for parchment-like backgrounds
+  // Additional sophisticated UI elements
+  scrollAccent: "#A16207", // Deep amber for interactive elements
+  crownAccent: "#FBBF24", // Bright gold for royal/important elements
+  parchmentAccent: "#FEF3C7", // Light cream for highlights
+  
+  // New sophisticated accent colors
+  wisdomAccent: "#4338CA", // Deep indigo for wisdom and learning
+  mysteryAccent: "#6B21A8", // Deep purple for mysteries and secrets
+  heroicAccent: "#DC2626", // Bold red for heroic moments
+  tragicAccent: "#374151", // Deep gray for tragic elements
+  
+  // Reading comfort colors
+  readingBackground: "#1A1714", // Optimized for long text reading
+  highlightBackground: "#2D2A24", // Subtle highlight for important text
+  selectionBackground: "#3F3B32", // Text selection background
 };
 
 export default colors;
