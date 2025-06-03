@@ -74,7 +74,7 @@ export default function ChoiceButton({
         activeOpacity={0.8}
       >
         <Feather 
-          size={Platform.select({ ios: 20, android: 18, default: 18 })} 
+          size={Platform.select({ ios: 24, android: 20, default: 20 })} 
           color={colors.primary} 
           style={styles.icon} 
         />
@@ -89,33 +89,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.choiceBackground,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    marginVertical: Platform.select({ ios: 10, android: 8, default: 8 }),
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
+    marginVertical: Platform.select({ ios: 12, android: 10, default: 10 }),
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
-    shadowOpacity: 0.15,
-    shadowRadius: Platform.select({ ios: 10, android: 8, default: 8 }),
-    elevation: 4,
-    borderLeftWidth: Platform.select({ ios: 4, android: 3, default: 3 }),
+    shadowOffset: { width: 0, height: Platform.select({ ios: 8, android: 6, default: 6 }) },
+    shadowOpacity: 0.2,
+    shadowRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    elevation: 6,
+    borderLeftWidth: Platform.select({ ios: 5, android: 4, default: 4 }),
     borderLeftColor: colors.primary,
     flexDirection: "row",
     alignItems: "flex-start",
-    minHeight: Platform.select({ ios: 80, android: 70, default: 60 }),
+    minHeight: Platform.select({ ios: 90, android: 80, default: 70 }),
   },
   disabled: {
     opacity: 0.5,
   },
   icon: {
-    marginRight: Platform.select({ ios: 16, android: 12, default: 12 }),
-    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
+    marginRight: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 6, android: 4, default: 4 }),
   },
   text: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
-    fontWeight: "500",
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+    lineHeight: Platform.select({ ios: 30, android: 28, default: 28 }),
+    fontWeight: "600",
     flex: 1,
-    paddingRight: Platform.select({ ios: 8, android: 4, default: 0 }),
+    paddingRight: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
 });

@@ -6,6 +6,16 @@ import { Bug, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, XCircle, Refre
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
+type DebugInfo = {
+  lastApiCall?: any;
+  lastResponse?: any;
+  lastError?: any;
+  callCount: number;
+  lastPrompt?: string;
+  lastRawResponse?: string;
+  apiCallHistory: any[];
+};
+
 export default function DebugPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showDetailedLogs, setShowDetailedLogs] = useState(false);
@@ -27,7 +37,7 @@ export default function DebugPanel() {
     <AlertTriangle size={16} color={colors.warning} />
   );
 
-  const getDebugInfo = () => {
+  const getDebugInfo = (): DebugInfo | null => {
     if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {
       return global.__CHRONICLE_DEBUG__;
     }
@@ -171,7 +181,7 @@ export default function DebugPanel() {
               <Text style={styles.debugText}>Orientation: {platformInfo.orientation}</Text>
               <Text style={styles.debugText}>Is TV: {platformInfo.isTV ? "Yes" : "No"}</Text>
               <Text style={styles.debugText}>Is Testing: {platformInfo.isTesting ? "Yes" : "No"}</Text>
-              <Text style={styles.debugText}>Pixel Ratio: {Platform.select({ ios: "iOS", android: "Android", web: "Web", default: "Unknown" })}</Text>
+              <Text style={styles.debugText}>Platform Type: {Platform.select({ ios: "iOS", android: "Android", web: "Web", default: "Unknown" })}</Text>
             </View>
           )}
 
@@ -407,7 +417,7 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>React Native Version: {Platform.constants?.reactNativeVersion?.major || "Unknown"}.{Platform.constants?.reactNativeVersion?.minor || "0"}</Text>
             <Text style={styles.debugText}>Expo SDK: 52.0.0</Text>
             <Text style={styles.debugText}>Build Type: {__DEV__ ? "Development" : "Production"}</Text>
-            <Text style={styles.debugText}>Platform Constants: {JSON.stringify(Platform.constants).substring(0, 100)}...</Text>
+            <Text style={styles.debugText}>Platform Constants: {Platform.constants ? JSON.stringify(Platform.constants).substring(0, 100) : "N/A"}...</Text>
             <Text style={styles.debugText}>Screen Scale: {Platform.select({ ios: "iOS Scale", android: "Android Scale", web: "Web Scale", default: "Unknown" })}</Text>
           </View>
 

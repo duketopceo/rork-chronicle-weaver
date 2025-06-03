@@ -27,11 +27,11 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
     >
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Feather size={Platform.select({ ios: 24, android: 20, default: 20 })} color={colors.primary} />
+          <Feather size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.primary} />
           <Text style={styles.headerTitle}>Write Your Action</Text>
         </View>
         <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
-          <X size={Platform.select({ ios: 24, android: 20, default: 20 })} color={colors.textMuted} />
+          <X size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.textMuted} />
         </TouchableOpacity>
       </View>
       
@@ -43,7 +43,7 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
           value={customAction}
           onChangeText={setCustomAction}
           multiline
-          numberOfLines={Platform.select({ ios: 5, android: 4, default: 4 })}
+          numberOfLines={Platform.select({ ios: 6, android: 5, default: 5 })}
           textAlignVertical="top"
           autoFocus
         />
@@ -73,30 +73,30 @@ export default function CustomChoiceInput({ onSubmit, onCancel, disabled }: Cust
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
-    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
-    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    padding: Platform.select({ ios: 28, android: 24, default: 24 }),
     borderWidth: 1,
     borderColor: colors.border,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: Platform.select({ ios: 8, android: 6, default: 6 }) },
-    shadowOpacity: 0.2,
-    shadowRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    elevation: 6,
+    shadowOffset: { width: 0, height: Platform.select({ ios: 12, android: 8, default: 8 }) },
+    shadowOpacity: 0.3,
+    shadowRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    elevation: 8,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
+    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Platform.select({ ios: 12, android: 10, default: 10 }),
+    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   headerTitle: {
-    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
-    fontWeight: "700",
+    fontSize: Platform.select({ ios: 24, android: 20, default: 20 }),
+    fontWeight: "800",
     color: colors.text,
     fontFamily: Platform.select({
       ios: "Georgia",
@@ -105,26 +105,26 @@ const styles = StyleSheet.create({
     }),
   },
   closeButton: {
-    padding: Platform.select({ ios: 8, android: 6, default: 6 }),
+    padding: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   inputContainer: {
-    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
   },
   textInput: {
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     color: colors.text,
-    minHeight: Platform.select({ ios: 120, android: 100, default: 100 }),
-    maxHeight: Platform.select({ ios: 180, android: 150, default: 150 }),
-    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
+    minHeight: Platform.select({ ios: 140, android: 120, default: 120 }),
+    maxHeight: Platform.select({ ios: 200, android: 180, default: 180 }),
+    lineHeight: Platform.select({ ios: 30, android: 28, default: 28 }),
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
+    gap: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   cancelButton: {
     flex: 1,

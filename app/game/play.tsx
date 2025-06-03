@@ -391,7 +391,7 @@ What will you do to begin your chronicle?`,
         </TouchableOpacity>
       </View>
       
-      {/* Main Content - Improved mobile layout */}
+      {/* Main Content - Full screen narrative until scroll */}
       <View style={styles.content}>
         {currentGame.currentSegment ? (
           <ScrollView 
@@ -418,7 +418,7 @@ What will you do to begin your chronicle?`,
               </View>
             )}
             
-            {/* Narrative Text Component - Full screen space */}
+            {/* Narrative Text Component - Takes full screen space */}
             <View style={styles.narrativeContainer}>
               <NarrativeText 
                 key={narrativeKey}
@@ -429,45 +429,49 @@ What will you do to begin your chronicle?`,
               />
             </View>
             
-            {/* Large spacer to ensure narrative gets full screen */}
+            {/* Large spacer to ensure narrative gets full screen before choices */}
             <View style={styles.narrativeSpacer} />
             
-            {/* Choices Section - Now clearly separated and at bottom */}
-            {processingChoice ? (
+            {/* Processing State */}
+            {processingChoice && (
               <View style={styles.processingContainer}>
                 <Feather size={48} color={colors.primary} />
                 <Text style={styles.processingTitle}>Kronos weaves the next chapter...</Text>
                 <ActivityIndicator size="large" color={colors.primary} style={styles.processingSpinner} />
               </View>
-            ) : showCustomInput ? (
-              /* Custom Input */
-              <View style={styles.customInputContainer}>
-                <CustomChoiceInput
-                  onSubmit={handleCustomAction}
-                  onCancel={() => setShowCustomInput(false)}
-                  disabled={processingChoice}
-                />
+            )}
+            
+            {/* Custom Input Section - Appears first when scrolling */}
+            {!processingChoice && showChoices && (
+              <View style={styles.customActionSection}>
+                {showCustomInput ? (
+                  <CustomChoiceInput
+                    onSubmit={handleCustomAction}
+                    onCancel={() => setShowCustomInput(false)}
+                    disabled={processingChoice}
+                  />
+                ) : (
+                  <TouchableOpacity 
+                    style={styles.customActionButton}
+                    onPress={() => setShowCustomInput(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Feather size={Platform.select({ ios: 36, android: 32, default: 32 })} color={colors.background} />
+                    <View style={styles.customActionContent}>
+                      <Text style={styles.customActionTitle}>Write Your Own Action</Text>
+                      <Text style={styles.customActionDescription}>
+                        Describe what you want to do in this situation
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
-            ) : showChoices ? (
-              /* Choices Section - Improved mobile layout */
+            )}
+            
+            {/* Predefined Choices Section - Three distinct boxes */}
+            {!processingChoice && showChoices && !showCustomInput && (
               <View style={styles.choicesSection}>
-                {/* Custom Action Button - More prominent on mobile */}
-                <TouchableOpacity 
-                  style={styles.customActionButton}
-                  onPress={() => setShowCustomInput(true)}
-                  activeOpacity={0.8}
-                >
-                  <Feather size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.background} />
-                  <View style={styles.customActionContent}>
-                    <Text style={styles.customActionTitle}>Write Your Own Action</Text>
-                    <Text style={styles.customActionDescription}>
-                      Describe what you want to do
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                
-                {/* Predefined Choices - Better mobile spacing */}
-                <Text style={styles.choicesTitle}>Or choose:</Text>
+                <Text style={styles.choicesTitle}>Or choose from these actions:</Text>
                 <View style={styles.choicesContainer}>
                   {currentGame.currentSegment.choices.map((choice, index) => (
                     <ChoiceButton
@@ -482,8 +486,10 @@ What will you do to begin your chronicle?`,
                 {/* Extra space at bottom for mobile comfort */}
                 <View style={styles.choicesBottomSpacer} />
               </View>
-            ) : (
-              /* Waiting for narrative to complete */
+            )}
+            
+            {/* Waiting State */}
+            {!processingChoice && !showChoices && (
               <View style={styles.waitingContainer}>
                 <Text style={styles.waitingText}>Reading your chronicle...</Text>
                 <TouchableOpacity 
@@ -523,7 +529,7 @@ What will you do to begin your chronicle?`,
           onPress={navigateToCharacter}
           activeOpacity={0.7}
         >
-          <User size={Platform.select({ ios: 20, android: 18, default: 18 })} color={colors.textMuted} />
+          <User size={Platform.select({ ios: 22, android: 20, default: 20 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Character</Text>
         </TouchableOpacity>
         
@@ -532,7 +538,7 @@ What will you do to begin your chronicle?`,
           onPress={navigateToLore}
           activeOpacity={0.7}
         >
-          <Feather size={Platform.select({ ios: 20, android: 18, default: 18 })} color={colors.textMuted} />
+          <Feather size={Platform.select({ ios: 22, android: 20, default: 20 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Chronicle</Text>
         </TouchableOpacity>
         
@@ -541,7 +547,7 @@ What will you do to begin your chronicle?`,
           onPress={navigateToSystems}
           activeOpacity={0.7}
         >
-          <Crown size={Platform.select({ ios: 20, android: 18, default: 18 })} color={colors.textMuted} />
+          <Crown size={Platform.select({ ios: 22, android: 20, default: 20 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Systems</Text>
         </TouchableOpacity>
       </View>
@@ -559,18 +565,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
-    padding: Platform.select({ ios: 32, android: 24, default: 24 }),
+    padding: Platform.select({ ios: 40, android: 32, default: 32 }),
   },
   loadingContent: {
     alignItems: "center",
-    maxWidth: 320,
+    maxWidth: 360,
   },
   loadingTitle: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 30, android: 28, default: 28 }),
-    fontWeight: "700",
-    marginTop: Platform.select({ ios: 32, android: 28, default: 28 }),
-    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+    fontSize: Platform.select({ ios: 32, android: 30, default: 30 }),
+    fontWeight: "800",
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
     textAlign: "center",
     fontFamily: Platform.select({
       ios: "Georgia",
@@ -580,10 +586,10 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     textAlign: "center",
-    lineHeight: Platform.select({ ios: 28, android: 26, default: 26 }),
-    marginBottom: Platform.select({ ios: 32, android: 28, default: 28 }),
+    lineHeight: Platform.select({ ios: 32, android: 28, default: 28 }),
+    marginBottom: Platform.select({ ios: 40, android: 32, default: 32 }),
     fontFamily: Platform.select({
       ios: "Georgia",
       android: "serif",
@@ -591,33 +597,33 @@ const styles = StyleSheet.create({
     }),
   },
   loadingSpinner: {
-    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
+    marginTop: Platform.select({ ios: 32, android: 24, default: 24 }),
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
-    padding: Platform.select({ ios: 32, android: 24, default: 24 }),
+    padding: Platform.select({ ios: 40, android: 32, default: 32 }),
   },
   errorTitle: {
     color: colors.error,
-    fontSize: Platform.select({ ios: 24, android: 22, default: 22 }),
-    fontWeight: "700",
-    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    fontSize: Platform.select({ ios: 28, android: 24, default: 24 }),
+    fontWeight: "800",
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
     textAlign: "center",
-    marginTop: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   errorMessage: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     textAlign: "center",
-    marginBottom: Platform.select({ ios: 32, android: 28, default: 28 }),
-    lineHeight: Platform.select({ ios: 28, android: 26, default: 26 }),
+    marginBottom: Platform.select({ ios: 40, android: 32, default: 32 }),
+    lineHeight: Platform.select({ ios: 32, android: 28, default: 28 }),
   },
   errorButtonsContainer: {
     flexDirection: "row",
-    gap: Platform.select({ ios: 20, android: 16, default: 16 }),
+    gap: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   retryButton: {
     backgroundColor: colors.primary,
@@ -629,15 +635,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
-    paddingVertical: Platform.select({ ios: 20, android: 16, default: 16 }),
+    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    paddingVertical: Platform.select({ ios: 24, android: 20, default: 20 }),
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary + "30",
+    borderBottomColor: colors.primary + "40",
     backgroundColor: colors.surface,
   },
   headerButton: {
-    padding: Platform.select({ ios: 12, android: 8, default: 8 }),
-    borderRadius: Platform.select({ ios: 10, android: 8, default: 8 }),
+    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    borderRadius: Platform.select({ ios: 12, android: 10, default: 10 }),
   },
   headerInfo: {
     alignItems: "center",
@@ -646,12 +652,12 @@ const styles = StyleSheet.create({
   headerTitleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Platform.select({ ios: 10, android: 8, default: 8 }),
+    gap: Platform.select({ ios: 12, android: 10, default: 10 }),
   },
   headerTitle: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
-    fontWeight: "700",
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
+    fontWeight: "800",
     fontFamily: Platform.select({
       ios: "Georgia",
       android: "serif",
@@ -660,9 +666,9 @@ const styles = StyleSheet.create({
   },
   turnText: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 14, android: 13, default: 13 }),
-    fontWeight: "500",
-    marginTop: Platform.select({ ios: 6, android: 4, default: 4 }),
+    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    fontWeight: "600",
+    marginTop: Platform.select({ ios: 8, android: 6, default: 6 }),
     fontStyle: "italic",
   },
   content: {
@@ -672,86 +678,88 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: Platform.select({ ios: 40, android: 24, default: 24 }),
+    paddingBottom: Platform.select({ ios: 60, android: 40, default: 40 }),
   },
   narrativeContainer: {
     paddingHorizontal: 0,
-    paddingTop: Platform.select({ ios: 12, android: 8, default: 8 }),
+    paddingTop: Platform.select({ ios: 16, android: 12, default: 12 }),
     width: "100%",
-    minHeight: SCREEN_HEIGHT * Platform.select({ ios: 0.6, android: 0.55, default: 0.5 }),
+    minHeight: SCREEN_HEIGHT * Platform.select({ ios: 0.75, android: 0.7, default: 0.65 }),
   },
   narrativeSpacer: {
-    height: Platform.select({ ios: 60, android: 40, default: 24 }),
+    height: Platform.select({ ios: 80, android: 60, default: 40 }),
   },
-  choicesSection: {
-    paddingHorizontal: Platform.select({ ios: 20, android: 16, default: 16 }),
-    paddingTop: Platform.select({ ios: 24, android: 16, default: 16 }),
-    paddingBottom: Platform.select({ ios: 40, android: 24, default: 24 }),
+  customActionSection: {
+    paddingHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
+    paddingTop: Platform.select({ ios: 32, android: 24, default: 24 }),
+    paddingBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
     width: "100%",
-  },
-  choicesContainer: {
-    gap: Platform.select({ ios: 16, android: 12, default: 8 }),
-  },
-  choicesBottomSpacer: {
-    height: Platform.select({ ios: 40, android: 24, default: 16 }),
   },
   customActionButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
-    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
-    marginBottom: Platform.select({ ios: 28, android: 20, default: 20 }),
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    padding: Platform.select({ ios: 28, android: 24, default: 24 }),
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: Platform.select({ ios: 8, android: 6, default: 6 }) },
-    shadowOpacity: 0.3,
-    shadowRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    elevation: 8,
+    shadowOffset: { width: 0, height: Platform.select({ ios: 12, android: 8, default: 8 }) },
+    shadowOpacity: 0.4,
+    shadowRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    elevation: 10,
     borderWidth: 2,
     borderColor: colors.primaryDark,
   },
   customActionContent: {
-    marginLeft: Platform.select({ ios: 24, android: 20, default: 20 }),
+    marginLeft: Platform.select({ ios: 28, android: 24, default: 24 }),
     flex: 1,
   },
   customActionTitle: {
     color: colors.background,
-    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
     fontWeight: "800",
-    marginBottom: Platform.select({ ios: 6, android: 4, default: 4 }),
+    marginBottom: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   customActionDescription: {
     color: colors.background,
-    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     opacity: 0.9,
+    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
+  },
+  choicesSection: {
+    paddingHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
+    paddingTop: Platform.select({ ios: 32, android: 24, default: 24 }),
+    paddingBottom: Platform.select({ ios: 40, android: 32, default: 32 }),
+    width: "100%",
   },
   choicesTitle: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
-    fontWeight: "600",
-    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+    fontWeight: "700",
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
     textAlign: "center",
   },
-  customInputContainer: {
-    paddingHorizontal: Platform.select({ ios: 20, android: 16, default: 16 }),
-    paddingBottom: Platform.select({ ios: 40, android: 24, default: 24 }),
+  choicesContainer: {
+    gap: Platform.select({ ios: 20, android: 16, default: 16 }),
+  },
+  choicesBottomSpacer: {
+    height: Platform.select({ ios: 60, android: 40, default: 32 }),
   },
   processingContainer: {
-    padding: Platform.select({ ios: 48, android: 40, default: 40 }),
+    padding: Platform.select({ ios: 60, android: 48, default: 48 }),
     alignItems: "center",
-    marginTop: Platform.select({ ios: 20, android: 16, default: 16 }),
-    marginHorizontal: Platform.select({ ios: 20, android: 16, default: 16 }),
-    backgroundColor: colors.surface + "80",
-    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 32, android: 24, default: 24 }),
+    marginHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
+    backgroundColor: colors.surface + "90",
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
   processingTitle: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
-    fontWeight: "600",
-    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
-    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
+    fontWeight: "700",
+    marginTop: Platform.select({ ios: 32, android: 24, default: 24 }),
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
     textAlign: "center",
     fontFamily: Platform.select({
       ios: "Georgia",
@@ -760,102 +768,102 @@ const styles = StyleSheet.create({
     }),
   },
   processingSpinner: {
-    marginTop: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   waitingContainer: {
-    padding: Platform.select({ ios: 32, android: 24, default: 24 }),
+    padding: Platform.select({ ios: 40, android: 32, default: 32 }),
     alignItems: "center",
-    marginTop: Platform.select({ ios: 20, android: 16, default: 16 }),
-    marginHorizontal: Platform.select({ ios: 20, android: 16, default: 16 }),
-    backgroundColor: colors.surface + "80",
-    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 32, android: 24, default: 24 }),
+    marginHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
+    backgroundColor: colors.surface + "90",
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
   waitingText: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     textAlign: "center",
-    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   skipButton: {
-    backgroundColor: colors.primary + "20",
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    paddingHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
-    paddingVertical: Platform.select({ ios: 16, android: 12, default: 12 }),
+    backgroundColor: colors.primary + "30",
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    paddingVertical: Platform.select({ ios: 20, android: 16, default: 16 }),
     borderWidth: 1,
     borderColor: colors.primary,
   },
   skipButtonText: {
     color: colors.primary,
-    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
-    fontWeight: "600",
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    fontWeight: "700",
   },
   noContentContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: Platform.select({ ios: 32, android: 24, default: 24 }),
+    padding: Platform.select({ ios: 40, android: 32, default: 32 }),
   },
   noContentText: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     textAlign: "center",
-    marginBottom: Platform.select({ ios: 32, android: 28, default: 28 }),
-    marginTop: Platform.select({ ios: 20, android: 16, default: 16 }),
-    lineHeight: Platform.select({ ios: 28, android: 26, default: 26 }),
+    marginBottom: Platform.select({ ios: 40, android: 32, default: 32 }),
+    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
+    lineHeight: Platform.select({ ios: 32, android: 28, default: 28 }),
   },
   bottomNav: {
     flexDirection: "row",
     backgroundColor: colors.surface,
     borderTopWidth: 2,
-    borderTopColor: colors.primary + "30",
-    paddingVertical: Platform.select({ ios: 16, android: 12, default: 12 }),
-    paddingHorizontal: Platform.select({ ios: 20, android: 16, default: 16 }),
-    paddingBottom: Platform.select({ ios: 20, android: 16, default: 12 }),
+    borderTopColor: colors.primary + "40",
+    paddingVertical: Platform.select({ ios: 20, android: 16, default: 16 }),
+    paddingHorizontal: Platform.select({ ios: 24, android: 20, default: 20 }),
+    paddingBottom: Platform.select({ ios: 28, android: 20, default: 16 }),
   },
   navButton: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: Platform.select({ ios: 12, android: 8, default: 8 }),
+    paddingVertical: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   navButtonText: {
     color: colors.textMuted,
-    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
-    marginTop: Platform.select({ ios: 6, android: 4, default: 4 }),
-    fontWeight: "500",
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
+    marginTop: Platform.select({ ios: 8, android: 6, default: 6 }),
+    fontWeight: "600",
   },
   debugContainer: {
     backgroundColor: colors.surface,
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    marginTop: Platform.select({ ios: 24, android: 20, default: 20 }),
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
+    marginTop: Platform.select({ ios: 32, android: 24, default: 24 }),
     borderWidth: 1,
     borderColor: colors.border,
-    maxWidth: 300,
+    maxWidth: 320,
   },
   debugTitle: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "700",
-    marginBottom: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   debugButtonsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
+    gap: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   debugButton: {
     backgroundColor: colors.primary,
-    borderRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
-    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
     flex: 1,
     alignItems: "center",
   },
   debugButtonText: {
     color: colors.background,
-    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
-    fontWeight: "600",
+    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    fontWeight: "700",
   },
 });
