@@ -51,7 +51,6 @@ export default function RootLayout() {
               contentStyle: {
                 backgroundColor: colors.background,
               },
-              headerBackTitleVisible: false, // Hide back title on iOS for cleaner look
               gestureEnabled: true, // Enable swipe gestures
             }}
           >
@@ -60,7 +59,6 @@ export default function RootLayout() {
               name="game/setup" 
               options={{ 
                 title: "Weave Your Chronicle",
-                headerBackTitle: "Back",
                 headerTitleStyle: {
                   fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
                   fontWeight: "700",

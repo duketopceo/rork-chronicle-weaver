@@ -39,11 +39,6 @@ export default function DebugPanel() {
       global.__CHRONICLE_DEBUG__ = { 
         callCount: 0,
         apiCallHistory: [],
-        performanceMetrics: {
-          renderCount: 0,
-          lastRenderTime: Date.now(),
-          averageRenderTime: 0
-        }
       };
     }
   };
@@ -53,11 +48,6 @@ export default function DebugPanel() {
       global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
         callCount: 0,
         apiCallHistory: [],
-        performanceMetrics: {
-          renderCount: 0,
-          lastRenderTime: Date.now(),
-          averageRenderTime: 0
-        }
       };
       global.__CHRONICLE_DEBUG__.lastError = {
         timestamp: new Date().toISOString(),
@@ -259,8 +249,7 @@ export default function DebugPanel() {
             </View>
             <Text style={styles.debugText}>Setup Step: {gameSetup.setupStep}</Text>
             <Text style={styles.debugText}>Difficulty: {gameSetup.difficulty}</Text>
-            <Text style={styles.debugText}>Custom Era: {gameSetup.customEra || "None"}</Text>
-            <Text style={styles.debugText}>Custom Theme: {gameSetup.customTheme || "None"}</Text>
+            <Text style={styles.debugText}>Generate Backstory: {gameSetup.generateBackstory ? "Yes" : "No"}</Text>
           </View>
 
           {/* Loading & Error State */}
@@ -378,12 +367,12 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>Backstory Length: {currentGame?.character?.backstory?.length || 0} chars</Text>
             <Text style={styles.debugText}>Lore Entries: {currentGame?.lore?.length || 0}</Text>
             <Text style={styles.debugText}>Memories: {currentGame?.memories?.length || 0}</Text>
-            <Text style={styles.debugText}>Systems Tracked: {Object.keys(currentGame?.systems || {}).length}</Text>
+            <Text style={styles.debugText}>World Systems Tracked: {Object.keys(currentGame?.worldSystems || {}).length}</Text>
             
-            {currentGame?.systems && (
+            {currentGame?.worldSystems && (
               <View style={styles.subSection}>
-                <Text style={styles.subSectionTitle}>System Values:</Text>
-                {Object.entries(currentGame.systems).map(([key, value]) => (
+                <Text style={styles.subSectionTitle}>World System Values:</Text>
+                {Object.entries(currentGame.worldSystems).map(([key, value]) => (
                   <Text key={key} style={styles.debugText}>
                     {key}: {typeof value === 'object' ? JSON.stringify(value).substring(0, 50) : String(value)}
                   </Text>
@@ -410,6 +399,26 @@ export default function DebugPanel() {
               new Date(currentGame.memories[currentGame.memories.length - 1].timestamp).toLocaleString() : "N/A"}</Text>
             <Text style={styles.debugText}>Session Duration: {currentGame?.id ? 
               Math.floor((Date.now() - parseInt(currentGame.id)) / 1000 / 60) + " minutes" : "N/A"}</Text>
+          </View>
+
+          {/* Additional Debug Sections */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🔧 Advanced Debug Info</Text>
+            <Text style={styles.debugText}>React Native Version: {Platform.constants?.reactNativeVersion?.major || "Unknown"}.{Platform.constants?.reactNativeVersion?.minor || "0"}</Text>
+            <Text style={styles.debugText}>Expo SDK: 52.0.0</Text>
+            <Text style={styles.debugText}>Build Type: {__DEV__ ? "Development" : "Production"}</Text>
+            <Text style={styles.debugText}>Platform Constants: {JSON.stringify(Platform.constants).substring(0, 100)}...</Text>
+            <Text style={styles.debugText}>Screen Scale: {Platform.select({ ios: "iOS Scale", android: "Android Scale", web: "Web Scale", default: "Unknown" })}</Text>
+          </View>
+
+          {/* Network & API Debug */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🌐 Network & API Debug</Text>
+            <Text style={styles.debugText}>API Endpoint: https://toolkit.rork.com/text/llm/</Text>
+            <Text style={styles.debugText}>Connection Status: {Platform.OS === 'web' ? 'Web Browser' : 'Native App'}</Text>
+            <Text style={styles.debugText}>Last API Call: {debugInfo?.lastApiCall?.timestamp || "None"}</Text>
+            <Text style={styles.debugText}>API Call Count: {debugInfo?.callCount || 0}</Text>
+            <Text style={styles.debugText}>Error Count: {debugInfo?.apiCallHistory?.filter(call => call.error)?.length || 0}</Text>
           </View>
         </ScrollView>
       )}
