@@ -1,9 +1,8 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, Animated } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, Animated, Platform } from "react-native";
 import { GameChoice } from "@/types/game";
 import { colors } from "@/constants/colors";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 import { Feather } from "lucide-react-native";
 
 type ChoiceButtonProps = {
@@ -74,7 +73,11 @@ export default function ChoiceButton({
         disabled={disabled}
         activeOpacity={0.8}
       >
-        <Feather size={18} color={colors.primary} style={styles.icon} />
+        <Feather 
+          size={Platform.select({ ios: 20, android: 18, default: 18 })} 
+          color={colors.primary} 
+          style={styles.icon} 
+        />
         <Text style={styles.text}>{choice.text}</Text>
       </TouchableOpacity>
     </Animated.View>
@@ -86,31 +89,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.choiceBackground,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 8,
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginVertical: Platform.select({ ios: 10, android: 8, default: 8 }),
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: Platform.select({ ios: 10, android: 8, default: 8 }),
     elevation: 4,
-    borderLeftWidth: 3,
+    borderLeftWidth: Platform.select({ ios: 4, android: 3, default: 3 }),
     borderLeftColor: colors.primary,
     flexDirection: "row",
     alignItems: "flex-start",
+    minHeight: Platform.select({ ios: 80, android: 70, default: 60 }),
   },
   disabled: {
     opacity: 0.5,
   },
   icon: {
-    marginRight: 12,
-    marginTop: 2,
+    marginRight: Platform.select({ ios: 16, android: 12, default: 12 }),
+    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
   },
   text: {
     color: colors.text,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
     fontWeight: "500",
     flex: 1,
+    paddingRight: Platform.select({ ios: 8, android: 4, default: 0 }),
   },
 });

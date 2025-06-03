@@ -14,7 +14,7 @@ type NarrativeTextProps = {
 export default function NarrativeText({
   text,
   animated = false,
-  speed = 1, // Much faster default speed (lower is faster)
+  speed = 1,
   onComplete,
 }: NarrativeTextProps) {
   const [displayedText, setDisplayedText] = useState(animated ? "" : text);
@@ -66,7 +66,7 @@ export default function NarrativeText({
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 300, // Faster fade-in
+      duration: Platform.select({ ios: 400, android: 300, default: 300 }),
       useNativeDriver: true,
     }).start();
 
@@ -85,7 +85,7 @@ export default function NarrativeText({
     }
     
     // Improved animation logic with larger batch updates for much faster appearance
-    const batchSize = 50; // Process many more characters per frame for much faster appearance
+    const batchSize = Platform.select({ ios: 60, android: 50, default: 50 }); // More characters per frame on iOS
     const timer = setInterval(() => {
       if (animationRef.current.charIndex < text.length) {
         setDisplayedText((current) => {
@@ -98,7 +98,7 @@ export default function NarrativeText({
               // Add subtle haptic feedback at punctuation marks (less frequent)
               if (Platform.OS !== "web" && 
                   ['.', '!', '?'].includes(text.charAt(animationRef.current.charIndex)) && 
-                  Math.random() > 0.9) { // Only trigger haptics 10% of the time for punctuation
+                  Math.random() > 0.95) { // Only trigger haptics 5% of the time for punctuation
                 Haptics.selectionAsync();
               }
               
@@ -131,7 +131,7 @@ export default function NarrativeText({
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.textContainer}>
           <View style={styles.errorHeader}>
-            <Crown size={24} color={colors.error} />
+            <Crown size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.error} />
             <Text style={styles.errorTitle}>Chronicle Unavailable</Text>
           </View>
           <Text style={styles.errorText}>
@@ -158,7 +158,7 @@ export default function NarrativeText({
       <View style={styles.textContainer}>
         {/* Header */}
         <View style={styles.narrativeHeader}>
-          <Feather size={20} color={colors.primary} />
+          <Feather size={Platform.select({ ios: 24, android: 20, default: 20 })} color={colors.primary} />
           <Text style={styles.narrativeTitle}>Chronicle Entry</Text>
           
           {/* Skip button - more prominent */}
@@ -199,6 +199,7 @@ export default function NarrativeText({
             <Text style={styles.debugText}>Animated: {animated ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Skipped: {isSkipped ? "Yes" : "No"}</Text>
             <Text style={styles.debugText}>Speed: {speed}ms</Text>
+            <Text style={styles.debugText}>Platform: {Platform.OS}</Text>
             
             <View style={styles.debugButtonsRow}>
               <TouchableOpacity 
@@ -232,32 +233,32 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     backgroundColor: colors.narrativeBackground,
-    borderRadius: 16,
-    padding: 24,
-    margin: 16,
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    padding: Platform.select({ ios: 28, android: 24, default: 24 }),
+    margin: Platform.select({ ios: 20, android: 16, default: 16 }),
     borderWidth: 1,
     borderColor: colors.border,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: Platform.select({ ios: 10, android: 8, default: 8 }),
     elevation: 4,
-    borderLeftWidth: 3,
+    borderLeftWidth: Platform.select({ ios: 4, android: 3, default: 3 }),
     borderLeftColor: colors.primary,
-    minHeight: 200,
+    minHeight: Platform.select({ ios: 240, android: 200, default: 200 }),
   },
   narrativeHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20, // Increased spacing
-    gap: 8,
-    paddingBottom: 12,
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+    gap: Platform.select({ ios: 12, android: 8, default: 8 }),
+    paddingBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   narrativeTitle: {
     color: colors.primary,
-    fontSize: 16,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "600",
     fontFamily: Platform.select({
       ios: "Georgia",
@@ -268,21 +269,21 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     backgroundColor: colors.primary + "20",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingHorizontal: Platform.select({ ios: 18, android: 14, default: 14 }),
+    paddingVertical: Platform.select({ ios: 10, android: 8, default: 8 }),
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderWidth: 1,
     borderColor: colors.primary,
   },
   skipButtonText: {
     color: colors.primary,
-    fontSize: 13,
+    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
     fontWeight: "600",
   },
   text: {
     color: colors.text,
-    fontSize: 18,
-    lineHeight: 30, // Increased line height for better readability
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+    lineHeight: Platform.select({ ios: 32, android: 30, default: 30 }),
     fontFamily: Platform.select({
       ios: "Georgia",
       android: "serif",
@@ -293,66 +294,66 @@ const styles = StyleSheet.create({
   errorHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   errorTitle: {
     color: colors.error,
-    fontSize: 18,
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     fontWeight: "600",
   },
   errorText: {
     color: colors.error,
-    fontSize: 17,
-    lineHeight: 28,
+    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
+    lineHeight: Platform.select({ ios: 30, android: 28, default: 28 }),
     textAlign: "center",
     fontStyle: "italic",
   },
   cursor: {
     color: colors.primary,
-    fontSize: 18,
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     fontWeight: "bold",
   },
   debugContainer: {
     backgroundColor: colors.surface + "80",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 24, // Increased spacing
+    borderRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
+    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    marginTop: Platform.select({ ios: 28, android: 24, default: 24 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
   debugTitle: {
     color: colors.text,
-    fontSize: 12,
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   debugText: {
     color: colors.textSecondary,
-    fontSize: 11,
-    marginBottom: 2,
-    fontFamily: "monospace",
+    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
+    marginBottom: Platform.select({ ios: 3, android: 2, default: 2 }),
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
   },
   debugButtonsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
-    gap: 8,
+    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
+    gap: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   debugButton: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
-    padding: 8,
-    marginTop: 8,
+    borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
+    padding: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
     alignItems: "center",
   },
   debugButtonSmall: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   debugButtonText: {
     color: colors.background,
-    fontSize: 11,
+    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
     fontWeight: "600",
   },
 });

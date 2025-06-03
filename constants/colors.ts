@@ -55,10 +55,20 @@ export const colors = {
   heroicAccent: "#DC2626", // Bold red for heroic moments
   tragicAccent: "#374151", // Deep gray for tragic elements
   
-  // Reading comfort colors
+  // Reading comfort colors - Enhanced for mobile readability
   readingBackground: "#1A1714", // Optimized for long text reading
   highlightBackground: "#2D2A24", // Subtle highlight for important text
   selectionBackground: "#3F3B32", // Text selection background
+  
+  // Mobile-optimized colors for better touch interaction
+  touchHighlight: "#CD7F32" + "20", // Primary color with transparency for touch feedback
+  activeBackground: "#2A2621", // Active state background
+  focusedBorder: "#E6A85C", // Focused input border color
+  
+  // Enhanced contrast colors for better mobile accessibility
+  highContrastText: "#FFFFFF", // Pure white for maximum contrast when needed
+  mediumContrastText: "#F5F5DC", // Beige for medium contrast
+  lowContrastText: "#D2B48C", // Tan for low contrast elements
 };
 
 export default colors;
