@@ -158,6 +158,8 @@ export type GameSetupState = {
   characterName: string;
   generateBackstory: boolean;
   setupStep: "era" | "theme" | "character" | "complete";
+  customEra?: string;
+  customTheme?: string;
 };
 
 export type ChronosMessage = {
@@ -166,6 +168,40 @@ export type ChronosMessage = {
   response?: string;
   timestamp: number;
   resolved: boolean;
+};
+
+// Performance metrics for debug panel
+export type PerformanceMetrics = {
+  timestamp: number;
+  memoryUsage: number;
+  renderTime: number;
+  apiLatency: number;
+  frameRate: number;
+  networkStatus: string;
+  batteryLevel: number;
+  cpuUsage?: number;
+  diskUsage?: number;
+  networkLatency?: number;
+};
+
+// Enhanced debug information
+export type DebugInfo = {
+  lastApiCall?: any;
+  lastResponse?: any;
+  lastError?: any;
+  callCount: number;
+  lastPrompt?: string;
+  lastRawResponse?: string;
+  apiCallHistory: any[];
+  performanceMetrics?: PerformanceMetrics;
+  systemInfo?: {
+    platform: string;
+    version: string;
+    deviceType: string;
+    screenDimensions: { width: number; height: number };
+    orientation: string;
+    isDebug: boolean;
+  };
 };
 
 // User account types for future subscription system

@@ -1,4 +1,4 @@
-import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState } from "@/types/game";
+import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, DebugInfo, PerformanceMetrics } from "@/types/game";
 
 type ContentPart = 
   | { type: 'text'; text: string; }
@@ -20,21 +20,30 @@ const logError = (message: string, error?: any) => {
 
 // Enhanced global debug state for tracking
 declare global {
-  var __CHRONICLE_DEBUG__: {
-    lastApiCall?: any;
-    lastResponse?: any;
-    lastError?: any;
-    callCount: number;
-    lastPrompt?: string;
-    lastRawResponse?: string;
-    apiCallHistory: any[];
-  };
+  var __CHRONICLE_DEBUG__: DebugInfo;
 }
 
 if (typeof global !== 'undefined') {
   global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
     callCount: 0,
-    apiCallHistory: []
+    apiCallHistory: [],
+    performanceMetrics: {
+      timestamp: Date.now(),
+      memoryUsage: 0,
+      renderTime: 0,
+      apiLatency: 0,
+      frameRate: 60,
+      networkStatus: "Connected",
+      batteryLevel: 100,
+    },
+    systemInfo: {
+      platform: "unknown",
+      version: "unknown",
+      deviceType: "unknown",
+      screenDimensions: { width: 0, height: 0 },
+      orientation: "unknown",
+      isDebug: __DEV__,
+    }
   };
 }
 
@@ -53,6 +62,26 @@ const retryApiCall = async (apiCallFn: () => Promise<any>, retries = MAX_RETRIES
       return retryApiCall(apiCallFn, retries - 1);
     }
     throw error;
+  }
+};
+
+// Update performance metrics
+const updatePerformanceMetrics = (apiLatency?: number) => {
+  if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {
+    const metrics: PerformanceMetrics = {
+      timestamp: Date.now(),
+      memoryUsage: Math.floor(Math.random() * 100) + 50, // Mock memory usage
+      renderTime: Math.floor(Math.random() * 20) + 5, // Mock render time
+      apiLatency: apiLatency || 0,
+      frameRate: 60, // Mock frame rate
+      networkStatus: "Connected", // Mock network status
+      batteryLevel: Math.floor(Math.random() * 100), // Mock battery
+      cpuUsage: Math.floor(Math.random() * 50) + 10, // Mock CPU usage
+      diskUsage: Math.floor(Math.random() * 80) + 20, // Mock disk usage
+      networkLatency: Math.floor(Math.random() * 100) + 10, // Mock network latency
+    };
+    
+    global.__CHRONICLE_DEBUG__.performanceMetrics = metrics;
   }
 };
 
@@ -131,6 +160,8 @@ const parseAIResponse = (rawResponse: string): any => {
 };
 
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
+  const startTime = Date.now();
+  
   try {
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.callCount++;
@@ -272,6 +303,9 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return res;
     });
 
+    const apiLatency = Date.now() - startTime;
+    updatePerformanceMetrics(apiLatency);
+
     logDebug("Response status:", response.status);
 
     const data = await response.json();
@@ -282,7 +316,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         timestamp: new Date().toISOString(),
         type: "initial_story",
         data: data,
-        completionLength: data.completion?.length || 0
+        completionLength: data.completion?.length || 0,
+        processingTime: apiLatency
       };
       global.__CHRONICLE_DEBUG__.lastRawResponse = data.completion;
     }
@@ -435,6 +470,8 @@ What path will you choose to begin this new chapter of your chronicle?`,
 }
 
 export async function generateNextSegment(gameState: GameState, selectedChoice: GameChoice): Promise<GameSegment> {
+  const startTime = Date.now();
+  
   try {
     if (typeof global !== 'undefined') {
       global.__CHRONICLE_DEBUG__.callCount++;
@@ -456,11 +493,14 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
 
     const contextSummary = recentSegments.map((segment, index) => 
       `Segment ${pastSegments.length - recentSegments.length + index + 1}: ${segment.text.substring(0, 150)}...`
-    ).join("\n\n");
+    ).join("
+
+");
 
     const memorySummary = recentMemories.map(memory => 
       `${memory.title}: ${memory.description}`
-    ).join("\n");
+    ).join("
+");
 
     const systemPrompt = `You are Kronos, the Weaver of Chronicles, continuing an interactive chronicle in Chronicle Weaver. Maintain narrative consistency and character development while advancing the story based on the player's choice.
 
@@ -556,6 +596,9 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return res;
     });
 
+    const apiLatency = Date.now() - startTime;
+    updatePerformanceMetrics(apiLatency);
+
     logDebug("Next segment response status:", response.status);
 
     const data = await response.json();
@@ -566,7 +609,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         timestamp: new Date().toISOString(),
         type: "next_segment",
         data: data,
-        completionLength: data.completion?.length || 0
+        completionLength: data.completion?.length || 0,
+        processingTime: apiLatency
       };
       global.__CHRONICLE_DEBUG__.lastRawResponse = data.completion;
     }

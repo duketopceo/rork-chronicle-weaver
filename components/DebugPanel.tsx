@@ -2,28 +2,10 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions } from "react-native";
 import { colors } from "@/constants/colors";
 import { useGameStore } from "@/store/gameStore";
+import { DebugInfo } from "@/types/game";
 import { Bug, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Crown, Zap, Eye, EyeOff, Smartphone, Monitor, Cpu, Wifi, Battery, Clock, MemoryStick, Activity, Database, Globe, Settings, FileText, Users, Coins, Sword } from "lucide-react-native";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
-
-type DebugInfo = {
-  lastApiCall?: any;
-  lastResponse?: any;
-  lastError?: any;
-  callCount: number;
-  lastPrompt?: string;
-  lastRawResponse?: string;
-  apiCallHistory: any[];
-  performanceMetrics?: {
-    timestamp: number;
-    memoryUsage: number;
-    renderTime: number;
-    apiLatency: number;
-    frameRate: number;
-    networkStatus: string;
-    batteryLevel: number;
-  };
-};
 
 export default function DebugPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -61,6 +43,15 @@ export default function DebugPanel() {
       global.__CHRONICLE_DEBUG__ = { 
         callCount: 0,
         apiCallHistory: [],
+        performanceMetrics: {
+          timestamp: Date.now(),
+          memoryUsage: 0,
+          renderTime: 0,
+          apiLatency: 0,
+          frameRate: 60,
+          networkStatus: "Connected",
+          batteryLevel: 100,
+        }
       };
     }
   };
@@ -70,6 +61,15 @@ export default function DebugPanel() {
       global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
         callCount: 0,
         apiCallHistory: [],
+        performanceMetrics: {
+          timestamp: Date.now(),
+          memoryUsage: 0,
+          renderTime: 0,
+          apiLatency: 0,
+          frameRate: 60,
+          networkStatus: "Connected",
+          batteryLevel: 100,
+        }
       };
       global.__CHRONICLE_DEBUG__.lastError = {
         timestamp: new Date().toISOString(),
@@ -109,8 +109,12 @@ export default function DebugPanel() {
 
   const platformInfo = getPlatformInfo();
 
-  // Get memory and performance info (mock data for demonstration)
+  // Get memory and performance info
   const getPerformanceMetrics = () => {
+    if (debugInfo?.performanceMetrics) {
+      return debugInfo.performanceMetrics;
+    }
+    
     const now = Date.now();
     return {
       timestamp: now,
@@ -174,6 +178,18 @@ export default function DebugPanel() {
   };
 
   const storageInfo = getStorageInfo();
+
+  // Safe platform constants access
+  const getPlatformConstantsString = () => {
+    try {
+      if (Platform.constants && typeof Platform.constants === 'object') {
+        return JSON.stringify(Platform.constants).substring(0, 100);
+      }
+      return "Not available";
+    } catch (error) {
+      return "Error accessing constants";
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -269,6 +285,8 @@ export default function DebugPanel() {
               <Text style={styles.debugText}>React Native Version: {platformInfo.constants?.reactNativeVersion?.major || "Unknown"}.{platformInfo.constants?.reactNativeVersion?.minor || "0"}</Text>
               <Text style={styles.debugText}>Expo SDK: 52.0.0</Text>
               <Text style={styles.debugText}>Build Type: {__DEV__ ? "Development" : "Production"}</Text>
+              <Text style={styles.debugText}>Platform Constants: {getPlatformConstantsString()}...</Text>
+              <Text style={styles.debugText}>Screen Scale: {Platform.select({ ios: "iOS Scale", android: "Android Scale", web: "Web Scale", default: "Unknown" })}</Text>
             </View>
           )}
 
@@ -299,6 +317,18 @@ export default function DebugPanel() {
                 <Battery size={16} color={colors.debugSuccess} />
                 <Text style={styles.debugText}>Battery: ~{performanceMetrics.batteryLevel}%</Text>
               </View>
+              {performanceMetrics.cpuUsage && (
+                <View style={styles.debugRow}>
+                  <Cpu size={16} color={colors.debugInfo} />
+                  <Text style={styles.debugText}>CPU Usage: ~{performanceMetrics.cpuUsage}%</Text>
+                </View>
+              )}
+              {performanceMetrics.diskUsage && (
+                <Text style={styles.debugText}>Disk Usage: ~{performanceMetrics.diskUsage}%</Text>
+              )}
+              {performanceMetrics.networkLatency && (
+                <Text style={styles.debugText}>Network Latency: ~{performanceMetrics.networkLatency}ms</Text>
+              )}
             </View>
           )}
 
@@ -347,6 +377,12 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>Setup Step: {gameSetup.setupStep}</Text>
             <Text style={styles.debugText}>Difficulty: {gameSetup.difficulty}</Text>
             <Text style={styles.debugText}>Generate Backstory: {gameSetup.generateBackstory ? "Yes" : "No"}</Text>
+            {gameSetup.customEra && (
+              <Text style={styles.debugText}>Custom Era: {gameSetup.customEra}</Text>
+            )}
+            {gameSetup.customTheme && (
+              <Text style={styles.debugText}>Custom Theme: {gameSetup.customTheme}</Text>
+            )}
           </View>
 
           {/* Game Analysis */}
@@ -577,53 +613,53 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     top: Platform.select({ ios: 60, android: 50, default: 50 }),
-    right: Platform.select({ ios: 16, android: 10, default: 10 }),
+    right: Platform.select({ ios: 20, android: 16, default: 16 }),
     backgroundColor: colors.debugBackground + "F8",
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
     borderWidth: 1,
     borderColor: colors.debugBorder,
-    maxWidth: Platform.select({ ios: 400, android: 360, default: 360 }),
-    maxHeight: Platform.select({ ios: 720, android: 640, default: 640 }),
+    maxWidth: Platform.select({ ios: 420, android: 380, default: 380 }),
+    maxHeight: Platform.select({ ios: 760, android: 680, default: 680 }),
     zIndex: 1000,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: Platform.select({ ios: 8, android: 6, default: 6 }) },
-    shadowOpacity: 0.3,
-    shadowRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    elevation: 10,
+    shadowOffset: { width: 0, height: Platform.select({ ios: 12, android: 8, default: 8 }) },
+    shadowOpacity: 0.4,
+    shadowRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    elevation: 12,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
-    gap: Platform.select({ ios: 12, android: 10, default: 10 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
+    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
     backgroundColor: colors.primary + "25",
-    borderTopLeftRadius: Platform.select({ ios: 14, android: 10, default: 10 }),
-    borderTopRightRadius: Platform.select({ ios: 14, android: 10, default: 10 }),
+    borderTopLeftRadius: Platform.select({ ios: 18, android: 14, default: 14 }),
+    borderTopRightRadius: Platform.select({ ios: 18, android: 14, default: 14 }),
   },
   headerText: {
     color: colors.primary,
-    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "700",
     flex: 1,
   },
   platformBadge: {
     color: colors.primary,
-    fontSize: Platform.select({ ios: 12, android: 10, default: 10 }),
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
     fontWeight: "600",
     backgroundColor: colors.primary + "20",
-    paddingHorizontal: Platform.select({ ios: 8, android: 6, default: 6 }),
-    paddingVertical: Platform.select({ ios: 4, android: 2, default: 2 }),
-    borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
+    paddingHorizontal: Platform.select({ ios: 10, android: 8, default: 8 }),
+    paddingVertical: Platform.select({ ios: 6, android: 4, default: 4 }),
+    borderRadius: Platform.select({ ios: 10, android: 8, default: 8 }),
   },
   content: {
-    maxHeight: Platform.select({ ios: 640, android: 560, default: 560 }),
-    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    maxHeight: Platform.select({ ios: 680, android: 600, default: 600 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   section: {
-    marginBottom: Platform.select({ ios: 18, android: 14, default: 14 }),
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
     backgroundColor: colors.background + "E8",
-    borderRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
-    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
     borderWidth: 1,
     borderColor: colors.debugBorder,
   },
@@ -631,53 +667,53 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   headerButtons: {
     flexDirection: "row",
-    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
+    gap: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
+    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
     fontWeight: "700",
   },
   subSection: {
-    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
-    marginLeft: Platform.select({ ios: 12, android: 8, default: 8 }),
-    paddingLeft: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginTop: Platform.select({ ios: 16, android: 12, default: 12 }),
+    marginLeft: Platform.select({ ios: 16, android: 12, default: 12 }),
+    paddingLeft: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderLeftWidth: 2,
     borderLeftColor: colors.debugBorder,
   },
   subSectionTitle: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 13, android: 12, default: 12 }),
+    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
     fontWeight: "600",
-    marginBottom: Platform.select({ ios: 8, android: 6, default: 6 }),
+    marginBottom: Platform.select({ ios: 10, android: 8, default: 8 }),
   },
   clearButton: {
-    padding: Platform.select({ ios: 6, android: 4, default: 4 }),
+    padding: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   refreshButton: {
-    padding: Platform.select({ ios: 6, android: 4, default: 4 }),
+    padding: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   quickActionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
-    marginTop: Platform.select({ ios: 10, android: 8, default: 8 }),
+    gap: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginTop: Platform.select({ ios: 12, android: 10, default: 10 }),
   },
   quickActionButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary + "20",
-    borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
-    paddingHorizontal: Platform.select({ ios: 10, android: 8, default: 8 }),
-    paddingVertical: Platform.select({ ios: 6, android: 4, default: 4 }),
-    gap: Platform.select({ ios: 4, android: 3, default: 3 }),
+    borderRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
+    paddingHorizontal: Platform.select({ ios: 14, android: 10, default: 10 }),
+    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
+    gap: Platform.select({ ios: 6, android: 4, default: 4 }),
     borderWidth: 1,
     borderColor: colors.primary + "40",
-    minWidth: Platform.select({ ios: 60, android: 55, default: 55 }),
+    minWidth: Platform.select({ ios: 70, android: 60, default: 60 }),
   },
   quickActionButtonActive: {
     backgroundColor: colors.primary,
@@ -685,7 +721,7 @@ const styles = StyleSheet.create({
   },
   quickActionText: {
     color: colors.primary,
-    fontSize: Platform.select({ ios: 11, android: 10, default: 10 }),
+    fontSize: Platform.select({ ios: 13, android: 11, default: 11 }),
     fontWeight: "600",
   },
   quickActionTextActive: {
@@ -694,36 +730,36 @@ const styles = StyleSheet.create({
   debugRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
-    marginBottom: Platform.select({ ios: 4, android: 3, default: 3 }),
+    gap: Platform.select({ ios: 10, android: 8, default: 8 }),
+    marginBottom: Platform.select({ ios: 6, android: 4, default: 4 }),
   },
   debugText: {
     color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
-    marginBottom: Platform.select({ ios: 4, android: 3, default: 3 }),
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
+    marginBottom: Platform.select({ ios: 6, android: 4, default: 4 }),
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
     flex: 1,
   },
   errorText: {
     color: colors.debugError,
-    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
-    marginBottom: Platform.select({ ios: 4, android: 3, default: 3 }),
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
+    marginBottom: Platform.select({ ios: 6, android: 4, default: 4 }),
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
   },
   choiceText: {
     color: colors.textMuted,
-    fontSize: Platform.select({ ios: 11, android: 10, default: 10 }),
-    marginLeft: Platform.select({ ios: 16, android: 12, default: 12 }),
-    marginBottom: Platform.select({ ios: 3, android: 2, default: 2 }),
+    fontSize: Platform.select({ ios: 13, android: 11, default: 11 }),
+    marginLeft: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginBottom: Platform.select({ ios: 4, android: 3, default: 3 }),
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
   },
   rawResponseText: {
     color: colors.textMuted,
-    fontSize: Platform.select({ ios: 10, android: 9, default: 9 }),
+    fontSize: Platform.select({ ios: 12, android: 10, default: 10 }),
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),
     backgroundColor: colors.surface,
-    padding: Platform.select({ ios: 8, android: 6, default: 6 }),
-    borderRadius: Platform.select({ ios: 6, android: 4, default: 4 }),
-    marginTop: Platform.select({ ios: 6, android: 4, default: 4 }),
+    padding: Platform.select({ ios: 12, android: 8, default: 8 }),
+    borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
+    marginTop: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
 });
