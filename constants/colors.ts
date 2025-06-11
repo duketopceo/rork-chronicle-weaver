@@ -77,6 +77,31 @@ export const colors = {
   debugError: "#9A4A42", // Red for error states
   debugWarning: "#D4A56B", // Amber for warning states
   debugInfo: "#5A7AAE", // Blue for info states
+  
+  // Enhanced spacing and layout colors for better mobile UX
+  cardBackground: "#1C1611", // Card background with subtle warmth
+  cardBorder: "#2A221A", // Card border for definition
+  divider: "#3A2D1F", // Divider lines between sections
+  overlay: "#0F0D0A" + "CC", // Semi-transparent overlay for modals
+  
+  // Interactive element colors optimized for touch
+  buttonPrimary: "#E8B86D", // Primary button color
+  buttonSecondary: "#3A4D3A", // Secondary button color
+  buttonDisabled: "#4D3F31", // Disabled button color
+  inputBackground: "#2A221A", // Input field background
+  inputBorder: "#4D3F31", // Input field border
+  inputFocused: "#E8B86D", // Focused input border
+  
+  // Status and feedback colors
+  statusOnline: "#4D6C4D", // Online/connected status
+  statusOffline: "#9A4A42", // Offline/disconnected status
+  statusPending: "#D4A56B", // Pending/loading status
+  statusIdle: "#7A6A5A", // Idle status
+  
+  // Platform-specific adjustments
+  iosShadow: "#000000" + "40", // iOS shadow color
+  androidElevation: "#000000" + "30", // Android elevation shadow
+  webFocus: "#E8B86D" + "60", // Web focus outline
 };
 
 export default colors;

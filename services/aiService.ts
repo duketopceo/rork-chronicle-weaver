@@ -493,14 +493,11 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
 
     const contextSummary = recentSegments.map((segment, index) => 
       `Segment ${pastSegments.length - recentSegments.length + index + 1}: ${segment.text.substring(0, 150)}...`
-    ).join("
-
-");
+    ).join("\n\n");
 
     const memorySummary = recentMemories.map(memory => 
       `${memory.title}: ${memory.description}`
-    ).join("
-");
+    ).join("\n");
 
     const systemPrompt = `You are Kronos, the Weaver of Chronicles, continuing an interactive chronicle in Chronicle Weaver. Maintain narrative consistency and character development while advancing the story based on the player's choice.
 
@@ -524,7 +521,7 @@ Focus on:
 - Maintaining the chosen realism level
 - Providing engaging, diverse choices`;
 
-    const userPrompt = `Continue the chronicle based on the player's choice. Here's the context:
+    const userPrompt = `Continue the chronicle based on the player's choice. Here is the context:
 
 **Recent Chronicle Context:**
 ${contextSummary}
@@ -734,7 +731,7 @@ The player may ask you to:
 - Explain story elements
 - Request specific additions to the world
 
-Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and explain how you'll implement it in their chronicle. Keep responses concise but informative.`;
+Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and explain how you will implement it in their chronicle. Keep responses concise but informative.`;
 
     const messages: CoreMessage[] = [
       { role: "system", content: systemPrompt },
@@ -765,9 +762,9 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
     const data = await response.json();
     logDebug("Kronos response received");
     
-    return data.completion || "I apologize, but I'm having trouble responding right now. Please try again later.";
+    return data.completion || "I apologize, but I am having trouble responding right now. Please try again later.";
   } catch (error) {
     logError("Error processing Kronos message:", error);
-    return "I apologize, but I'm having trouble responding right now. Please try again later.";
+    return "I apologize, but I am having trouble responding right now. Please try again later.";
   }
 }

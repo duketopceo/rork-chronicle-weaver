@@ -17,6 +17,8 @@ interface GameStore {
   setDifficulty: (difficulty: number) => void;
   setCharacterName: (name: string) => void;
   setGenerateBackstory: (generate: boolean) => void;
+  setCustomEra: (era: string) => void;
+  setCustomTheme: (theme: string) => void;
   nextSetupStep: () => void;
   resetSetup: () => void;
 
@@ -75,6 +77,14 @@ export const useGameStore = create<GameStore>()(
 
       setGenerateBackstory: (generateBackstory) => set((state) => ({
         gameSetup: { ...state.gameSetup, generateBackstory }
+      })),
+
+      setCustomEra: (customEra) => set((state) => ({
+        gameSetup: { ...state.gameSetup, customEra }
+      })),
+
+      setCustomTheme: (customTheme) => set((state) => ({
+        gameSetup: { ...state.gameSetup, customTheme }
       })),
 
       nextSetupStep: () => set((state) => {
@@ -310,7 +320,7 @@ export const useGameStore = create<GameStore>()(
         };
       }),
 
-      updateWorldSystems: (systems) => set((state) => {
+      updateWorldSystems: (worldSystems) => set((state) => {
         if (!state.currentGame) return state;
 
         return {
@@ -318,7 +328,7 @@ export const useGameStore = create<GameStore>()(
             ...state.currentGame,
             worldSystems: {
               ...state.currentGame.worldSystems,
-              ...systems
+              ...worldSystems
             },
             updatedAt: Date.now()
           }
