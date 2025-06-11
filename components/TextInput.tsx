@@ -5,7 +5,8 @@ import {
   View, 
   Text,
   TextInputProps,
-  ViewStyle
+  ViewStyle,
+  Platform
 } from "react-native";
 import { colors } from "@/constants/colors";
 
@@ -43,32 +44,32 @@ export default function TextInput({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
     width: "100%",
   },
   label: {
-    fontSize: 17,
+    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
     fontWeight: "600",
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: Platform.select({ ios: 14, android: 12, default: 12 }),
   },
   input: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
-    padding: 18,
-    fontSize: 17,
+    borderRadius: Platform.select({ ios: 16, android: 14, default: 14 }),
+    padding: Platform.select({ ios: 20, android: 18, default: 18 }),
+    fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
     color: colors.text,
     width: "100%",
-    minHeight: 56,
+    minHeight: Platform.select({ ios: 60, android: 56, default: 56 }),
   },
   inputError: {
     borderColor: colors.error,
   },
   errorText: {
     color: colors.error,
-    fontSize: 15,
-    marginTop: 10,
+    fontSize: Platform.select({ ios: 16, android: 15, default: 15 }),
+    marginTop: Platform.select({ ios: 12, android: 10, default: 10 }),
   },
 });

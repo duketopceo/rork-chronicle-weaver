@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions } from "react-native";
 import { colors } from "@/constants/colors";
 import { useGameStore } from "@/store/gameStore";
-import { Bug, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Crown, Zap, Eye, EyeOff, Smartphone, Monitor, Cpu, Wifi, Battery, Clock, MemoryStick, Activity } from "lucide-react-native";
+import { Bug, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Crown, Zap, Eye, EyeOff, Smartphone, Monitor, Cpu, Wifi, Battery, Clock, MemoryStick, Activity, Database, Globe, Settings, FileText, Users, Coins, Sword } from "lucide-react-native";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -14,6 +14,15 @@ type DebugInfo = {
   lastPrompt?: string;
   lastRawResponse?: string;
   apiCallHistory: any[];
+  performanceMetrics?: {
+    timestamp: number;
+    memoryUsage: number;
+    renderTime: number;
+    apiLatency: number;
+    frameRate: number;
+    networkStatus: string;
+    batteryLevel: number;
+  };
 };
 
 export default function DebugPanel() {
@@ -21,20 +30,23 @@ export default function DebugPanel() {
   const [showDetailedLogs, setShowDetailedLogs] = useState(false);
   const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(false);
   const [showPlatformInfo, setShowPlatformInfo] = useState(false);
+  const [showGameAnalysis, setShowGameAnalysis] = useState(false);
+  const [showStorageInfo, setShowStorageInfo] = useState(false);
+  const [showNetworkInfo, setShowNetworkInfo] = useState(false);
   const { currentGame, gameSetup, isLoading, error } = useGameStore();
 
   if (!__DEV__) return null; // Only show in development
 
   const getStatusIcon = (condition: boolean) => {
     return condition ? (
-      <CheckCircle size={16} color={colors.success} />
+      <CheckCircle size={16} color={colors.debugSuccess} />
     ) : (
-      <XCircle size={16} color={colors.error} />
+      <XCircle size={16} color={colors.debugError} />
     );
   };
 
   const getWarningIcon = () => (
-    <AlertTriangle size={16} color={colors.warning} />
+    <AlertTriangle size={16} color={colors.debugWarning} />
   );
 
   const getDebugInfo = (): DebugInfo | null => {
@@ -75,6 +87,7 @@ export default function DebugPanel() {
 
   // Get platform-specific information
   const getPlatformInfo = () => {
+    const platformConstants = Platform.constants || {};
     return {
       os: Platform.OS,
       version: Platform.Version,
@@ -89,7 +102,8 @@ export default function DebugPanel() {
         default: "Unknown Platform"
       }),
       deviceType: SCREEN_WIDTH > 768 ? "Tablet/Desktop" : "Mobile",
-      orientation: SCREEN_WIDTH > SCREEN_HEIGHT ? "Landscape" : "Portrait"
+      orientation: SCREEN_WIDTH > SCREEN_HEIGHT ? "Landscape" : "Portrait",
+      constants: platformConstants
     };
   };
 
@@ -112,6 +126,55 @@ export default function DebugPanel() {
 
   const performanceMetrics = getPerformanceMetrics();
 
+  // Get comprehensive game analysis
+  const getGameAnalysis = () => {
+    if (!currentGame) return null;
+    
+    const totalChoicesMade = currentGame.pastSegments.length;
+    const averageChoicesPerSegment = currentGame.pastSegments.length > 0 
+      ? currentGame.pastSegments.reduce((acc, segment) => acc + segment.choices.length, 0) / currentGame.pastSegments.length 
+      : 0;
+    
+    const totalTextLength = currentGame.pastSegments.reduce((acc, segment) => acc + segment.text.length, 0) + 
+      (currentGame.currentSegment?.text.length || 0);
+    
+    const estimatedPlayTime = Math.floor(totalTextLength / 1000); // Rough estimate: 1000 chars per minute
+    
+    return {
+      totalChoicesMade,
+      averageChoicesPerSegment: Math.round(averageChoicesPerSegment * 10) / 10,
+      totalTextLength,
+      estimatedPlayTime,
+      memoryCount: currentGame.memories.length,
+      loreCount: currentGame.lore.length,
+      inventoryCount: currentGame.character.inventory.length,
+      relationshipCount: currentGame.character.relationships.length,
+      politicalFactions: currentGame.worldSystems.politics.length,
+      activeConflicts: currentGame.worldSystems.war.activeConflicts.length,
+      playerWealth: currentGame.worldSystems.economics.playerWealth,
+    };
+  };
+
+  const gameAnalysis = getGameAnalysis();
+
+  // Get storage information
+  const getStorageInfo = () => {
+    const gameSize = JSON.stringify(currentGame || {}).length;
+    const setupSize = JSON.stringify(gameSetup || {}).length;
+    const debugSize = JSON.stringify(debugInfo || {}).length;
+    
+    return {
+      gameObjectSize: gameSize,
+      setupObjectSize: setupSize,
+      debugInfoSize: debugSize,
+      totalEstimatedSize: gameSize + setupSize + debugSize,
+      sizeInKB: Math.round((gameSize + setupSize + debugSize) / 1024 * 100) / 100,
+      sizeInMB: Math.round((gameSize + setupSize + debugSize) / (1024 * 1024) * 100) / 100,
+    };
+  };
+
+  const storageInfo = getStorageInfo();
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
@@ -119,7 +182,7 @@ export default function DebugPanel() {
         onPress={() => setIsExpanded(!isExpanded)}
       >
         <Bug size={18} color={colors.primary} />
-        <Text style={styles.headerText}>Debug Panel</Text>
+        <Text style={styles.headerText}>Chronicle Debug</Text>
         <Text style={styles.platformBadge}>{Platform.OS.toUpperCase()}</Text>
         {isExpanded ? (
           <ChevronUp size={18} color={colors.primary} />
@@ -136,7 +199,7 @@ export default function DebugPanel() {
               <Text style={styles.sectionTitle}>⚡ Quick Actions</Text>
               <View style={styles.headerButtons}>
                 <TouchableOpacity onPress={clearDebugInfo} style={styles.clearButton}>
-                  <Trash2 size={16} color={colors.warning} />
+                  <Trash2 size={16} color={colors.debugWarning} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={forceRefreshAI} style={styles.refreshButton}>
                   <RefreshCw size={16} color={colors.primary} />
@@ -165,6 +228,27 @@ export default function DebugPanel() {
                 <Smartphone size={14} color={showPlatformInfo ? colors.background : colors.primary} />
                 <Text style={[styles.quickActionText, showPlatformInfo && styles.quickActionTextActive]}>Device</Text>
               </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setShowGameAnalysis(!showGameAnalysis)} 
+                style={[styles.quickActionButton, showGameAnalysis && styles.quickActionButtonActive]}
+              >
+                <Crown size={14} color={showGameAnalysis ? colors.background : colors.primary} />
+                <Text style={[styles.quickActionText, showGameAnalysis && styles.quickActionTextActive]}>Game</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setShowStorageInfo(!showStorageInfo)} 
+                style={[styles.quickActionButton, showStorageInfo && styles.quickActionButtonActive]}
+              >
+                <Database size={14} color={showStorageInfo ? colors.background : colors.primary} />
+                <Text style={[styles.quickActionText, showStorageInfo && styles.quickActionTextActive]}>Storage</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setShowNetworkInfo(!showNetworkInfo)} 
+                style={[styles.quickActionButton, showNetworkInfo && styles.quickActionButtonActive]}
+              >
+                <Globe size={14} color={showNetworkInfo ? colors.background : colors.primary} />
+                <Text style={[styles.quickActionText, showNetworkInfo && styles.quickActionTextActive]}>Network</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -182,6 +266,9 @@ export default function DebugPanel() {
               <Text style={styles.debugText}>Is TV: {platformInfo.isTV ? "Yes" : "No"}</Text>
               <Text style={styles.debugText}>Is Testing: {platformInfo.isTesting ? "Yes" : "No"}</Text>
               <Text style={styles.debugText}>Platform Type: {Platform.select({ ios: "iOS", android: "Android", web: "Web", default: "Unknown" })}</Text>
+              <Text style={styles.debugText}>React Native Version: {platformInfo.constants?.reactNativeVersion?.major || "Unknown"}.{platformInfo.constants?.reactNativeVersion?.minor || "0"}</Text>
+              <Text style={styles.debugText}>Expo SDK: 52.0.0</Text>
+              <Text style={styles.debugText}>Build Type: {__DEV__ ? "Development" : "Production"}</Text>
             </View>
           )}
 
@@ -190,7 +277,7 @@ export default function DebugPanel() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>⚡ Performance Metrics</Text>
               <View style={styles.debugRow}>
-                <MemoryStick size={16} color={colors.warning} />
+                <MemoryStick size={16} color={colors.debugWarning} />
                 <Text style={styles.debugText}>Memory Usage: ~{performanceMetrics.memoryUsage}MB</Text>
               </View>
               <View style={styles.debugRow}>
@@ -198,7 +285,7 @@ export default function DebugPanel() {
                 <Text style={styles.debugText}>Render Time: ~{performanceMetrics.renderTime}ms</Text>
               </View>
               <View style={styles.debugRow}>
-                <Wifi size={16} color={colors.success} />
+                <Wifi size={16} color={colors.debugSuccess} />
                 <Text style={styles.debugText}>Network: {performanceMetrics.networkStatus}</Text>
               </View>
               <View style={styles.debugRow}>
@@ -209,7 +296,7 @@ export default function DebugPanel() {
                 <Text style={styles.debugText}>API Latency: {performanceMetrics.apiLatency}ms</Text>
               )}
               <View style={styles.debugRow}>
-                <Battery size={16} color={colors.success} />
+                <Battery size={16} color={colors.debugSuccess} />
                 <Text style={styles.debugText}>Battery: ~{performanceMetrics.batteryLevel}%</Text>
               </View>
             </View>
@@ -262,6 +349,96 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>Generate Backstory: {gameSetup.generateBackstory ? "Yes" : "No"}</Text>
           </View>
 
+          {/* Game Analysis */}
+          {showGameAnalysis && gameAnalysis && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📊 Game Analysis</Text>
+              <View style={styles.debugRow}>
+                <Crown size={16} color={colors.primary} />
+                <Text style={styles.debugText}>Total Choices Made: {gameAnalysis.totalChoicesMade}</Text>
+              </View>
+              <Text style={styles.debugText}>Avg Choices/Segment: {gameAnalysis.averageChoicesPerSegment}</Text>
+              <Text style={styles.debugText}>Total Text Length: {gameAnalysis.totalTextLength} chars</Text>
+              <Text style={styles.debugText}>Estimated Play Time: {gameAnalysis.estimatedPlayTime} min</Text>
+              
+              <View style={styles.subSection}>
+                <Text style={styles.subSectionTitle}>Character Data:</Text>
+                <View style={styles.debugRow}>
+                  <Users size={14} color={colors.relationshipAccent} />
+                  <Text style={styles.debugText}>Relationships: {gameAnalysis.relationshipCount}</Text>
+                </View>
+                <Text style={styles.debugText}>Inventory Items: {gameAnalysis.inventoryCount}</Text>
+                <Text style={styles.debugText}>Memories: {gameAnalysis.memoryCount}</Text>
+                <Text style={styles.debugText}>Lore Entries: {gameAnalysis.loreCount}</Text>
+              </View>
+              
+              <View style={styles.subSection}>
+                <Text style={styles.subSectionTitle}>World Systems:</Text>
+                <View style={styles.debugRow}>
+                  <Crown size={14} color={colors.politicsAccent} />
+                  <Text style={styles.debugText}>Political Factions: {gameAnalysis.politicalFactions}</Text>
+                </View>
+                <View style={styles.debugRow}>
+                  <Coins size={14} color={colors.economicsAccent} />
+                  <Text style={styles.debugText}>Player Wealth: {gameAnalysis.playerWealth}</Text>
+                </View>
+                <View style={styles.debugRow}>
+                  <Sword size={14} color={colors.warAccent} />
+                  <Text style={styles.debugText}>Active Conflicts: {gameAnalysis.activeConflicts}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Storage Information */}
+          {showStorageInfo && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💾 Storage Analysis</Text>
+              <View style={styles.debugRow}>
+                <Database size={16} color={colors.primary} />
+                <Text style={styles.debugText}>Total Size: {storageInfo.sizeInKB} KB</Text>
+              </View>
+              <Text style={styles.debugText}>Game Object: {Math.round(storageInfo.gameObjectSize / 1024 * 100) / 100} KB</Text>
+              <Text style={styles.debugText}>Setup Object: {Math.round(storageInfo.setupObjectSize / 1024 * 100) / 100} KB</Text>
+              <Text style={styles.debugText}>Debug Info: {Math.round(storageInfo.debugInfoSize / 1024 * 100) / 100} KB</Text>
+              {storageInfo.sizeInMB > 0.1 && (
+                <Text style={styles.debugText}>Size in MB: {storageInfo.sizeInMB} MB</Text>
+              )}
+              
+              <View style={styles.subSection}>
+                <Text style={styles.subSectionTitle}>Storage Breakdown:</Text>
+                <Text style={styles.debugText}>Character Data: ~{Math.round(JSON.stringify(currentGame?.character || {}).length / 1024 * 100) / 100} KB</Text>
+                <Text style={styles.debugText}>World Systems: ~{Math.round(JSON.stringify(currentGame?.worldSystems || {}).length / 1024 * 100) / 100} KB</Text>
+                <Text style={styles.debugText}>Segments: ~{Math.round(JSON.stringify(currentGame?.pastSegments || []).length / 1024 * 100) / 100} KB</Text>
+                <Text style={styles.debugText}>Memories: ~{Math.round(JSON.stringify(currentGame?.memories || []).length / 1024 * 100) / 100} KB</Text>
+                <Text style={styles.debugText}>Lore: ~{Math.round(JSON.stringify(currentGame?.lore || []).length / 1024 * 100) / 100} KB</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Network & API Information */}
+          {showNetworkInfo && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🌐 Network & API</Text>
+              <Text style={styles.debugText}>API Endpoint: https://toolkit.rork.com/text/llm/</Text>
+              <Text style={styles.debugText}>Connection: {Platform.OS === 'web' ? 'Web Browser' : 'Native App'}</Text>
+              <Text style={styles.debugText}>Last API Call: {debugInfo?.lastApiCall?.timestamp || "None"}</Text>
+              <Text style={styles.debugText}>Total API Calls: {debugInfo?.callCount || 0}</Text>
+              <Text style={styles.debugText}>Failed Calls: {debugInfo?.apiCallHistory?.filter(call => call.error)?.length || 0}</Text>
+              
+              {debugInfo?.apiCallHistory && debugInfo.apiCallHistory.length > 0 && (
+                <View style={styles.subSection}>
+                  <Text style={styles.subSectionTitle}>Recent API Activity:</Text>
+                  {debugInfo.apiCallHistory.slice(0, 5).map((call, index) => (
+                    <Text key={index} style={styles.debugText}>
+                      {call.timestamp?.substring(11, 19) || "N/A"}: {call.type} - {call.status || "OK"}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Loading & Error State */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🔄 System Status</Text>
@@ -286,17 +463,6 @@ export default function DebugPanel() {
                 <Cpu size={16} color={colors.primary} />
                 <Text style={styles.debugText}>API Calls: {debugInfo.callCount || 0}</Text>
               </View>
-              
-              {debugInfo.apiCallHistory && debugInfo.apiCallHistory.length > 0 && (
-                <View style={styles.subSection}>
-                  <Text style={styles.subSectionTitle}>Recent API Activity:</Text>
-                  {debugInfo.apiCallHistory.slice(0, 5).map((call, index) => (
-                    <Text key={index} style={styles.debugText}>
-                      {call.timestamp?.substring(11, 19) || "N/A"}: {call.type} - {call.era || call.choice || "N/A"}
-                    </Text>
-                  ))}
-                </View>
-              )}
               
               {debugInfo.lastApiCall && (
                 <View style={styles.subSection}>
@@ -391,15 +557,6 @@ export default function DebugPanel() {
             )}
           </View>
 
-          {/* Memory & Storage Analysis */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💾 Memory & Storage</Text>
-            <Text style={styles.debugText}>Game Object Size: ~{JSON.stringify(currentGame || {}).length} bytes</Text>
-            <Text style={styles.debugText}>Setup Object Size: ~{JSON.stringify(gameSetup || {}).length} bytes</Text>
-            <Text style={styles.debugText}>Total Estimated Storage: ~{(JSON.stringify(currentGame || {}).length + JSON.stringify(gameSetup || {}).length) / 1024} KB</Text>
-            <Text style={styles.debugText}>Debug Info Size: ~{JSON.stringify(debugInfo || {}).length} bytes</Text>
-          </View>
-
           {/* Timestamp Information */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>⏰ Timing Information</Text>
@@ -409,26 +566,6 @@ export default function DebugPanel() {
               new Date(currentGame.memories[currentGame.memories.length - 1].timestamp).toLocaleString() : "N/A"}</Text>
             <Text style={styles.debugText}>Session Duration: {currentGame?.id ? 
               Math.floor((Date.now() - parseInt(currentGame.id)) / 1000 / 60) + " minutes" : "N/A"}</Text>
-          </View>
-
-          {/* Additional Debug Sections */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔧 Advanced Debug Info</Text>
-            <Text style={styles.debugText}>React Native Version: {Platform.constants?.reactNativeVersion?.major || "Unknown"}.{Platform.constants?.reactNativeVersion?.minor || "0"}</Text>
-            <Text style={styles.debugText}>Expo SDK: 52.0.0</Text>
-            <Text style={styles.debugText}>Build Type: {__DEV__ ? "Development" : "Production"}</Text>
-            <Text style={styles.debugText}>Platform Constants: {Platform.constants ? JSON.stringify(Platform.constants).substring(0, 100) : "N/A"}...</Text>
-            <Text style={styles.debugText}>Screen Scale: {Platform.select({ ios: "iOS Scale", android: "Android Scale", web: "Web Scale", default: "Unknown" })}</Text>
-          </View>
-
-          {/* Network & API Debug */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🌐 Network & API Debug</Text>
-            <Text style={styles.debugText}>API Endpoint: https://toolkit.rork.com/text/llm/</Text>
-            <Text style={styles.debugText}>Connection Status: {Platform.OS === 'web' ? 'Web Browser' : 'Native App'}</Text>
-            <Text style={styles.debugText}>Last API Call: {debugInfo?.lastApiCall?.timestamp || "None"}</Text>
-            <Text style={styles.debugText}>API Call Count: {debugInfo?.callCount || 0}</Text>
-            <Text style={styles.debugText}>Error Count: {debugInfo?.apiCallHistory?.filter(call => call.error)?.length || 0}</Text>
           </View>
         </ScrollView>
       )}
@@ -441,24 +578,24 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: Platform.select({ ios: 60, android: 50, default: 50 }),
     right: Platform.select({ ios: 16, android: 10, default: 10 }),
-    backgroundColor: colors.surface + "F5",
+    backgroundColor: colors.debugBackground + "F8",
     borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderWidth: 1,
-    borderColor: colors.primary,
-    maxWidth: Platform.select({ ios: 380, android: 350, default: 350 }),
-    maxHeight: Platform.select({ ios: 700, android: 600, default: 600 }),
+    borderColor: colors.debugBorder,
+    maxWidth: Platform.select({ ios: 400, android: 360, default: 360 }),
+    maxHeight: Platform.select({ ios: 720, android: 640, default: 640 }),
     zIndex: 1000,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
-    shadowOpacity: 0.25,
-    shadowRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
-    elevation: 8,
+    shadowOffset: { width: 0, height: Platform.select({ ios: 8, android: 6, default: 6 }) },
+    shadowOpacity: 0.3,
+    shadowRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    elevation: 10,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: Platform.select({ ios: 14, android: 10, default: 10 }),
-    gap: Platform.select({ ios: 10, android: 8, default: 8 }),
+    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
+    gap: Platform.select({ ios: 12, android: 10, default: 10 }),
     backgroundColor: colors.primary + "25",
     borderTopLeftRadius: Platform.select({ ios: 14, android: 10, default: 10 }),
     borderTopRightRadius: Platform.select({ ios: 14, android: 10, default: 10 }),
@@ -479,22 +616,22 @@ const styles = StyleSheet.create({
     borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   content: {
-    maxHeight: Platform.select({ ios: 600, android: 500, default: 500 }),
-    padding: Platform.select({ ios: 14, android: 10, default: 10 }),
+    maxHeight: Platform.select({ ios: 640, android: 560, default: 560 }),
+    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   section: {
-    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
+    marginBottom: Platform.select({ ios: 18, android: 14, default: 14 }),
     backgroundColor: colors.background + "E8",
     borderRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
-    padding: Platform.select({ ios: 14, android: 10, default: 10 }),
+    padding: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.debugBorder,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Platform.select({ ios: 10, android: 6, default: 6 }),
+    marginBottom: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   headerButtons: {
     flexDirection: "row",
@@ -506,17 +643,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   subSection: {
-    marginTop: Platform.select({ ios: 10, android: 6, default: 6 }),
-    marginLeft: Platform.select({ ios: 10, android: 6, default: 6 }),
-    paddingLeft: Platform.select({ ios: 10, android: 6, default: 6 }),
+    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
+    marginLeft: Platform.select({ ios: 12, android: 8, default: 8 }),
+    paddingLeft: Platform.select({ ios: 12, android: 8, default: 8 }),
     borderLeftWidth: 2,
-    borderLeftColor: colors.border,
+    borderLeftColor: colors.debugBorder,
   },
   subSectionTitle: {
     color: colors.textSecondary,
     fontSize: Platform.select({ ios: 13, android: 12, default: 12 }),
     fontWeight: "600",
-    marginBottom: Platform.select({ ios: 6, android: 4, default: 4 }),
+    marginBottom: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   clearButton: {
     padding: Platform.select({ ios: 6, android: 4, default: 4 }),
@@ -526,19 +663,21 @@ const styles = StyleSheet.create({
   },
   quickActionsRow: {
     flexDirection: "row",
-    gap: Platform.select({ ios: 10, android: 8, default: 8 }),
-    marginTop: Platform.select({ ios: 8, android: 6, default: 6 }),
+    flexWrap: "wrap",
+    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
+    marginTop: Platform.select({ ios: 10, android: 8, default: 8 }),
   },
   quickActionButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary + "20",
     borderRadius: Platform.select({ ios: 8, android: 6, default: 6 }),
-    paddingHorizontal: Platform.select({ ios: 12, android: 8, default: 8 }),
-    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
-    gap: Platform.select({ ios: 6, android: 4, default: 4 }),
+    paddingHorizontal: Platform.select({ ios: 10, android: 8, default: 8 }),
+    paddingVertical: Platform.select({ ios: 6, android: 4, default: 4 }),
+    gap: Platform.select({ ios: 4, android: 3, default: 3 }),
     borderWidth: 1,
     borderColor: colors.primary + "40",
+    minWidth: Platform.select({ ios: 60, android: 55, default: 55 }),
   },
   quickActionButtonActive: {
     backgroundColor: colors.primary,
@@ -546,7 +685,7 @@ const styles = StyleSheet.create({
   },
   quickActionText: {
     color: colors.primary,
-    fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
+    fontSize: Platform.select({ ios: 11, android: 10, default: 10 }),
     fontWeight: "600",
   },
   quickActionTextActive: {
@@ -566,7 +705,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   errorText: {
-    color: colors.error,
+    color: colors.debugError,
     fontSize: Platform.select({ ios: 12, android: 11, default: 11 }),
     marginBottom: Platform.select({ ios: 4, android: 3, default: 3 }),
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }),

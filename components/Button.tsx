@@ -5,7 +5,8 @@ import {
   StyleSheet, 
   ActivityIndicator,
   ViewStyle,
-  TextStyle
+  TextStyle,
+  Platform
 } from "react-native";
 import { colors } from "@/constants/colors";
 
@@ -32,7 +33,7 @@ export default function Button({
 }: ButtonProps) {
   const getButtonStyle = () => {
     let baseStyle: ViewStyle = {
-      borderRadius: 16,
+      borderRadius: Platform.select({ ios: 16, android: 14, default: 14 }),
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "row",
@@ -44,9 +45,9 @@ export default function Button({
         ...baseStyle,
         backgroundColor: colors.primary,
         shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 6 },
+        shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
         shadowOpacity: 0.3,
-        shadowRadius: 12,
+        shadowRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
         elevation: 6,
       };
     } else if (variant === "secondary") {
@@ -63,24 +64,24 @@ export default function Button({
       };
     }
     
-    // Size styles
+    // Size styles with improved mobile spacing
     if (size === "small") {
       baseStyle = {
         ...baseStyle,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
+        paddingVertical: Platform.select({ ios: 14, android: 12, default: 12 }),
+        paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
       };
     } else if (size === "medium") {
       baseStyle = {
         ...baseStyle,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
+        paddingVertical: Platform.select({ ios: 18, android: 16, default: 16 }),
+        paddingHorizontal: Platform.select({ ios: 36, android: 32, default: 32 }),
       };
     } else if (size === "large") {
       baseStyle = {
         ...baseStyle,
-        paddingVertical: 20,
-        paddingHorizontal: 40,
+        paddingVertical: Platform.select({ ios: 22, android: 20, default: 20 }),
+        paddingHorizontal: Platform.select({ ios: 44, android: 40, default: 40 }),
       };
     }
     
@@ -121,17 +122,17 @@ export default function Button({
     if (size === "small") {
       baseStyle = {
         ...baseStyle,
-        fontSize: 15,
+        fontSize: Platform.select({ ios: 16, android: 15, default: 15 }),
       };
     } else if (size === "medium") {
       baseStyle = {
         ...baseStyle,
-        fontSize: 17,
+        fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
       };
     } else if (size === "large") {
       baseStyle = {
         ...baseStyle,
-        fontSize: 19,
+        fontSize: Platform.select({ ios: 20, android: 19, default: 19 }),
       };
     }
     

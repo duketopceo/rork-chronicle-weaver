@@ -30,7 +30,7 @@ export default function RootLayout() {
         <View style={{ 
           flex: 1, 
           backgroundColor: colors.background,
-          paddingTop: Platform.select({ ios: 0, android: 0, default: 0 }) // Remove any default padding
+          paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
         }}>
           <StatusBar style="light" />
           <Stack
@@ -51,7 +51,7 @@ export default function RootLayout() {
               contentStyle: {
                 backgroundColor: colors.background,
               },
-              gestureEnabled: true, // Enable swipe gestures
+              gestureEnabled: true,
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -69,7 +69,7 @@ export default function RootLayout() {
               name="game/play" 
               options={{ 
                 headerShown: false,
-                gestureEnabled: false, // Disable swipe back during gameplay
+                gestureEnabled: false,
               }} 
             />
             <Stack.Screen 
