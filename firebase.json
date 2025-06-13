@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "firebase": {
+    "app": {
+      "config": {
+        "apiKey": "your-api-key",
+        "authDomain": "your-auth-domain",
+        "projectId": "your-project-id",
+        "storageBucket": "your-storage-bucket",
+        "messagingSenderId": "your-messaging-sender-id",
+        "appId": "your-app-id"
+      }
+    }
+  }
+}

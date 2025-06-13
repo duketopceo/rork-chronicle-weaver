@@ -16,7 +16,7 @@ Please ensure you are using the latest version for security updates.
 If you discover a security vulnerability, please follow these steps:
 
 1. **Do not disclose publicly**: Avoid sharing details of the vulnerability in public forums or repositories.
-2. **Contact us directly**: Send an email to [security@rork.com](mailto:security@rork.com) with the following details:
+2. **Contact us directly**: Send an email to [security@example.com](mailto:security@example.com) with the following details:
    - A clear description of the vulnerability.
    - Steps to reproduce the issue.
    - Any potential impact or risk.
@@ -26,10 +26,9 @@ If you discover a security vulnerability, please follow these steps:
 
 To ensure the security of your deployment:
 
-- **Keep dependencies updated**: Regularly update npm packages and other dependencies.
-- **Use environment variables**: Avoid hardcoding sensitive information like API keys or database credentials.
-- **Enable HTTPS**: Ensure all communications are encrypted using HTTPS.
-- **Monitor logs**: Regularly review application logs for suspicious activity.
-- **Apply access controls**: Restrict access to sensitive endpoints and resources.
+- Keep dependencies up-to-date.
+- Use strong passwords and secure authentication methods.
+- Regularly review and audit your codebase.
+- Enable HTTPS for all communications.
 
 Thank you for helping us keep this project secure!
