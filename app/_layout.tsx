@@ -1,3 +1,4 @@
+import React from "react";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";

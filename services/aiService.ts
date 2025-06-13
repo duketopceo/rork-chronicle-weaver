@@ -1,6 +1,7 @@
 import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "@/types/game";
 import { ChronicleDebugState, ApiCompletion } from "@/types/global";
 import { useGameStore } from "@/store/gameStore";
+import { fetchFromFirebaseFunction } from "@/services/firebaseUtils";
 
 type ContentPart = 
   | { type: 'text'; text: string; }
@@ -901,15 +902,17 @@ async function processAIRequest(requestPayload: any) {
   try {
     await enforceTurnLimit();
 
-    // Proceed with AI request logic
+    // Route AI request through Firebase Functions
+    const response = await fetchFromFirebaseFunction("processAIRequest", requestPayload);
+
     console.log("Processing AI request with payload:", requestPayload);
 
-    // ...existing AI request logic...
+    return response;
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error processing AI request:", error.message);
+      console.error("Error processing AI request via Firebase Functions:", error.message);
     } else {
-      console.error("Unknown error occurred during AI request processing:", error);
+      console.error("Unknown error occurred during AI request processing via Firebase Functions:", error);
     }
     throw error;
   }
