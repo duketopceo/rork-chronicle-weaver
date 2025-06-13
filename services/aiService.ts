@@ -45,8 +45,17 @@ interface ApiCall {
 interface ApiCompletion<T = unknown> {
   completion?: string;
   data?: T;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+interface ChronicleDebugState {
+  lastApiCall?: ApiCall;
+  lastResponse?: ApiResponse;
+  lastError?: ApiError;
+  callCount: number;
+  lastPrompt?: string;
+  lastRawResponse?: string;
+  apiCallHistory: ApiCall[];
 }
 
 interface InitialStoryResponse {
@@ -110,54 +119,6 @@ interface NextSegmentResponse {
   };
 }
 
-// --- Interface definitions ---
-interface ApiCall {
-  timestamp: string;
-  type: string;
-  messages?: CoreMessage[];
-  gameState?: GameState;
-  gameSetup?: GameSetupState;
-  selectedChoice?: GameChoice;
-  choice?: string;
-  turnCount?: number;
-  era?: string;
-  theme?: string;
-  character?: string;
-}
-
-interface ApiResponse {
-  timestamp: string;
-  type: string;
-  data: unknown;
-  completionLength?: number;
-}
-
-interface ApiError {
-  timestamp: string;
-  type: string;
-  status?: number;
-  statusText?: string;
-  errorText?: string;
-  error?: unknown;
-  stack?: string;
-  rawCompletion?: string;
-}
-
-interface ApiCompletion {
-  completion?: string;
-  [key: string]: unknown;
-}
-
-interface ChronicleDebugState {
-  lastApiCall?: ApiCall;
-  lastResponse?: ApiResponse;
-  lastError?: ApiError;
-  callCount: number;
-  lastPrompt?: string;
-  lastRawResponse?: string;
-  apiCallHistory: ApiCall[];
-}
-
 // --- Global type declarations ---
 interface GlobalWithDebug {
   __CHRONICLE_DEBUG__?: ChronicleDebugState;
@@ -176,7 +137,7 @@ declare global {
 let DEBUG_MODE = false;
 
 // --- Type guards ---
-function isApiCompletion(data: unknown): data is ApiCompletion {
+function isApiCompletion(data: unknown): data is ApiCompletion<unknown> {
   return typeof data === 'object' && data !== null && 'completion' in data;
 }
 
@@ -196,13 +157,13 @@ function ensureDebugState(): ChronicleDebugState {
 }
 
 // --- Logging utilities ---
-const _logDebug = (message: string, data?: unknown): void => {
-  console.log(`[AI SERVICE DEBUG] ${message}`, data || '');
-};
+function _logDebug(message: string, data?: unknown): void {
+  console.log(`[AI SERVICE] ${message}`, data || '');
+}
 
-const _logError = (message: string, error?: unknown): void => {
+function _logError(message: string, error?: unknown): void {
   console.error(`[AI SERVICE ERROR] ${message}`, error || '');
-};
+}
 
 export function logDebug(message: string, data?: unknown): void {
   if (DEBUG_MODE) _logDebug(message, data);
