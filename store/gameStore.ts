@@ -10,6 +10,7 @@ interface GameStore {
   isLoading: boolean;
   error: string | null;
   chronosMessages: ChronosMessage[];
+  narrative: GameSegment | null;
 
   // Game setup actions
   setEra: (era: string) => void;
@@ -39,6 +40,9 @@ interface GameStore {
   addChronosMessage: (message: string) => void;
   updateChronosResponse: (messageId: string, response: string) => void;
   markChronosMessageResolved: (messageId: string) => void;
+
+  // Narrative actions
+  updateNarrative: (newNarrative: GameSegment) => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -56,6 +60,7 @@ export const useGameStore = create<GameStore>()(
       isLoading: false,
       error: null,
       chronosMessages: [],
+      narrative: null,
 
       setEra: (era) => set((state) => ({
         gameSetup: { ...state.gameSetup, era }
@@ -366,6 +371,16 @@ export const useGameStore = create<GameStore>()(
           msg.id === messageId ? { ...msg, resolved: true } : msg
         )
       })),
+
+      updateNarrative: (newNarrative) => {
+        // Log the new narrative/choices payload
+        console.log("Updating narrative with payload:", newNarrative);
+
+        set((state) => ({
+          narrative: newNarrative,
+          // ...existing state updates...
+        }));
+      },
     }),
     {
       name: "chronicle-weaver-storage",

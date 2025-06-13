@@ -558,6 +558,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -660,9 +664,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: 20,
   },
   narrativeSection: {
-    flex: 1,
+    flex: 2,
+    marginRight: 10,
   },
   narrativeContent: {
     paddingBottom: 20, // Add padding at the bottom for better spacing
@@ -671,6 +680,8 @@ const styles = StyleSheet.create({
     height: 20, // Extra space between narrative and choices
   },
   choicesSection: {
+    flex: 1,
+    marginLeft: 10,
     maxHeight: 350,
     padding: 16,
     borderTopWidth: 1,

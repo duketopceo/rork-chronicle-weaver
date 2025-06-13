@@ -152,6 +152,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    maxWidth: 800,
+    marginHorizontal: 'auto',
   },
   scrollView: {
     flex: 1,

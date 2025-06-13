@@ -550,14 +550,27 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
 
 export async function generateNextSegment(gameState: GameState, selectedChoice: GameChoice): Promise<GameSegment> {
   const debugState = ensureDebugState();
-  
+
   try {
     debugState.callCount++;
-    
+
     logDebug("=== 🎯 STARTING NEXT SEGMENT GENERATION ===");
     logDebug("Selected choice:", selectedChoice.text);
 
     const { era, theme, difficulty, character, pastSegments, turnCount, memories, worldSystems } = gameState;
+
+    // Log the exact prompt being sent for the second turn
+    if (turnCount === 2) {
+      logDebug("Exact prompt for Turn 2:", {
+        era,
+        theme,
+        difficulty,
+        character,
+        pastSegments,
+        memories,
+        worldSystems
+      });
+    }
 
     const realismLevel = difficulty <= 0.2 ? "hyper-realistic" : 
                          difficulty <= 0.4 ? "historically accurate" :
@@ -696,7 +709,9 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     });
 
     const response = await makeApiRequest<NextSegmentResponse>(messages, "next_segment");
-    logDebug("📖 Next segment response preview:", response.completion?.substring(0, 300) + "...");
+
+    // Log the raw response received from the API before parsing
+    logDebug("Raw response from API:", response);
 
     let parsedResponse;
     try {
@@ -704,14 +719,14 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     } catch (parseError) {
       logError("❌ Failed to parse AI response:", response.completion);
       logError("Parse error:", parseError);
-      
+
       debugState.lastError = {
         timestamp: new Date().toISOString(),
         type: "parse_error",
         error: parseError,
         rawCompletion: response.completion
       };
-      
+
       throw new Error("Failed to parse API response");
     }
 
@@ -738,14 +753,14 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
     return nextSegment;
   } catch (error) {
     logError("❌ Error in generateNextSegment:", error);
-    
+
     debugState.lastError = {
       timestamp: new Date().toISOString(),
       type: "generation_error",
       error,
       stack: error instanceof Error ? error.stack : undefined
     };
-    
+
     throw error;
   }
 }
