@@ -1,4 +1,6 @@
-import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, DebugInfo, PerformanceMetrics } from "@/types/game";
+import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "@/types/game";
+import { ChronicleDebugState, ApiCompletion } from "@/types/global";
+import { useGameStore } from "@/store/gameStore";
 
 type ContentPart = 
   | { type: 'text'; text: string; }
@@ -8,116 +10,6 @@ type CoreMessage =
   | { role: 'system'; content: string; }  
   | { role: 'user'; content: string | Array<ContentPart>; }
   | { role: 'assistant'; content: string | Array<ContentPart>; };
-
-<<<<<<< HEAD
-interface ApiResponse {
-  timestamp: string;
-  type: string;
-  data: unknown;
-  completionLength?: number;
-}
-
-interface ApiError {
-  timestamp: string;
-  type: string;
-  status?: number;
-  statusText?: string;
-  errorText?: string;
-  error?: unknown;
-  stack?: string;
-  rawCompletion?: string;
-}
-
-interface ApiCall {
-  timestamp: string;
-  type: string;
-  messages?: CoreMessage[];
-  gameState?: GameState;
-  gameSetup?: GameSetupState;
-  selectedChoice?: GameChoice;
-  choice?: string;
-  turnCount?: number;
-  era?: string;
-  theme?: string;
-  character?: string;
-}
-
-interface ApiCompletion<T = unknown> {
-  completion?: string;
-  data?: T;
-  [key: string]: unknown;
-}
-
-interface ChronicleDebugState {
-  lastApiCall?: ApiCall;
-  lastResponse?: ApiResponse;
-  lastError?: ApiError;
-  callCount: number;
-  lastPrompt?: string;
-  lastRawResponse?: string;
-  apiCallHistory: ApiCall[];
-}
-
-interface InitialStoryResponse {
-  backstory: string;
-  segment: {
-    text: string;
-    choices: Array<{ id: string; text: string; }>;
-  };
-  worldSystems: {
-    politics: Array<{ name: string; description: string; power: number; playerStanding: number; }>;
-    economics: {
-      currency: string;
-      marketPrices: Record<string, number>;
-      tradeRoutes: string[];
-    };
-    initialInventory: Array<{
-      name: string;
-      description: string;
-      quantity: number;
-      value: number;
-      category: string;
-    }>;
-  };
-}
-
-interface NextSegmentResponse {
-  text: string;
-  choices: Array<{ id: string; text: string; }>;
-  consequences: {
-    statChanges: {
-      influence: number;
-      knowledge: number;
-      resources: number;
-      reputation: number;
-    };
-    newInventory: Array<{
-      name: string;
-      description: string;
-      quantity: number;
-      value: number;
-      category: string;
-    }>;
-    politicalChanges: Array<{
-      factionName: string;
-      standingChange: number;
-    }>;
-    economicChanges: {
-      wealthChange: number;
-      newPrices: Record<string, number>;
-    };
-    newLore: Array<{
-      title: string;
-      content: string;
-      category: string;
-    }>;
-    newMemories: Array<{
-      title: string;
-      description: string;
-      category: string;
-    }>;
-  };
-}
 
 // --- Global type declarations ---
 interface GlobalWithDebug {
@@ -130,7 +22,7 @@ declare global {
     forEach(callback: (value: string, key: string) => void): void;
   }
   
-  var __CHRONICLE_DEBUG__: ChronicleDebugState | undefined;
+  var __CHRONICLE_DEBUG__: ChronicleDebugState;
 }
 
 // --- Debug state configuration ---
@@ -157,28 +49,35 @@ function ensureDebugState(): ChronicleDebugState {
 }
 
 // --- Logging utilities ---
-function _logDebug(message: string, data?: unknown): void {
-  console.log(`[AI SERVICE] ${message}`, data || '');
+function logDebug(message: string, ...optionalParams: any[]) {
+  console.debug(message, ...optionalParams);
 }
 
-function _logError(message: string, error?: unknown): void {
-=======
-// Enhanced logging for debugging
-const logDebug = (message: string, data?: any) => {
-  console.log(`[AI SERVICE] ${message}`, data || '');
-};
-
-const logError = (message: string, error?: any) => {
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
-  console.error(`[AI SERVICE ERROR] ${message}`, error || '');
+function logError(message: string, ...optionalParams: any[]) {
+  console.error(message, ...optionalParams);
 }
 
 // Enhanced global debug state for tracking
 declare global {
-  var __CHRONICLE_DEBUG__: DebugInfo;
+  var __CHRONICLE_DEBUG__: ChronicleDebugState;
 }
 
 if (typeof global !== 'undefined') {
+  // Ensure global.__CHRONICLE_DEBUG__ is initialized properly
+  if (!global.__CHRONICLE_DEBUG__) {
+    global.__CHRONICLE_DEBUG__ = {
+      callCount: 0,
+      apiCallHistory: [],
+      performanceMetrics: undefined,
+      systemInfo: undefined,
+      lastPrompt: undefined,
+      lastResponse: undefined,
+      lastRawResponse: undefined,
+      lastError: undefined,
+      lastApiCall: undefined,
+    };
+  }
+
   global.__CHRONICLE_DEBUG__ = global.__CHRONICLE_DEBUG__ || { 
     callCount: 0,
     apiCallHistory: [],
@@ -187,19 +86,22 @@ if (typeof global !== 'undefined') {
       memoryUsage: 0,
       renderTime: 0,
       apiLatency: 0,
-      frameRate: 60,
-      networkStatus: "Connected",
+      frameRate: 0,
+      networkStatus: "unknown",
       batteryLevel: 100,
     },
     systemInfo: {
-      platform: "unknown",
+      os: "unknown",
       version: "unknown",
-      deviceType: "unknown",
-      screenDimensions: { width: 0, height: 0 },
-      orientation: "unknown",
-      isDebug: __DEV__,
-    }
-  };
+    },
+    lastPrompt: "",
+    lastResponse: {
+      status: 200,
+      statusText: "OK",
+    },
+    lastRawResponse: "",
+    lastError: "",
+  } as ChronicleDebugState;
 }
 
 // Maximum retries for API calls
@@ -625,14 +527,6 @@ What path will you choose to begin this new chapter of your chronicle?`,
 }
 
 export async function generateNextSegment(gameState: GameState, selectedChoice: GameChoice): Promise<GameSegment> {
-<<<<<<< HEAD
-  const debugState = ensureDebugState();
-
-  try {
-    debugState.callCount++;
-
-    logDebug("=== 🎯 STARTING NEXT SEGMENT GENERATION ===");
-=======
   const startTime = Date.now();
   
   try {
@@ -641,7 +535,6 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
     }
     
     logDebug("Starting next segment generation");
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
     logDebug("Selected choice:", selectedChoice.text);
 
     const { era, theme, difficulty, character, pastSegments, turnCount, memories } = gameState;
@@ -770,12 +663,6 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return res;
     });
 
-<<<<<<< HEAD
-    const response = await makeApiRequest<NextSegmentResponse>(messages, "next_segment");
-
-    // Log the raw response received from the API before parsing
-    logDebug("Raw response from API:", response);
-=======
     const apiLatency = Date.now() - startTime;
     updatePerformanceMetrics(apiLatency);
 
@@ -799,7 +686,6 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       logError("No completion in response:", data);
       throw new Error("No completion received from API");
     }
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
 
     let parsedResponse;
     try {
@@ -811,20 +697,6 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       }
       
     } catch (parseError) {
-<<<<<<< HEAD
-      logError("❌ Failed to parse AI response:", response.completion);
-      logError("Parse error:", parseError);
-
-      debugState.lastError = {
-        timestamp: new Date().toISOString(),
-        type: "parse_error",
-        error: parseError,
-        rawCompletion: response.completion
-      };
-
-      throw new Error("Failed to parse API response");
-    }
-=======
       logError("Failed to parse next segment response:", parseError);
       
       if (typeof global !== 'undefined') {
@@ -841,7 +713,6 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       return {
         id: `segment-${turnCount + 1}`,
         text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
 
 The consequences of your decision begin to manifest as the world around you responds to your actions. The theme of ${gameState.theme} becomes more apparent as you navigate the complexities of this historical period, and you find yourself facing new challenges that test your resolve and wisdom.
 
@@ -876,18 +747,6 @@ What will you do next as this chronicle continues to unfold around you?`,
 
     return nextSegment;
   } catch (error) {
-<<<<<<< HEAD
-    logError("❌ Error in generateNextSegment:", error);
-
-    debugState.lastError = {
-      timestamp: new Date().toISOString(),
-      type: "generation_error",
-      error,
-      stack: error instanceof Error ? error.stack : undefined
-    };
-
-    throw error;
-=======
     logError("Error in generateNextSegment:", error);
     
     if (typeof global !== 'undefined') {
@@ -921,7 +780,6 @@ What will you do next as this chronicle continues to unfold around you?`,
       ],
       customChoiceEnabled: true
     };
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
   }
 }
 
@@ -978,5 +836,81 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
   } catch (error) {
     logError("Error processing Kronos message:", error);
     return "I apologize, but I am having trouble responding right now. Please try again later.";
+  }
+}
+
+// Refactor ApiResponse to include timestamp
+interface ApiResponse {
+  status: number;
+  statusText: string;
+  completion?: string;
+  timestamp?: string;
+}
+
+// Ensure proper initialization of global.__CHRONICLE_DEBUG__
+if (!global.__CHRONICLE_DEBUG__) {
+  global.__CHRONICLE_DEBUG__ = {
+    callCount: 0,
+    apiCallHistory: [],
+    performanceMetrics: undefined,
+    systemInfo: undefined,
+    lastPrompt: undefined,
+    lastResponse: undefined,
+    lastRawResponse: undefined,
+    lastError: undefined,
+    lastApiCall: undefined,
+  };
+}
+
+// Add safe access for global.__CHRONICLE_DEBUG__
+function updateDebugState(update: Partial<ChronicleDebugState>) {
+  if (global.__CHRONICLE_DEBUG__) {
+    Object.assign(global.__CHRONICLE_DEBUG__, update);
+  }
+}
+
+// Example usage
+updateDebugState({ callCount: (global.__CHRONICLE_DEBUG__?.callCount || 0) + 1 });
+
+// Initialize worldSystems where used
+const worldSystems = {
+  politics: [],
+  economics: {
+    currency: "",
+    marketPrices: {},
+    tradeRoutes: []
+  },
+  initialInventory: []
+};
+
+async function enforceTurnLimit() {
+  const { currentGame, userType } = useGameStore.getState();
+
+  if (!currentGame) {
+    throw new Error("No active game found.");
+  }
+
+  const turnLimit = userType === "free" ? 50 : 10000;
+
+  if (currentGame.turnCount >= turnLimit) {
+    throw new Error(`Turn limit reached for ${userType} user.`);
+  }
+}
+
+async function processAIRequest(requestPayload: any) {
+  try {
+    await enforceTurnLimit();
+
+    // Proceed with AI request logic
+    console.log("Processing AI request with payload:", requestPayload);
+
+    // ...existing AI request logic...
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error processing AI request:", error.message);
+    } else {
+      console.error("Unknown error occurred during AI request processing:", error);
+    }
+    throw error;
   }
 }

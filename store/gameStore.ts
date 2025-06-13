@@ -12,6 +12,9 @@ interface GameStore {
   chronosMessages: ChronosMessage[];
   narrative: GameSegment | null;
 
+  // User type
+  userType: "free" | "paid";
+
   // Game setup actions
   setEra: (era: string) => void;
   setTheme: (theme: string) => void;
@@ -37,6 +40,7 @@ interface GameStore {
   endGame: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setUserType: (type: "free" | "paid") => void;
 
   // Kronos communication
   addChronosMessage: (message: string) => void;
@@ -63,6 +67,7 @@ export const useGameStore = create<GameStore>()(
       error: null,
       chronosMessages: [],
       narrative: null,
+      userType: "free",
 
       setEra: (era) => set((state) => ({
         gameSetup: { ...state.gameSetup, era }
@@ -187,8 +192,32 @@ export const useGameStore = create<GameStore>()(
       },
 
       makeChoice: async (choiceId) => {
-        // This is handled in the component for now
-        // Could be moved here for better state management
+        const currentGame = get().currentGame;
+        const userType = get().userType;
+
+        if (!currentGame) {
+          console.error("[GameStore] ❌ No current game to make a choice");
+          return;
+        }
+
+        const turnLimit = userType === "free" ? 50 : 10000;
+
+        if (currentGame.turnCount >= turnLimit) {
+          console.error(`[GameStore] ❌ Turn limit reached for ${userType} user`);
+          set({ error: "Turn limit reached" });
+          return;
+        }
+
+        // Proceed with choice logic
+        console.log(`[GameStore] ✅ Making choice: ${choiceId}`);
+
+        const updatedGame = {
+          ...currentGame,
+          turnCount: currentGame.turnCount + 1,
+          updatedAt: Date.now(),
+        };
+
+        set({ currentGame: updatedGame });
       },
 
       updateGameSegment: (segment) => set((state) => {

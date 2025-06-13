@@ -682,14 +682,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 20,
   },
-<<<<<<< HEAD
-  narrativeSection: {
-    flex: 2,
-    marginRight: 10,
-=======
   mainScrollView: {
     flex: 1,
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
+    padding: 10,
   },
   scrollViewContent: {
     paddingBottom: Platform.select({ ios: 80, android: 60, default: 60 }),
@@ -700,25 +695,12 @@ const styles = StyleSheet.create({
     width: "100%",
     minHeight: SCREEN_HEIGHT * Platform.select({ ios: 0.75, android: 0.7, default: 0.65 }),
   },
-<<<<<<< HEAD
-  choicesSection: {
-    flex: 1,
-    marginLeft: 10,
-    maxHeight: 350,
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface + "80",
-=======
   narrativeSpacer: {
-    height: Platform.select({ ios: 100, android: 80, default: 80 }),
+    height: 20,
   },
   customActionSection: {
-    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
-    paddingTop: Platform.select({ ios: 40, android: 32, default: 32 }),
-    paddingBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
-    width: "100%",
->>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
+    margin: 10,
+    padding: 10,
   },
   customActionButton: {
     flexDirection: "row",
