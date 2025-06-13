@@ -112,7 +112,7 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <History size={28} color={colors.primary} />
+              <History size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
               <Text style={styles.stepTitle}>Setting</Text>
             </View>
             <Text style={styles.stepDescription}>
@@ -126,7 +126,7 @@ export default function GameSetupScreen() {
                   style={styles.randomButton}
                   onPress={() => handleRandomExample(ERA_EXAMPLES, setEra)}
                 >
-                  <Shuffle size={14} color={colors.primary} />
+                  <Shuffle size={16} color={colors.primary} />
                   <Text style={styles.randomButtonText}>Random</Text>
                 </TouchableOpacity>
               </View>
@@ -173,7 +173,7 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <Palette size={28} color={colors.primary} />
+              <Palette size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
               <Text style={styles.stepTitle}>Theme</Text>
             </View>
             <Text style={styles.stepDescription}>
@@ -187,7 +187,7 @@ export default function GameSetupScreen() {
                   style={styles.randomButton}
                   onPress={() => handleRandomExample(THEME_EXAMPLES, setTheme)}
                 >
-                  <Shuffle size={14} color={colors.primary} />
+                  <Shuffle size={16} color={colors.primary} />
                   <Text style={styles.randomButtonText}>Random</Text>
                 </TouchableOpacity>
               </View>
@@ -223,7 +223,7 @@ export default function GameSetupScreen() {
         return (
           <>
             <View style={styles.stepHeader}>
-              <User size={28} color={colors.primary} />
+              <User size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
               <Text style={styles.stepTitle}>Character</Text>
             </View>
             <Text style={styles.stepDescription}>
@@ -258,7 +258,7 @@ export default function GameSetupScreen() {
             
             <View style={styles.summaryContainer}>
               <View style={styles.summaryHeader}>
-                <Crown size={18} color={colors.primary} />
+                <Crown size={20} color={colors.primary} />
                 <Text style={styles.summaryTitle}>Summary</Text>
               </View>
               <View style={styles.summaryItem}>
@@ -303,7 +303,7 @@ export default function GameSetupScreen() {
       >
         <View style={styles.header}>
           <View style={styles.headerIcon}>
-            <Crown size={24} color={colors.primary} />
+            <Crown size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.primary} />
           </View>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Chronicle Weaver</Text>
@@ -357,49 +357,49 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
   headerIcon: {
-    marginRight: 12,
+    marginRight: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   headerContent: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: Platform.select({ ios: 24, android: 20, default: 20 }),
     fontWeight: "700",
     color: colors.text,
     fontFamily: "serif",
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
     color: colors.textSecondary,
-    marginTop: 2,
+    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
   },
   progressContainer: {
-    padding: 16,
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
     backgroundColor: colors.surface,
   },
   progressBar: {
-    height: 6,
+    height: Platform.select({ ios: 8, android: 6, default: 6 }),
     backgroundColor: colors.surfaceLight,
-    borderRadius: 3,
+    borderRadius: Platform.select({ ios: 4, android: 3, default: 3 }),
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
     backgroundColor: colors.primary,
-    borderRadius: 3,
+    borderRadius: Platform.select({ ios: 4, android: 3, default: 3 }),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   content: {
     flex: 1,
@@ -407,33 +407,33 @@ const styles = StyleSheet.create({
   stepHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
+    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   stepTitle: {
-    fontSize: 22,
+    fontSize: Platform.select({ ios: 28, android: 24, default: 24 }),
     fontWeight: "700",
     color: colors.text,
     flex: 1,
     fontFamily: "serif",
   },
   stepDescription: {
-    fontSize: 16,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     color: colors.textSecondary,
-    marginBottom: 20,
-    lineHeight: 22,
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   inputHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   inputLabel: {
-    fontSize: 16,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "600",
     color: colors.text,
   },
@@ -441,118 +441,118 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: Platform.select({ ios: 14, android: 12, default: 12 }),
+    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
+    borderRadius: Platform.select({ ios: 14, android: 12, default: 12 }),
     borderWidth: 1,
     borderColor: colors.primary,
-    gap: 4,
+    gap: Platform.select({ ios: 6, android: 4, default: 4 }),
   },
   randomButtonText: {
     color: colors.primary,
-    fontSize: 12,
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
     fontWeight: "600",
   },
   multilineInput: {
-    height: 80,
+    height: Platform.select({ ios: 100, android: 80, default: 80 }),
     textAlignVertical: "top",
   },
   examplesContainer: {
-    marginTop: 8,
+    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
   },
   examplesScroll: {
     flexDirection: "row",
   },
   exampleChip: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
+    borderRadius: Platform.select({ ios: 14, android: 12, default: 12 }),
+    paddingHorizontal: Platform.select({ ios: 16, android: 12, default: 12 }),
+    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
+    marginRight: Platform.select({ ios: 12, android: 8, default: 8 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
   exampleChipText: {
     color: colors.textSecondary,
-    fontSize: 12,
+    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
   },
   backstoryOption: {
     flexDirection: "row",
     alignItems: "flex-start",
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    padding: Platform.select({ ios: 18, android: 14, default: 14 }),
+    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
     borderWidth: 1,
     borderColor: colors.border,
-    gap: 10,
+    gap: Platform.select({ ios: 14, android: 10, default: 10 }),
   },
   backstoryCheckbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
+    width: Platform.select({ ios: 22, android: 18, default: 18 }),
+    height: Platform.select({ ios: 22, android: 18, default: 18 }),
+    borderRadius: Platform.select({ ios: 6, android: 4, default: 4 }),
     borderWidth: 2,
     borderColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
+    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
   },
   backstoryCheckboxFill: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
+    width: Platform.select({ ios: 12, android: 10, default: 10 }),
+    height: Platform.select({ ios: 12, android: 10, default: 10 }),
+    borderRadius: Platform.select({ ios: 3, android: 2, default: 2 }),
     backgroundColor: colors.primary,
   },
   backstoryContent: {
     flex: 1,
   },
   backstoryTitle: {
-    fontSize: 15,
+    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
     fontWeight: "600",
     color: colors.text,
-    marginBottom: 2,
+    marginBottom: Platform.select({ ios: 4, android: 2, default: 2 }),
   },
   backstoryDescription: {
-    fontSize: 13,
+    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
     color: colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: Platform.select({ ios: 22, android: 20, default: 20 }),
   },
   summaryContainer: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
+    marginTop: Platform.select({ ios: 16, android: 12, default: 12 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
   summaryHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    gap: 6,
+    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
+    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
   },
   summaryTitle: {
-    fontSize: 16,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "700",
     color: colors.text,
     fontFamily: "serif",
   },
   summaryItem: {
-    marginBottom: 10,
+    marginBottom: Platform.select({ ios: 12, android: 10, default: 10 }),
   },
   summaryLabel: {
-    fontSize: 13,
+    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
     color: colors.textSecondary,
-    marginBottom: 2,
+    marginBottom: Platform.select({ ios: 4, android: 2, default: 2 }),
     fontWeight: "500",
   },
   summaryValue: {
-    fontSize: 15,
+    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
     color: colors.text,
-    lineHeight: 20,
+    lineHeight: Platform.select({ ios: 24, android: 22, default: 22 }),
   },
   footer: {
-    padding: 20,
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.surface,
@@ -560,6 +560,6 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     backgroundColor: colors.primary,
-    borderRadius: 12,
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
 });

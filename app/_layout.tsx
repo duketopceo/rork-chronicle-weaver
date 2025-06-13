@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import { colors } from "@/constants/colors";
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "@/lib/trpc";
@@ -17,7 +17,7 @@ export default function RootLayout() {
   useEffect(() => {
     // Hide the splash screen after a delay
     const hideSplash = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, Platform.select({ ios: 1200, android: 1000, default: 1000 })));
       await SplashScreen.hideAsync();
     };
     
@@ -27,7 +27,11 @@ export default function RootLayout() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ 
+          flex: 1, 
+          backgroundColor: colors.background,
+          paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
+        }}>
           <StatusBar style="light" />
           <Stack
             screenOptions={{
@@ -37,10 +41,17 @@ export default function RootLayout() {
               headerTintColor: colors.text,
               headerTitleStyle: {
                 fontWeight: "bold",
+                fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                fontFamily: Platform.select({
+                  ios: "Georgia",
+                  android: "serif",
+                  default: "serif",
+                }),
               },
               contentStyle: {
                 backgroundColor: colors.background,
               },
+              gestureEnabled: true,
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -48,7 +59,10 @@ export default function RootLayout() {
               name="game/setup" 
               options={{ 
                 title: "Weave Your Chronicle",
-                headerBackTitle: "Back"
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+                  fontWeight: "700",
+                }
               }} 
             />
             <Stack.Screen 
@@ -62,35 +76,50 @@ export default function RootLayout() {
               name="game/character" 
               options={{ 
                 title: "Character",
-                presentation: "modal"
+                presentation: "modal",
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                }
               }} 
             />
             <Stack.Screen 
               name="game/memories" 
               options={{ 
                 title: "Chronicle Memories",
-                presentation: "modal"
+                presentation: "modal",
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                }
               }} 
             />
             <Stack.Screen 
               name="game/lore" 
               options={{ 
                 title: "Chronicle Lore",
-                presentation: "modal"
+                presentation: "modal",
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                }
               }} 
             />
             <Stack.Screen 
               name="game/systems" 
               options={{ 
                 title: "World Systems",
-                presentation: "modal"
+                presentation: "modal",
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                }
               }} 
             />
             <Stack.Screen 
               name="game/kronos" 
               options={{ 
                 title: "Speak with Kronos",
-                presentation: "modal"
+                presentation: "modal",
+                headerTitleStyle: {
+                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                }
               }} 
             />
           </Stack>

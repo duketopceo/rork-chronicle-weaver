@@ -1,53 +1,107 @@
 export const colors = {
-  // Enhanced dark theme with rich historical accents inspired by ancient manuscripts and royal courts
-  background: "#0A0A0A", // Deep charcoal black
-  surface: "#1A1612", // Warm dark brown with golden undertones
-  surfaceLight: "#2D2520", // Lighter warm brown
+  // Sophisticated manuscript theme inspired by ancient libraries and illuminated texts
+  background: "#0F0D0A", // Deeper parchment brown - like aged manuscript pages in candlelight
+  surface: "#1C1611", // Rich leather binding brown with more depth
+  surfaceLight: "#2A221A", // Lighter manuscript brown with warmth
   
-  // Primary colors - rich amber gold inspired by candlelight and illuminated manuscripts
-  primary: "#D4A574", // Warm amber gold
-  primaryLight: "#E6B885", // Light amber
-  primaryDark: "#B8935F", // Dark amber
+  // Primary colors - Illuminated manuscript gold and amber with enhanced richness
+  primary: "#E8B86D", // Warmer manuscript gold - like illuminated letters catching light
+  primaryLight: "#F2D4A7", // Light parchment gold with subtle luminosity
+  primaryDark: "#C49C5A", // Deep manuscript amber with earthiness
   
-  // Secondary colors - deep burgundy inspired by medieval manuscripts and royal robes
-  secondary: "#8B4513", // Saddle brown
-  secondaryLight: "#A0522D", // Sienna
+  // Secondary colors - Deep forest green like ancient book bindings
+  secondary: "#3A4D3A", // Deeper sage green - like old book cloth
+  secondaryLight: "#5B6E5B", // Medium sage green with sophistication
   
-  // Accent colors - deep crimson for important elements
-  accent: "#8B0000", // Dark red
-  accentLight: "#CD5C5C", // Indian red
+  // Accent colors - Royal burgundy for important elements
+  accent: "#7A4A6A", // Deeper burgundy - like royal seals
+  accentLight: "#9A6A8A", // Light burgundy with elegance
   
-  // Text colors - warm off-whites like aged parchment and vellum
-  text: "#F5F5DC", // Beige - main text
-  textSecondary: "#D2B48C", // Tan - secondary text
-  textMuted: "#BC9A6A", // Dark khaki - muted text
+  // Text colors - Warm ivory and sepia like aged ink with better contrast
+  text: "#F8F5E8", // Warmer ivory - main text like fresh ink on parchment
+  textSecondary: "#E8DDD0", // Warm beige - secondary text like aged ink
+  textMuted: "#D4C5B0", // Muted tan - subtle text like very old ink
   
-  // Semantic colors with historical inspiration
-  success: "#228B22", // Forest green - like medieval heraldry
-  error: "#DC143C", // Crimson - like royal seals
-  warning: "#DAA520", // Goldenrod - like illuminated warnings
+  // Semantic colors with rich, manuscript-inspired tones
+  success: "#4D6C4D", // Deeper forest green - like fresh spring leaves
+  error: "#9A4A42", // Deeper rust red - like dried blood or red ink
+  warning: "#D4A56B", // Warmer amber - like candlelight
   
-  // UI colors with historical depth
-  border: "#3C3530", // Dark brown border
-  borderLight: "#4A453E", // Medium brown border
+  // UI colors with sophisticated manuscript depth
+  border: "#3A2D1F", // Warmer dark border - like manuscript margins
+  borderLight: "#4D3F31", // Medium warm border with depth
   
-  // Special colors for narrative elements with manuscript inspiration
-  narrativeBackground: "#1A1814", // Slightly warmer than surface for text areas
-  choiceBackground: "#252017", // Warm dark background for choices
-  memoryAccent: "#9370DB", // Medium purple - like royal ink
-  loreAccent: "#4682B4", // Steel blue - like ancient knowledge
+  // Special colors for narrative elements with literary inspiration
+  narrativeBackground: "#141106", // Slightly warmer reading background
+  choiceBackground: "#1A140B", // Warm choice background with depth
+  memoryAccent: "#7A6AAE", // Deeper lavender purple for memories - like pressed flowers
+  loreAccent: "#5A8A8A", // Deeper sage blue-green for ancient knowledge
   
-  // System colors with historical inspiration
-  politicsAccent: "#800080", // Purple for nobility and politics
-  economicsAccent: "#DAA520", // Goldenrod for commerce and trade
-  warAccent: "#8B0000", // Dark red for war and conflict
-  relationshipAccent: "#CD853F", // Peru for relationships and diplomacy
-  inventoryAccent: "#8B4513", // Saddle brown for possessions and inventory
+  // System colors with sophisticated historical inspiration
+  politicsAccent: "#8A5A7A", // Deeper royal purple for nobility and politics
+  economicsAccent: "#E8B86D", // Rich gold for commerce and trade
+  warAccent: "#9A4A42", // Deeper red for war and conflict
+  relationshipAccent: "#D4A56B", // Warmer amber for relationships
+  inventoryAccent: "#7A6A5A", // Warmer brown for possessions
   
-  // Additional historical UI elements
-  scrollAccent: "#D2691E", // Chocolate for scroll-like elements
-  crownAccent: "#FFD700", // Gold for royal/important elements
-  parchmentAccent: "#F5DEB3", // Wheat for parchment-like backgrounds
+  // Additional sophisticated UI elements
+  scrollAccent: "#C49C5A", // Manuscript gold for interactive elements
+  crownAccent: "#F2D4A7", // Bright gold for royal/important elements
+  parchmentAccent: "#F8F5E8", // Ivory for highlights
+  
+  // Enhanced manuscript accent colors
+  wisdomAccent: "#5A7AAE", // Deeper scholarly blue for wisdom and learning
+  mysteryAccent: "#7A5A8A", // Deeper purple for mysteries and secrets
+  heroicAccent: "#9A4A42", // Noble red for heroic moments
+  tragicAccent: "#4D4D4D", // Muted gray for tragic elements
+  
+  // Reading comfort colors - Enhanced for mobile readability
+  readingBackground: "#0C0A08", // Optimized for long text reading with deeper warmth
+  highlightBackground: "#1F1A10", // Subtle highlight for important text
+  selectionBackground: "#2F241C", // Text selection background with warmth
+  
+  // Mobile-optimized colors for better touch interaction
+  touchHighlight: "#E8B86D" + "40", // Primary color with transparency for touch feedback
+  activeBackground: "#1C1611", // Active state background
+  focusedBorder: "#F2D4A7", // Focused input border color
+  
+  // Enhanced contrast colors for better mobile accessibility
+  highContrastText: "#FFFFFF", // Pure white for maximum contrast when needed
+  mediumContrastText: "#F8F5E8", // Ivory for medium contrast
+  lowContrastText: "#E8DDD0", // Warm beige for low contrast elements
+  
+  // Debug and development colors with enhanced visibility
+  debugBackground: "#1A0F0A", // Darker brown for debug panels
+  debugBorder: "#3A2D1F", // Warm border for debug elements
+  debugSuccess: "#4D6C4D", // Green for success states
+  debugError: "#9A4A42", // Red for error states
+  debugWarning: "#D4A56B", // Amber for warning states
+  debugInfo: "#5A7AAE", // Blue for info states
+  
+  // Enhanced spacing and layout colors for better mobile UX
+  cardBackground: "#1C1611", // Card background with subtle warmth
+  cardBorder: "#2A221A", // Card border for definition
+  divider: "#3A2D1F", // Divider lines between sections
+  overlay: "#0F0D0A" + "CC", // Semi-transparent overlay for modals
+  
+  // Interactive element colors optimized for touch
+  buttonPrimary: "#E8B86D", // Primary button color
+  buttonSecondary: "#3A4D3A", // Secondary button color
+  buttonDisabled: "#4D3F31", // Disabled button color
+  inputBackground: "#2A221A", // Input field background
+  inputBorder: "#4D3F31", // Input field border
+  inputFocused: "#E8B86D", // Focused input border
+  
+  // Status and feedback colors
+  statusOnline: "#4D6C4D", // Online/connected status
+  statusOffline: "#9A4A42", // Offline/disconnected status
+  statusPending: "#D4A56B", // Pending/loading status
+  statusIdle: "#7A6A5A", // Idle status
+  
+  // Platform-specific adjustments
+  iosShadow: "#000000" + "40", // iOS shadow color
+  androidElevation: "#000000" + "30", // Android elevation shadow
+  webFocus: "#E8B86D" + "60", // Web focus outline
 };
 
 export default colors;

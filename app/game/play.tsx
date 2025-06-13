@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { colors } from "@/constants/colors";
@@ -12,7 +12,8 @@ import Button from "@/components/Button";
 import { generateInitialStory, generateNextSegment } from "@/services/aiService";
 import { User, ArrowLeft, MessageCircle, Crown, Feather } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
+
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function GamePlayScreen() {
   const router = useRouter();
@@ -34,11 +35,11 @@ export default function GamePlayScreen() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [processingChoice, setProcessingChoice] = useState(false);
   const [narrativeKey, setNarrativeKey] = useState(0);
+  const [animationSpeed, setAnimationSpeed] = useState(1);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Force show UI for debugging
   const forceShowUIElements = () => {
-    console.log("[PLAY] Force showing UI elements");
     setShowChoices(true);
     setInitializing(false);
     setProcessingChoice(false);
@@ -46,39 +47,25 @@ export default function GamePlayScreen() {
 
   // Retry initialization if it fails
   const retryInitialization = async () => {
-    console.log("[PLAY] Retrying initialization");
     setError(null);
     await initializeGame();
   };
 
   const initializeGame = async () => {
-    console.log("[PLAY] Starting game initialization");
-    
     if (!currentGame) {
-      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
     
     if (!currentGame.currentSegment) {
-      console.log("[PLAY] No current segment, generating initial story");
       try {
         setInitializing(true);
         setLoading(true);
         setError(null);
         
-        console.log("[PLAY] Calling generateInitialStory");
-        
         const { backstory, firstSegment } = await generateInitialStory(currentGame, gameSetup);
         
-        console.log("[PLAY] Generated content", {
-          backstoryLength: backstory.length,
-          segmentTextLength: firstSegment.text.length,
-          segmentChoicesCount: firstSegment.choices.length
-        });
-        
         // Set character backstory
-        console.log("[PLAY] Setting character backstory");
         updateCharacterBackstory(backstory);
         
         // Add backstory to lore
@@ -90,15 +77,12 @@ export default function GamePlayScreen() {
           category: "character"
         });
         
-        console.log("[PLAY] Added backstory to lore");
-        
         // Set first game segment with custom choice enabled
         const segmentWithCustom = {
           ...firstSegment,
           customChoiceEnabled: true
         };
         
-        console.log("[PLAY] Updating game segment");
         updateGameSegment(segmentWithCustom);
         
         // Add first memory
@@ -110,18 +94,14 @@ export default function GamePlayScreen() {
           category: "event"
         });
         
-        console.log("[PLAY] Added initial memory");
-        
         setError(null);
         setNarrativeKey(prev => prev + 1);
-        console.log("[PLAY] Game initialization complete");
         
       } catch (error) {
-        console.error("[PLAY] Failed to initialize game:", error);
+        console.error("Failed to initialize game:", error);
         setError(`Failed to start your chronicle: ${error instanceof Error ? error.message : 'Unknown error'}`);
         
         // Show fallback content for debugging
-        console.log("[PLAY] Providing fallback content for debugging");
         const fallbackSegment = {
           id: "fallback-segment-1",
           text: `Welcome to Chronicle Weaver, ${currentGame.character.name}. 
@@ -149,12 +129,6 @@ What will you do to begin your chronicle?`,
         setShowChoices(true);
       }
     } else {
-      console.log("[PLAY] Game already has current segment, showing UI");
-      console.log("[PLAY] Existing segment details", {
-        textLength: currentGame.currentSegment.text.length,
-        choicesCount: currentGame.currentSegment.choices.length,
-        customChoiceEnabled: currentGame.currentSegment.customChoiceEnabled
-      });
       setInitializing(false);
       setShowChoices(true);
       setNarrativeKey(prev => prev + 1);
@@ -162,14 +136,7 @@ What will you do to begin your chronicle?`,
   };
 
   useEffect(() => {
-    console.log("[PLAY] Game play screen mounted");
-    console.log("[PLAY] Current game exists", !!currentGame);
-    console.log("[PLAY] Current game ID", currentGame?.id);
-    console.log("[PLAY] Current segment exists", !!currentGame?.currentSegment);
-    console.log("[PLAY] Current segment text length", currentGame?.currentSegment?.text?.length || 0);
-    
     if (!currentGame) {
-      console.log("[PLAY] No current game, redirecting to home");
       router.replace("/");
       return;
     }
@@ -178,20 +145,24 @@ What will you do to begin your chronicle?`,
   }, [currentGame?.id]);
 
   const handleNarrativeComplete = () => {
-    console.log("[PLAY] Narrative animation complete, showing choices");
     setShowChoices(true);
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    
+    // Scroll to the bottom to show choices
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    }, 300);
   };
 
   const handleChoiceSelected = async (choiceId: string) => {
     if (!currentGame || !currentGame.currentSegment || processingChoice) {
-      console.log("[PLAY] Cannot process choice - invalid state");
       return;
     }
     
-    console.log("[PLAY] Choice selected", choiceId);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -201,20 +172,13 @@ What will you do to begin your chronicle?`,
     );
     
     if (!selectedChoice) {
-      console.log("[PLAY] Selected choice not found");
       setProcessingChoice(false);
       setShowChoices(true);
       return;
     }
     
     try {
-      console.log("[PLAY] Generating next segment for choice", selectedChoice.text);
       const nextSegment = await generateNextSegment(currentGame, selectedChoice);
-      
-      console.log("[PLAY] Generated next segment", {
-        textLength: nextSegment.text.length,
-        choicesCount: nextSegment.choices.length
-      });
       
       // Add memory of the choice
       addMemory({
@@ -238,15 +202,13 @@ What will you do to begin your chronicle?`,
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
       
-      console.log("[PLAY] Choice processing complete");
-      
       // Scroll to top when new narrative is shown
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ y: 0, animated: true });
       }
       
     } catch (error) {
-      console.error("[PLAY] Failed to generate next segment:", error);
+      console.error("Failed to generate next segment:", error);
       Alert.alert(
         "Error", 
         "Failed to process your choice. Please check your connection and try again.",
@@ -260,11 +222,9 @@ What will you do to begin your chronicle?`,
 
   const handleCustomAction = async (customAction: string) => {
     if (!currentGame || processingChoice) {
-      console.log("[PLAY] Cannot process custom action - invalid state");
       return;
     }
     
-    console.log("[PLAY] Custom action submitted", customAction);
     setShowChoices(false);
     setShowCustomInput(false);
     setProcessingChoice(true);
@@ -299,15 +259,13 @@ What will you do to begin your chronicle?`,
       setShowChoices(false);
       setNarrativeKey(prev => prev + 1);
       
-      console.log("[PLAY] Custom action processing complete");
-      
       // Scroll to top when new narrative is shown
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ y: 0, animated: true });
       }
       
     } catch (error) {
-      console.error("[PLAY] Failed to generate next segment for custom action:", error);
+      console.error("Failed to generate next segment for custom action:", error);
       Alert.alert(
         "Error", 
         "Failed to process your action. Please check your connection and try again.",
@@ -325,6 +283,10 @@ What will you do to begin your chronicle?`,
 
   const navigateToLore = () => {
     router.push("/game/lore");
+  };
+
+  const navigateToSystems = () => {
+    router.push("/game/systems");
   };
 
   const navigateToKronos = () => {
@@ -357,7 +319,7 @@ What will you do to begin your chronicle?`,
       <SafeAreaView style={styles.loadingContainer}>
         <DebugPanel />
         <View style={styles.loadingContent}>
-          <Crown size={72} color={colors.primary} />
+          <Crown size={Platform.select({ ios: 80, android: 72, default: 72 })} color={colors.primary} />
           <Text style={styles.loadingTitle}>Kronos Weaves Your Chronicle</Text>
           <Text style={styles.loadingText}>
             Creating your unique narrative in {currentGame.era}...
@@ -382,7 +344,7 @@ What will you do to begin your chronicle?`,
     return (
       <SafeAreaView style={styles.errorContainer}>
         <DebugPanel />
-        <Crown size={48} color={colors.error} />
+        <Crown size={Platform.select({ ios: 56, android: 48, default: 48 })} color={colors.error} />
         <Text style={styles.errorTitle}>Chronicle Interrupted</Text>
         <Text style={styles.errorMessage}>{error}</Text>
         <View style={styles.errorButtonsContainer}>
@@ -413,91 +375,104 @@ What will you do to begin your chronicle?`,
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton} onPress={navigateToHome}>
-          <ArrowLeft size={24} color={colors.text} />
+          <ArrowLeft size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.text} />
         </TouchableOpacity>
         
         <View style={styles.headerInfo}>
           <View style={styles.headerTitleContainer}>
-            <Crown size={20} color={colors.primary} />
+            <Crown size={Platform.select({ ios: 24, android: 20, default: 20 })} color={colors.primary} />
             <Text style={styles.headerTitle}>Chronicle Weaver</Text>
           </View>
           <Text style={styles.turnText}>Turn {currentGame.turnCount} • {currentGame.era}</Text>
         </View>
         
         <TouchableOpacity style={styles.headerButton} onPress={navigateToKronos}>
-          <MessageCircle size={24} color={colors.primary} />
+          <MessageCircle size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.primary} />
         </TouchableOpacity>
       </View>
       
-      {/* Main Content */}
+      {/* Main Content - Full screen narrative until scroll */}
       <View style={styles.content}>
         {currentGame.currentSegment ? (
-          <>
-            {/* Narrative Section */}
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.narrativeSection} 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.narrativeContent}
-            >
-              {/* Debug buttons for development */}
-              {__DEV__ && (
-                <View style={styles.debugButtonsContainer}>
-                  <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
-                    <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
-                    <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              
-              {/* Narrative Text Component */}
+          <ScrollView 
+            ref={scrollViewRef}
+            style={styles.mainScrollView} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollViewContent}
+          >
+            {/* Debug buttons for development */}
+            {__DEV__ && (
+              <View style={styles.debugButtonsContainer}>
+                <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
+                  <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
+                  <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.debugButton} 
+                  onPress={() => setAnimationSpeed(prev => Math.max(1, prev - 1))}
+                >
+                  <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Narrative Text Component - Takes full screen space */}
+            <View style={styles.narrativeContainer}>
               <NarrativeText 
                 key={narrativeKey}
                 text={currentGame.currentSegment.text} 
                 onComplete={handleNarrativeComplete}
                 animated={true}
+                speed={animationSpeed}
               />
-              
-              {/* Spacer to ensure good spacing between narrative and choices */}
-              <View style={styles.spacer} />
-            </ScrollView>
+            </View>
+            
+            {/* Large spacer to ensure narrative gets full screen before choices */}
+            <View style={styles.narrativeSpacer} />
             
             {/* Processing State */}
-            {processingChoice ? (
+            {processingChoice && (
               <View style={styles.processingContainer}>
-                <Feather size={48} color={colors.primary} />
+                <Feather size={Platform.select({ ios: 56, android: 48, default: 48 })} color={colors.primary} />
                 <Text style={styles.processingTitle}>Kronos weaves the next chapter...</Text>
                 <ActivityIndicator size="large" color={colors.primary} style={styles.processingSpinner} />
               </View>
-            ) : showCustomInput ? (
-              /* Custom Input */
-              <CustomChoiceInput
-                onSubmit={handleCustomAction}
-                onCancel={() => setShowCustomInput(false)}
-                disabled={processingChoice}
-              />
-            ) : showChoices ? (
-              /* Choices Section */
-              <View style={styles.choicesSection}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {/* Custom Action Button */}
+            )}
+            
+            {/* Custom Input Section - Appears first when scrolling */}
+            {!processingChoice && showChoices && (
+              <View style={styles.customActionSection}>
+                {showCustomInput ? (
+                  <CustomChoiceInput
+                    onSubmit={handleCustomAction}
+                    onCancel={() => setShowCustomInput(false)}
+                    disabled={processingChoice}
+                  />
+                ) : (
                   <TouchableOpacity 
                     style={styles.customActionButton}
                     onPress={() => setShowCustomInput(true)}
+                    activeOpacity={0.8}
                   >
-                    <Feather size={28} color={colors.background} />
+                    <Feather size={Platform.select({ ios: 40, android: 36, default: 36 })} color={colors.background} />
                     <View style={styles.customActionContent}>
                       <Text style={styles.customActionTitle}>Write Your Own Action</Text>
                       <Text style={styles.customActionDescription}>
-                        Describe what you want to do
+                        Describe what you want to do in this situation
                       </Text>
                     </View>
                   </TouchableOpacity>
-                  
-                  {/* Predefined Choices */}
-                  <Text style={styles.choicesTitle}>Or choose:</Text>
+                )}
+              </View>
+            )}
+            
+            {/* Predefined Choices Section - Three distinct boxes */}
+            {!processingChoice && showChoices && !showCustomInput && (
+              <View style={styles.choicesSection}>
+                <Text style={styles.choicesTitle}>Or choose from these actions:</Text>
+                <View style={styles.choicesContainer}>
                   {currentGame.currentSegment.choices.map((choice, index) => (
                     <ChoiceButton
                       key={choice.id}
@@ -506,21 +481,30 @@ What will you do to begin your chronicle?`,
                       index={index}
                     />
                   ))}
-                </ScrollView>
+                </View>
+                
+                {/* Extra space at bottom for mobile comfort */}
+                <View style={styles.choicesBottomSpacer} />
               </View>
-            ) : (
-              /* Waiting for narrative to complete */
+            )}
+            
+            {/* Waiting State */}
+            {!processingChoice && !showChoices && (
               <View style={styles.waitingContainer}>
                 <Text style={styles.waitingText}>Reading your chronicle...</Text>
-                <TouchableOpacity style={styles.skipButton} onPress={() => setShowChoices(true)}>
+                <TouchableOpacity 
+                  style={styles.skipButton} 
+                  onPress={() => setShowChoices(true)}
+                  activeOpacity={0.7}
+                >
                   <Text style={styles.skipButtonText}>Skip to Choices</Text>
                 </TouchableOpacity>
               </View>
             )}
-          </>
+          </ScrollView>
         ) : (
           <View style={styles.noContentContainer}>
-            <Crown size={48} color={colors.textMuted} />
+            <Crown size={Platform.select({ ios: 56, android: 48, default: 48 })} color={colors.textMuted} />
             <Text style={styles.noContentText}>
               No chronicle segment available. Kronos is preparing your story...
             </Text>
@@ -538,16 +522,33 @@ What will you do to begin your chronicle?`,
         )}
       </View>
       
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Improved mobile spacing */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton} onPress={navigateToCharacter}>
-          <User size={18} color={colors.textMuted} />
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToCharacter}
+          activeOpacity={0.7}
+        >
+          <User size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Character</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.navButton} onPress={navigateToLore}>
-          <Feather size={18} color={colors.textMuted} />
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToLore}
+          activeOpacity={0.7}
+        >
+          <Feather size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Chronicle</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton} 
+          onPress={navigateToSystems}
+          activeOpacity={0.7}
+        >
+          <Crown size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
+          <Text style={styles.navButtonText}>Systems</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -568,57 +569,65 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
-    padding: 24,
+    padding: Platform.select({ ios: 48, android: 40, default: 40 }),
   },
   loadingContent: {
     alignItems: "center",
-    maxWidth: 320,
+    maxWidth: 380,
   },
   loadingTitle: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "700",
-    marginTop: 28,
-    marginBottom: 20,
+    fontSize: Platform.select({ ios: 36, android: 32, default: 32 }),
+    fontWeight: "800",
+    marginTop: Platform.select({ ios: 48, android: 40, default: 40 }),
+    marginBottom: Platform.select({ ios: 32, android: 28, default: 28 }),
     textAlign: "center",
-    fontFamily: "serif",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   loadingText: {
     color: colors.textSecondary,
-    fontSize: 17,
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
     textAlign: "center",
-    lineHeight: 26,
-    marginBottom: 28,
-    fontFamily: "serif",
+    lineHeight: Platform.select({ ios: 36, android: 32, default: 32 }),
+    marginBottom: Platform.select({ ios: 48, android: 40, default: 40 }),
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   loadingSpinner: {
-    marginTop: 20,
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
-    padding: 24,
+    padding: Platform.select({ ios: 48, android: 40, default: 40 }),
   },
   errorTitle: {
     color: colors.error,
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 16,
+    fontSize: Platform.select({ ios: 32, android: 28, default: 28 }),
+    fontWeight: "800",
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
     textAlign: "center",
-    marginTop: 16,
+    marginTop: Platform.select({ ios: 28, android: 24, default: 24 }),
   },
   errorMessage: {
     color: colors.text,
-    fontSize: 17,
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
     textAlign: "center",
-    marginBottom: 28,
-    lineHeight: 26,
+    marginBottom: Platform.select({ ios: 48, android: 40, default: 40 }),
+    lineHeight: Platform.select({ ios: 36, android: 32, default: 32 }),
   },
   errorButtonsContainer: {
     flexDirection: "row",
-    gap: 16,
+    gap: Platform.select({ ios: 28, android: 24, default: 24 }),
   },
   retryButton: {
     backgroundColor: colors.primary,
@@ -630,15 +639,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: Platform.select({ ios: 32, android: 28, default: 28 }),
+    paddingVertical: Platform.select({ ios: 28, android: 24, default: 24 }),
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary + "30",
+    borderBottomColor: colors.primary + "40",
     backgroundColor: colors.surface,
   },
   headerButton: {
-    padding: 8,
-    borderRadius: 8,
+    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
+    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   headerInfo: {
     alignItems: "center",
@@ -647,19 +656,23 @@ const styles = StyleSheet.create({
   headerTitleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
   },
   headerTitle: {
     color: colors.text,
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "serif",
+    fontSize: Platform.select({ ios: 26, android: 22, default: 22 }),
+    fontWeight: "800",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
   turnText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "500",
-    marginTop: 4,
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    fontWeight: "600",
+    marginTop: Platform.select({ ios: 10, android: 8, default: 8 }),
     fontStyle: "italic",
   },
   content: {
@@ -669,16 +682,25 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 20,
   },
+<<<<<<< HEAD
   narrativeSection: {
     flex: 2,
     marginRight: 10,
+=======
+  mainScrollView: {
+    flex: 1,
+>>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
   },
-  narrativeContent: {
-    paddingBottom: 20, // Add padding at the bottom for better spacing
+  scrollViewContent: {
+    paddingBottom: Platform.select({ ios: 80, android: 60, default: 60 }),
   },
-  spacer: {
-    height: 20, // Extra space between narrative and choices
+  narrativeContainer: {
+    paddingHorizontal: 0,
+    paddingTop: Platform.select({ ios: 20, android: 16, default: 16 }),
+    width: "100%",
+    minHeight: SCREEN_HEIGHT * Platform.select({ ios: 0.75, android: 0.7, default: 0.65 }),
   },
+<<<<<<< HEAD
   choicesSection: {
     flex: 1,
     marginLeft: 10,
@@ -687,153 +709,186 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.surface + "80",
+=======
+  narrativeSpacer: {
+    height: Platform.select({ ios: 100, android: 80, default: 80 }),
+  },
+  customActionSection: {
+    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    paddingTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    paddingBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
+    width: "100%",
+>>>>>>> 78f9cf1e46b7b99c8ff6495c2ae269647acdc18c
   },
   customActionButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: Platform.select({ ios: 28, android: 24, default: 24 }),
+    padding: Platform.select({ ios: 32, android: 28, default: 28 }),
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: Platform.select({ ios: 16, android: 12, default: 12 }) },
+    shadowOpacity: 0.4,
+    shadowRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    elevation: 12,
     borderWidth: 2,
     borderColor: colors.primaryDark,
   },
   customActionContent: {
-    marginLeft: 20,
+    marginLeft: Platform.select({ ios: 32, android: 28, default: 28 }),
     flex: 1,
   },
   customActionTitle: {
     color: colors.background,
-    fontSize: 18,
+    fontSize: Platform.select({ ios: 26, android: 22, default: 22 }),
     fontWeight: "800",
-    marginBottom: 4,
+    marginBottom: Platform.select({ ios: 10, android: 8, default: 8 }),
   },
   customActionDescription: {
     color: colors.background,
-    fontSize: 14,
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     opacity: 0.9,
+    lineHeight: Platform.select({ ios: 30, android: 28, default: 28 }),
+  },
+  choicesSection: {
+    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    paddingTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    paddingBottom: Platform.select({ ios: 48, android: 40, default: 40 }),
+    width: "100%",
   },
   choicesTitle: {
     color: colors.textSecondary,
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 16,
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
+    fontWeight: "700",
+    marginBottom: Platform.select({ ios: 32, android: 28, default: 28 }),
     textAlign: "center",
+  },
+  choicesContainer: {
+    gap: Platform.select({ ios: 24, android: 20, default: 20 }),
+  },
+  choicesBottomSpacer: {
+    height: Platform.select({ ios: 80, android: 60, default: 60 }),
   },
   processingContainer: {
-    padding: 40,
+    padding: Platform.select({ ios: 72, android: 60, default: 60 }),
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface + "80",
-  },
-  processingTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 20,
-    marginBottom: 16,
-    textAlign: "center",
-    fontFamily: "serif",
-  },
-  processingSpinner: {
-    marginTop: 16,
-  },
-  waitingContainer: {
-    padding: 20,
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface + "80",
-  },
-  waitingText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  skipButton: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    marginHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    backgroundColor: colors.surface + "90",
+    borderRadius: Platform.select({ ios: 28, android: 24, default: 24 }),
     borderWidth: 1,
     borderColor: colors.border,
   },
+  processingTitle: {
+    color: colors.text,
+    fontSize: Platform.select({ ios: 26, android: 22, default: 22 }),
+    fontWeight: "700",
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
+    textAlign: "center",
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
+  },
+  processingSpinner: {
+    marginTop: Platform.select({ ios: 28, android: 24, default: 24 }),
+  },
+  waitingContainer: {
+    padding: Platform.select({ ios: 48, android: 40, default: 40 }),
+    alignItems: "center",
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
+    marginHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    backgroundColor: colors.surface + "90",
+    borderRadius: Platform.select({ ios: 28, android: 24, default: 24 }),
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  waitingText: {
+    color: colors.textSecondary,
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
+    textAlign: "center",
+    marginBottom: Platform.select({ ios: 28, android: 24, default: 24 }),
+  },
+  skipButton: {
+    backgroundColor: colors.primary + "30",
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    paddingHorizontal: Platform.select({ ios: 32, android: 28, default: 28 }),
+    paddingVertical: Platform.select({ ios: 24, android: 20, default: 20 }),
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
   skipButtonText: {
     color: colors.primary,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
+    fontWeight: "700",
   },
   noContentContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    padding: Platform.select({ ios: 48, android: 40, default: 40 }),
   },
   noContentText: {
     color: colors.text,
-    fontSize: 17,
+    fontSize: Platform.select({ ios: 22, android: 20, default: 20 }),
     textAlign: "center",
-    marginBottom: 28,
-    marginTop: 16,
-    lineHeight: 26,
+    marginBottom: Platform.select({ ios: 48, android: 40, default: 40 }),
+    marginTop: Platform.select({ ios: 28, android: 24, default: 24 }),
+    lineHeight: Platform.select({ ios: 36, android: 32, default: 32 }),
   },
   bottomNav: {
     flexDirection: "row",
     backgroundColor: colors.surface,
     borderTopWidth: 2,
-    borderTopColor: colors.primary + "30",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderTopColor: colors.primary + "40",
+    paddingVertical: Platform.select({ ios: 24, android: 20, default: 20 }),
+    paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+    paddingBottom: Platform.select({ ios: 36, android: 28, default: 28 }),
   },
   navButton: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   navButtonText: {
     color: colors.textMuted,
-    fontSize: 11,
-    marginTop: 4,
-    fontWeight: "500",
+    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
+    marginTop: Platform.select({ ios: 10, android: 8, default: 8 }),
+    fontWeight: "600",
   },
   debugContainer: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    padding: Platform.select({ ios: 28, android: 24, default: 24 }),
+    marginTop: Platform.select({ ios: 40, android: 32, default: 32 }),
     borderWidth: 1,
     borderColor: colors.border,
-    maxWidth: 300,
+    maxWidth: 360,
   },
   debugTitle: {
     color: colors.text,
-    fontSize: 14,
+    fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
   },
   debugButtonsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    padding: 16,
-    gap: 12,
+    padding: Platform.select({ ios: 28, android: 24, default: 24 }),
+    gap: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   debugButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: Platform.select({ ios: 20, android: 16, default: 16 }),
+    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
     flex: 1,
     alignItems: "center",
   },
   debugButtonText: {
     color: colors.background,
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+    fontWeight: "700",
   },
 });
