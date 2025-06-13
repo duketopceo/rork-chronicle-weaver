@@ -202,6 +202,8 @@ export type DebugInfo = {
     orientation: string;
     isDebug: boolean;
   };
+  cpuUsage?: number;
+  networkLatency?: number;
 };
 
 // User account types for future subscription system

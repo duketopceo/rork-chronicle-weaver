@@ -6,7 +6,7 @@ import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import TextInput from "@/components/TextInput";
 import { useRouter } from "expo-router";
-import { processChronosMessage } from "@/services/aiService";
+import { processKronosMessage } from "@/services/aiService";
 import { MessageCircle, Send, Clock, CheckCircle, History } from "lucide-react-native";
 
 export default function ChronosScreen() {
@@ -39,7 +39,7 @@ export default function ChronosScreen() {
 
     try {
       // Send to AI for processing
-      const response = await processChronosMessage(currentGame, messageText);
+      const response = await processKronosMessage(currentGame, messageText);
       updateChronosResponse(messageId, response);
     } catch (error) {
       updateChronosResponse(messageId, "I apologize, but I'm having trouble responding right now. Please try again later.");

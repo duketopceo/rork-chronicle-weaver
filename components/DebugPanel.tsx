@@ -49,7 +49,17 @@ export default function DebugPanel() {
 
   const getDebugInfo = (): DebugInfo | null => {
     if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {
-      return global.__CHRONICLE_DEBUG__;
+      return {
+        platform: Platform.OS,
+        version: Platform.Version.toString(),
+        deviceType: SCREEN_WIDTH > 768 ? "tablet" : "phone",
+        screenDimensions: {
+          width: SCREEN_WIDTH,
+          height: SCREEN_HEIGHT,
+        },
+        orientation: SCREEN_HEIGHT > SCREEN_WIDTH ? "portrait" : "landscape",
+        isDebug: __DEV__,
+      };
     }
     return null;
   };
@@ -285,7 +295,13 @@ export default function DebugPanel() {
       uptime: uptimeHours > 0 ? `${uptimeHours}h ${uptimeMinutes % 60}m` : `${uptimeMinutes}m`,
       memoryPressure: performanceMetrics.memoryUsage > 80 ? "High" : performanceMetrics.memoryUsage > 60 ? "Medium" : "Low",
       thermalState: performanceMetrics.cpuUsage && performanceMetrics.cpuUsage > 70 ? "Warm" : "Normal",
-      networkQuality: performanceMetrics.networkLatency < 50 ? "Excellent" : performanceMetrics.networkLatency < 100 ? "Good" : "Poor",
+      networkQuality: performanceMetrics?.networkLatency
+        ? performanceMetrics.networkLatency < 50
+          ? "Excellent"
+          : performanceMetrics.networkLatency < 100
+          ? "Good"
+          : "Poor"
+        : "Unknown",
       storageHealth: storageInfo.sizeInMB < 1 ? "Optimal" : storageInfo.sizeInMB < 5 ? "Good" : "Heavy",
       renderPerformance: performanceMetrics.frameRate >= 58 ? "Smooth" : performanceMetrics.frameRate >= 45 ? "Acceptable" : "Choppy",
     };
@@ -865,7 +881,7 @@ export default function DebugPanel() {
               <View style={styles.subSection}>
                 <Text style={styles.subSectionTitle}>Call Types:</Text>
                 {Object.entries(apiAnalytics.callTypes).map(([type, count]) => (
-                  <Text key={type} style={styles.debugText}>{type}: {count}</Text>
+                  <Text key={type} style={styles.debugText}>{`${type}`}: {count}</Text>
                 ))}
               </View>
             </View>

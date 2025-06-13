@@ -420,6 +420,8 @@ export const useGameStore = create<GameStore>()(
           // ...existing state updates...
         }));
       },
+
+      setUserType: (type) => set({ userType: type }),
     }),
     {
       name: "chronicle-weaver-storage",

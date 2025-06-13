@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { LoreEntry } from "@/types/game";
 import { BookOpen, User, MapPin, Calendar, Filter } from "lucide-react-native";
 
-type CategoryFilter = "all" | "historical" | "character" | "location" | "event";
+type CategoryFilter = "all" | "historical" | "character" | "location" | "event" | "politics" | "economics" | "war" | "culture" | "technology";
 
 export default function LoreScreen() {
   const router = useRouter();
