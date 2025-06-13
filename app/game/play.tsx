@@ -30,6 +30,8 @@ export default function GamePlayScreen() {
     updateCharacterBackstory
   } = useGameStore();
   
+  const narrative = useGameStore((state) => state.narrative);
+  
   const [showChoices, setShowChoices] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [showCustomInput, setShowCustomInput] = useState(false);
@@ -37,6 +39,11 @@ export default function GamePlayScreen() {
   const [narrativeKey, setNarrativeKey] = useState(0);
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Log the narrative state whenever it changes
+  useEffect(() => {
+    console.log('[play.tsx] Narrative state changed:', narrative);
+  }, [narrative]);
 
   // Force show UI for debugging
   const forceShowUIElements = () => {

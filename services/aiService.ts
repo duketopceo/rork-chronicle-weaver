@@ -342,6 +342,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
       });
     }
 
+    console.log('[aiService] Sending prompt to Firebase Function:', messages);
+
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
       const res = await fetch("https://toolkit.rork.com/text/llm/", {
@@ -644,6 +646,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         turnCount: turnCount
       });
     }
+
+    console.log('[aiService] Sending prompt to Firebase Function:', messages);
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
