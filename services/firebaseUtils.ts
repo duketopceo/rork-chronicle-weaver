@@ -4,7 +4,7 @@ import { getApp } from "firebase/app";
 
 // Initialize AppCheck instance
 const appCheckInstance = initializeAppCheck(getApp(), {
-  provider: new ReCaptchaV3Provider('your-recaptcha-key'),
+  provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'), // <-- Replace with your actual reCAPTCHA v3 key
   isTokenAutoRefreshEnabled: true,
 });
 
@@ -27,7 +27,8 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: a
 
     const idToken = await user.getIdToken();
 
-    const response = await fetch(`https://<your-region>-<your-project-id>.cloudfunctions.net/${functionName}`, {
+    // Use the correct region and project ID for your Firebase Functions endpoint
+    const response = await fetch(`https://us-central1-chronicle-weaver-460713.cloudfunctions.net/${functionName}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

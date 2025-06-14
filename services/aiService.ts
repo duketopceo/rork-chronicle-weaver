@@ -346,21 +346,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
-      const res = await fetch("https://toolkit.rork.com/text/llm/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages }),
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        logError("API error response:", errorText);
-        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
-      }
-      
-      return res;
+      // Route through secure Firebase Function
+      return await processAIRequest({ messages });
     });
 
     const apiLatency = Date.now() - startTime;
@@ -651,21 +638,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
-      const res = await fetch("https://toolkit.rork.com/text/llm/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages }),
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        logError("API error response:", errorText);
-        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
-      }
-      
-      return res;
+      // Route through secure Firebase Function
+      return await processAIRequest({ messages });
     });
 
     const apiLatency = Date.now() - startTime;
@@ -817,21 +791,8 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
-      const res = await fetch("https://toolkit.rork.com/text/llm/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages }),
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        logError("API error response:", errorText);
-        throw new Error(`API request failed: ${res.status} ${res.statusText} - ${errorText}`);
-      }
-      
-      return res;
+      // Route through secure Firebase Function
+      return await processAIRequest({ messages });
     });
 
     const data = await response.json();

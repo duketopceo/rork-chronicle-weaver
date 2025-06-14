@@ -4,6 +4,10 @@ import { colors } from "@/constants/colors";
 import { useGameStore } from "@/store/gameStore";
 import { DebugInfo } from "@/types/game";
 import { Bug, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, XCircle, RefreshCw, Trash2, Crown, Zap, Eye, EyeOff, Smartphone, Monitor, Cpu, Wifi, Battery, Clock, MemoryStick, Activity, Database, Globe, Settings, FileText, Users, Coins, Sword, HardDrive, Signal, Thermometer, Gauge, Network, Server, Code, Terminal, Layers, Boxes, Archive, Folder, Hash, Timer, Maximize2, Minimize2 } from "lucide-react-native";
+import { getApp, getApps } from "firebase/app";
+import { getAnalytics, isSupported as analyticsSupported } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { fetchFromFirebaseFunction } from "@/services/firebaseUtils";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -22,6 +26,26 @@ export default function DebugPanel() {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { currentGame, gameSetup, isLoading, error } = useGameStore();
 
+  const [firebaseStatus, setFirebaseStatus] = useState({
+    initialized: false,
+    analytics: false,
+    appCheck: false,
+    error: null as string | null,
+    config: null as any,
+  });
+  const [aiBackendStatus, setAiBackendStatus] = useState({
+    healthy: false,
+    latency: null as number | null,
+    lastChecked: null as string | null,
+    error: null as string | null,
+  });
+  const [envInfo, setEnvInfo] = useState({
+    expo: (global as any).expoVersion || 'unknown',
+    buildType: __DEV__ ? 'Development' : 'Production',
+    platform: Platform.OS,
+    firebaseConfig: null as any,
+  });
+
   // Auto-refresh performance metrics
   useEffect(() => {
     if (isExpanded && (showPerformanceMetrics || showAdvancedMetrics)) {
@@ -32,6 +56,61 @@ export default function DebugPanel() {
       return () => clearInterval(interval);
     }
   }, [isExpanded, showPerformanceMetrics, showAdvancedMetrics]);
+
+  // Firebase SDK diagnostics
+  useEffect(() => {
+    try {
+      const apps = getApps();
+      const initialized = apps && apps.length > 0;
+      let analyticsEnabled = false;
+      if (initialized) {
+        try {
+          analyticsEnabled = !!getAnalytics(getApp());
+        } catch {}
+      }
+      // AppCheck is not always available on web
+      setFirebaseStatus(s => ({
+        ...s,
+        initialized,
+        analytics: analyticsEnabled,
+        appCheck: false, // Could be improved if AppCheck is used
+        error: null,
+        config: initialized ? getApp().options : null,
+      }));
+    } catch (e: any) {
+      setFirebaseStatus(s => ({ ...s, error: e.message || 'Unknown error' }));
+    }
+  }, [refreshCounter]);
+
+  // AI backend health check
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAIBackend() {
+      const start = Date.now();
+      try {
+        const res = await fetchFromFirebaseFunction('aiHealthCheck', { ping: true });
+        if (!cancelled) {
+          setAiBackendStatus({
+            healthy: true,
+            latency: Date.now() - start,
+            lastChecked: new Date().toLocaleTimeString(),
+            error: null,
+          });
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setAiBackendStatus({
+            healthy: false,
+            latency: null,
+            lastChecked: new Date().toLocaleTimeString(),
+            error: e.message || 'Unreachable',
+          });
+        }
+      }
+    }
+    if (isExpanded) checkAIBackend();
+    return () => { cancelled = true; };
+  }, [isExpanded, refreshCounter]);
 
   if (!__DEV__) return null; // Only show in development
 
@@ -309,12 +388,37 @@ export default function DebugPanel() {
 
   const systemDiagnostics = getSystemDiagnostics();
 
+  // --- Top Status Bar ---
+  const statusBar = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6, justifyContent: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Database size={16} color={firebaseStatus.initialized ? colors.debugSuccess : colors.debugError} />
+        <Text style={{ color: firebaseStatus.initialized ? colors.debugSuccess : colors.debugError, fontWeight: '700', fontSize: 12 }}>Firebase</Text>
+        {firebaseStatus.analytics && <CheckCircle size={14} color={colors.debugSuccess} />}
+        {firebaseStatus.error && <AlertTriangle size={14} color={colors.debugError} />}
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Server size={16} color={aiBackendStatus.healthy ? colors.debugSuccess : colors.debugError} />
+        <Text style={{ color: aiBackendStatus.healthy ? colors.debugSuccess : colors.debugError, fontWeight: '700', fontSize: 12 }}>AI Backend</Text>
+        {aiBackendStatus.latency !== null && (
+          <Text style={{ color: colors.textMuted, fontSize: 11 }}>({aiBackendStatus.latency}ms)</Text>
+        )}
+        {aiBackendStatus.error && <AlertTriangle size={14} color={colors.debugError} />}
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Cpu size={16} color={colors.primary} />
+        <Text style={{ color: colors.textMuted, fontSize: 12 }}>{envInfo.buildType}</Text>
+      </View>
+    </View>
+  );
+
   return (
     <View style={[styles.container, Platform.select({
       ios: styles.containerIOS,
       android: styles.containerAndroid,
       default: styles.containerDefault
     })]}>
+      {statusBar}
       <TouchableOpacity 
         style={[styles.header, Platform.select({
           ios: styles.headerIOS,
@@ -1086,6 +1190,92 @@ export default function DebugPanel() {
             <Text style={styles.debugText}>Session Duration: {currentGame?.id ? 
               Math.floor((Date.now() - parseInt(currentGame.id)) / 1000 / 60) + " minutes" : "N/A"}</Text>
           </View>
+
+          {/* --- Firebase SDK Diagnostics --- */}
+          {isExpanded && (
+            <View style={[styles.section, Platform.select({
+              ios: styles.sectionIOS,
+              android: styles.sectionAndroid,
+              default: styles.sectionDefault
+            })]}>
+              <Text style={[styles.sectionTitle, Platform.select({
+                ios: styles.sectionTitleIOS,
+                android: styles.sectionTitleAndroid,
+                default: styles.sectionTitleDefault
+              })]}>🔥 Firebase SDK Status</Text>
+              <View style={styles.debugRow}>
+                {getStatusIcon(firebaseStatus.initialized)}
+                <Text style={styles.debugText}>Initialized: {firebaseStatus.initialized ? 'Yes' : 'No'}</Text>
+              </View>
+              <View style={styles.debugRow}>
+                {getStatusIcon(firebaseStatus.analytics)}
+                <Text style={styles.debugText}>Analytics: {firebaseStatus.analytics ? 'Enabled' : 'Disabled'}</Text>
+              </View>
+              <View style={styles.debugRow}>
+                {getStatusIcon(firebaseStatus.appCheck)}
+                <Text style={styles.debugText}>AppCheck: {firebaseStatus.appCheck ? 'Enabled' : 'Disabled'}</Text>
+              </View>
+              {firebaseStatus.error && (
+                <Text style={styles.errorText}>Error: {firebaseStatus.error}</Text>
+              )}
+              {firebaseStatus.config && (
+                <View style={styles.subSection}>
+                  <Text style={styles.subSectionTitle}>Config:</Text>
+                  <Text style={styles.rawResponseText}>{JSON.stringify(firebaseStatus.config, null, 2)}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* --- AI Backend Health --- */}
+          {isExpanded && (
+            <View style={[styles.section, Platform.select({
+              ios: styles.sectionIOS,
+              android: styles.sectionAndroid,
+              default: styles.sectionDefault
+            })]}>
+              <Text style={[styles.sectionTitle, Platform.select({
+                ios: styles.sectionTitleIOS,
+                android: styles.sectionTitleAndroid,
+                default: styles.sectionTitleDefault
+              })]}>🤖 AI Backend Health</Text>
+              <View style={styles.debugRow}>
+                {getStatusIcon(aiBackendStatus.healthy)}
+                <Text style={styles.debugText}>Healthy: {aiBackendStatus.healthy ? 'Yes' : 'No'}</Text>
+                {aiBackendStatus.latency !== null && (
+                  <Text style={styles.debugText}>Latency: {aiBackendStatus.latency}ms</Text>
+                )}
+              </View>
+              <Text style={styles.debugText}>Last Checked: {aiBackendStatus.lastChecked || 'Never'}</Text>
+              {aiBackendStatus.error && (
+                <Text style={styles.errorText}>Error: {aiBackendStatus.error}</Text>
+              )}
+            </View>
+          )}
+
+          {/* --- Environment & Build Info --- */}
+          {isExpanded && (
+            <View style={[styles.section, Platform.select({
+              ios: styles.sectionIOS,
+              android: styles.sectionAndroid,
+              default: styles.sectionDefault
+            })]}>
+              <Text style={[styles.sectionTitle, Platform.select({
+                ios: styles.sectionTitleIOS,
+                android: styles.sectionTitleAndroid,
+                default: styles.sectionTitleDefault
+              })]}>🌎 Environment Info</Text>
+              <Text style={styles.debugText}>Expo SDK: {envInfo.expo}</Text>
+              <Text style={styles.debugText}>Build Type: {envInfo.buildType}</Text>
+              <Text style={styles.debugText}>Platform: {envInfo.platform}</Text>
+              {firebaseStatus.config && (
+                <View style={styles.subSection}>
+                  <Text style={styles.subSectionTitle}>Firebase Project ID:</Text>
+                  <Text style={styles.debugText}>{firebaseStatus.config.projectId || 'Unknown'}</Text>
+                </View>
+              )}
+            </View>
+          )}
         </ScrollView>
       )}
     </View>
