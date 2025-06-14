@@ -7,12 +7,27 @@ import { colors } from "@/constants/colors";
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 // Create a client
 const queryClient = new QueryClient();
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+  authDomain: "chronicle-weaver-460713.firebaseapp.com",
+  projectId: "chronicle-weaver-460713",
+  storageBucket: "chronicle-weaver-460713.appspot.com",
+  messagingSenderId: "927289740022",
+  appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
+  measurementId: "G-ENMCNZZZTJ"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 export default function RootLayout() {
   useEffect(() => {
