@@ -1,3 +1,27 @@
+/**
+ * Home Screen Component - Chronicle Weaver
+ * 
+ * This is the main landing screen for Chronicle Weaver, providing:
+ * - App introduction and branding
+ * - New game initialization
+ * - Continue existing game functionality
+ * - Feature highlights for the historical RPG experience
+ * 
+ * Key Features Displayed:
+ * - Historical era flexibility (Ancient to Modern)
+ * - Character archetype variety (Leaders, Explorers, etc.)
+ * - Choice-driven narrative mechanics
+ * - Rich visual design with gradients and icons
+ * 
+ * Navigation Flow:
+ * - New Game → Game Setup Screen
+ * - Continue → Main Gameplay Screen (if save exists)
+ * 
+ * State Management:
+ * - Uses Zustand game store for save data and setup state
+ * - Integrates with game reset functionality
+ */
+
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,15 +32,33 @@ import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
 import { Scroll, Crown, Feather, History } from "lucide-react-native";
 
+/**
+ * Main Home Screen Component
+ * 
+ * Renders the welcome interface with game options and feature highlights.
+ * Manages navigation to game setup or continuation of existing games.
+ */
 export default function HomeScreen() {
   const router = useRouter();
   const { currentGame, resetSetup } = useGameStore();
 
+  /**
+   * Handle New Game Creation
+   * 
+   * Resets any existing setup state and navigates to the game setup screen.
+   * This ensures a fresh start for character and world creation.
+   */
   const handleNewGame = () => {
-    resetSetup();
+    resetSetup(); // Clear any previous setup data
     router.push("/game/setup");
   };
 
+  /**
+   * Handle Continue Game
+   * 
+   * Navigates directly to the main gameplay screen.
+   * Assumes existing game state is available in the store.
+   */
   const handleContinueGame = () => {
     router.push("/game/play");
   };

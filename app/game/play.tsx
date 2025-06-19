@@ -1,3 +1,41 @@
+/**
+ * Game Play Screen - Main Gameplay Interface for Chronicle Weaver
+ * 
+ * This is the core gameplay screen where players experience the Chronicle Weaver
+ * historical RPG. It manages the entire game session including narrative display,
+ * choice selection, story progression, and game state management.
+ * 
+ * Key Features:
+ * - Dynamic narrative text display with typing animation
+ * - Interactive choice system with immediate feedback
+ * - Custom choice input for player creativity
+ * - Real-time game state updates and persistence
+ * - AI-powered story generation and progression
+ * - Haptic feedback for enhanced mobile experience
+ * - Debug panel for development and testing
+ * 
+ * Game Flow:
+ * 1. Initialize game session with AI-generated opening
+ * 2. Display narrative text with animated typography
+ * 3. Present choices to player (predefined + custom options)
+ * 4. Process player selection and update game state
+ * 5. Generate next story segment based on choice
+ * 6. Update character stats, inventory, and relationships
+ * 7. Continue cycle until story conclusion
+ * 
+ * Architecture:
+ * - Uses Zustand for reactive state management
+ * - Integrates with AI service for dynamic content
+ * - Implements smooth UI animations and transitions
+ * - Provides accessibility and platform optimizations
+ * 
+ * UI Components:
+ * - NarrativeText: Animated story text display
+ * - ChoiceButton: Interactive choice selection
+ * - CustomChoiceInput: Player-authored responses
+ * - DebugPanel: Development tools and state inspection
+ */
+
 import React, { useEffect, useState, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Dimensions, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,51 +51,82 @@ import { generateInitialStory, generateNextSegment } from "@/services/aiService"
 import { User, ArrowLeft, MessageCircle, Crown, Feather } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
+// Get screen dimensions for responsive layout
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
+/**
+ * Main Game Play Screen Component
+ * 
+ * Orchestrates the entire gameplay experience including story progression,
+ * choice handling, and state management for Chronicle Weaver.
+ */
 export default function GamePlayScreen() {
   const router = useRouter();
+  
+  // === GAME STATE MANAGEMENT ===
+  // Extract necessary state and actions from the game store
   const { 
-    currentGame, 
-    gameSetup,
-    isLoading, 
-    error,
-    updateGameSegment,
-    addMemory,
-    addLoreEntry,
-    setLoading,
-    setError,
-    updateCharacterBackstory
+    currentGame,              // Current game session data
+    gameSetup,               // Initial game setup configuration
+    isLoading,               // Global loading state
+    error,                   // Error state for user feedback
+    updateGameSegment,       // Update current story segment
+    addMemory,              // Add to player's memory log
+    addLoreEntry,           // Add discovered lore
+    setLoading,             // Control loading state
+    setError,               // Handle error states
+    updateCharacterBackstory // Update character background
   } = useGameStore();
   
+  // Get current narrative segment with reactive updates
   const narrative = useGameStore((state) => state.narrative);
   
-  const [showChoices, setShowChoices] = useState(false);
-  const [initializing, setInitializing] = useState(true);
-  const [showCustomInput, setShowCustomInput] = useState(false);
-  const [processingChoice, setProcessingChoice] = useState(false);
-  const [narrativeKey, setNarrativeKey] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(1);
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  // Log the narrative state whenever it changes
+  // === LOCAL COMPONENT STATE ===
+  // UI state management for interactive elements
+  const [showChoices, setShowChoices] = useState(false);           // Control choice visibility
+  const [initializing, setInitializing] = useState(true);         // Track initialization state
+  const [showCustomInput, setShowCustomInput] = useState(false);  // Custom choice input visibility
+  const [processingChoice, setProcessingChoice] = useState(false); // Choice processing state
+  const [narrativeKey, setNarrativeKey] = useState(0);            // Force narrative re-render
+  const [animationSpeed, setAnimationSpeed] = useState(1);        // Text animation speed control
+  const scrollViewRef = useRef<ScrollView>(null);                 // Scroll view reference
+  
+  // === DEVELOPMENT DEBUGGING ===
+  // Log narrative state changes for development monitoring
   useEffect(() => {
     console.log('[play.tsx] Narrative state changed:', narrative);
   }, [narrative]);
 
-  // Force show UI for debugging
+  /**
+   * Force Show UI Elements
+   * 
+   * Development utility to bypass loading states and show UI elements.
+   * Used for debugging and testing interface components.
+   */
   const forceShowUIElements = () => {
     setShowChoices(true);
     setInitializing(false);
     setProcessingChoice(false);
   };
 
-  // Retry initialization if it fails
+  /**
+   * Retry Initialization
+   * 
+   * Attempts to re-initialize the game session after an error.
+   * Resets error state and calls the initializeGame function.
+   */
   const retryInitialization = async () => {
     setError(null);
     await initializeGame();
   };
 
+  /**
+   * Initialize Game Session
+   * 
+   * Sets up the game for a new session or resets the current session.
+   * Generates the initial story segment and character backstory.
+   * Updates the game state and UI accordingly.
+   */
   const initializeGame = async () => {
     if (!currentGame) {
       router.replace("/");
@@ -70,6 +139,7 @@ export default function GamePlayScreen() {
         setLoading(true);
         setError(null);
         
+        // Generate initial story and backstory for the character
         const { backstory, firstSegment } = await generateInitialStory(currentGame, gameSetup);
         
         // Set character backstory
@@ -142,6 +212,7 @@ What will you do to begin your chronicle?`,
     }
   };
 
+  // Initialize game on component mount or currentGame change
   useEffect(() => {
     if (!currentGame) {
       router.replace("/");
@@ -151,6 +222,12 @@ What will you do to begin your chronicle?`,
     initializeGame();
   }, [currentGame?.id]);
 
+  /**
+   * Handle Narrative Completion
+   * 
+   * Callback for when the narrative text animation completes.
+   * Triggers haptic feedback and scrolls to the choices section.
+   */
   const handleNarrativeComplete = () => {
     setShowChoices(true);
     if (Platform.OS !== "web") {
@@ -165,6 +242,14 @@ What will you do to begin your chronicle?`,
     }, 300);
   };
 
+  /**
+   * Handle Choice Selection
+   * 
+   * Processes the player's choice selection from the available options.
+   * Updates the game state and triggers the generation of the next story segment.
+   * 
+   * @param choiceId - The ID of the selected choice
+   */
   const handleChoiceSelected = async (choiceId: string) => {
     if (!currentGame || !currentGame.currentSegment || processingChoice) {
       return;
@@ -227,6 +312,14 @@ What will you do to begin your chronicle?`,
     }
   };
 
+  /**
+   * Handle Custom Action
+   * 
+   * Processes a custom action input by the player.
+   * Updates the game state and triggers the generation of the next story segment.
+   * 
+   * @param customAction - The custom action text provided by the player
+   */
   const handleCustomAction = async (customAction: string) => {
     if (!currentGame || processingChoice) {
       return;
@@ -284,6 +377,8 @@ What will you do to begin your chronicle?`,
     }
   };
 
+  // === NAVIGATION HANDLERS ===
+  // Functions to navigate between different screens in the app
   const navigateToCharacter = () => {
     router.push("/game/character");
   };
@@ -311,6 +406,8 @@ What will you do to begin your chronicle?`,
     );
   };
 
+  // === LOADING AND ERROR STATES ===
+  // Render different UI states based on the game status
   if (!currentGame) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -375,6 +472,8 @@ What will you do to begin your chronicle?`,
     );
   }
 
+  // === MAIN GAMEPLAY UI ===
+  // Render the main interface for playing the game
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <DebugPanel />

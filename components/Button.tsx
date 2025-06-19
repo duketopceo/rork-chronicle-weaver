@@ -1,3 +1,31 @@
+/**
+ * Custom Button Component for Chronicle Weaver
+ * 
+ * A flexible, reusable button component designed for the historical RPG theme.
+ * Provides multiple variants, sizes, and states to maintain consistent UI/UX
+ * across the entire Chronicle Weaver application.
+ * 
+ * Features:
+ * - Multiple visual variants (primary, secondary, outline)
+ * - Responsive sizing (small, medium, large)
+ * - Loading and disabled states
+ * - Platform-specific styling optimizations
+ * - Accessibility support
+ * - Custom styling overrides
+ * 
+ * Design Philosophy:
+ * - Historical/fantasy theme with elegant styling
+ * - Clear visual hierarchy for player decision-making
+ * - Consistent touch targets for mobile gameplay
+ * - Visual feedback for user interactions
+ * 
+ * Usage:
+ * - Game navigation and menu interactions
+ * - Story choice selections
+ * - Form submissions and confirmations
+ * - Modal and dialog actions
+ */
+
 import React from "react";
 import { 
   TouchableOpacity, 
@@ -10,74 +38,112 @@ import {
 } from "react-native";
 import { colors } from "@/constants/colors";
 
+/**
+ * Button Component Props Interface
+ * 
+ * Defines all customization options available for the Button component.
+ * Provides flexibility while maintaining design consistency.
+ */
 type ButtonProps = {
-  title: string;
-  onPress: () => void;
-  variant?: "primary" | "secondary" | "outline";
-  size?: "small" | "medium" | "large";
-  disabled?: boolean;
-  loading?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  title: string;                                           // Button text display
+  onPress: () => void;                                     // Touch handler function
+  variant?: "primary" | "secondary" | "outline";          // Visual style variant
+  size?: "small" | "medium" | "large";                    // Button size preset
+  disabled?: boolean;                                      // Disable user interaction
+  loading?: boolean;                                       // Show loading spinner
+  style?: ViewStyle;                                       // Custom container styling
+  textStyle?: TextStyle;                                   // Custom text styling
 };
 
+/**
+ * Button Component
+ * 
+ * Renders a customizable button with platform-optimized styling.
+ * Handles different states and provides consistent user experience.
+ * 
+ * @param props - Button configuration and styling options
+ * @returns Styled TouchableOpacity with appropriate visual feedback
+ */
 export default function Button({
   title,
   onPress,
-  variant = "primary",
-  size = "medium",
-  disabled = false,
-  loading = false,
-  style,
-  textStyle,
+  variant = "primary",    // Default to primary button style
+  size = "medium",        // Default to medium size
+  disabled = false,       // Default to enabled state
+  loading = false,        // Default to non-loading state
+  style,                  // Optional custom styling
+  textStyle,              // Optional custom text styling
 }: ButtonProps) {
+  
+  /**
+   * Dynamic Button Style Generator
+   * 
+   * Creates appropriate styling based on variant, size, and state.
+   * Handles platform-specific differences for optimal appearance.
+   * 
+   * @returns Complete ViewStyle object for the button container
+   */
   const getButtonStyle = () => {
+    // Base styling shared across all button variants
     let baseStyle: ViewStyle = {
-      borderRadius: Platform.select({ ios: 16, android: 14, default: 14 }),
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "row",
+      borderRadius: Platform.select({ ios: 16, android: 14, default: 14 }), // Rounded corners
+      alignItems: "center",      // Center content horizontally
+      justifyContent: "center",  // Center content vertically
+      flexDirection: "row",      // Arrange loading indicator and text horizontally
     };
     
-    // Variant styles
+    // === VARIANT-SPECIFIC STYLING ===
+    
+    // Primary Button: Main action button with prominent styling
     if (variant === "primary") {
       baseStyle = {
         ...baseStyle,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.primary,  // Brand primary color
+        // Enhanced shadow for depth and prominence
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: Platform.select({ ios: 6, android: 4, default: 4 }) },
         shadowOpacity: 0.3,
         shadowRadius: Platform.select({ ios: 12, android: 8, default: 8 }),
-        elevation: 6,
+        elevation: 6,                  // Elevation for Android shadow
       };
-    } else if (variant === "secondary") {
+    } 
+    // Secondary Button: Alternative action with subdued styling
+    else if (variant === "secondary") {
       baseStyle = {
         ...baseStyle,
-        backgroundColor: colors.secondary,
+        backgroundColor: colors.secondary,  // Brand secondary color
       };
-    } else if (variant === "outline") {
+    } 
+    // Outline Button: Transparent background with border
+    else if (variant === "outline") {
       baseStyle = {
         ...baseStyle,
-        backgroundColor: "transparent",
-        borderWidth: 2,
-        borderColor: colors.primary,
+        backgroundColor: "transparent",    // No background color
+        borderWidth: 2,                   // Border width
+        borderColor: colors.primary,      // Border color matches primary
       };
     }
     
-    // Size styles with improved mobile spacing
+    // === SIZE-SPECIFIC STYLING ===
+    
+    // Small Size: Compact button for tight spaces
     if (size === "small") {
       baseStyle = {
         ...baseStyle,
-        paddingVertical: Platform.select({ ios: 14, android: 12, default: 12 }),
-        paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }),
+        paddingVertical: Platform.select({ ios: 14, android: 12, default: 12 }),  // Vertical padding
+        paddingHorizontal: Platform.select({ ios: 28, android: 24, default: 24 }), // Horizontal padding
       };
-    } else if (size === "medium") {
+    } 
+    // Medium Size: Default size for general use
+    else if (size === "medium") {
       baseStyle = {
         ...baseStyle,
         paddingVertical: Platform.select({ ios: 18, android: 16, default: 16 }),
         paddingHorizontal: Platform.select({ ios: 36, android: 32, default: 32 }),
       };
-    } else if (size === "large") {
+    } 
+    // Large Size: Expanded button for emphasis
+    else if (size === "large") {
       baseStyle = {
         ...baseStyle,
         paddingVertical: Platform.select({ ios: 22, android: 20, default: 20 }),
@@ -85,51 +151,76 @@ export default function Button({
       };
     }
     
-    // Disabled style
+    // === STATE-BASED STYLING ===
+    
+    // Disabled State: Indicate non-interactivity
     if (disabled) {
       baseStyle = {
         ...baseStyle,
-        opacity: 0.5,
+        opacity: 0.5,                  // Reduced opacity
       };
     }
     
     return baseStyle;
   };
   
+  /**
+   * Dynamic Text Style Generator
+   * 
+   * Creates appropriate text styling based on variant and size.
+   * Ensures readability and accessibility across button types.
+   * 
+   * @returns Complete TextStyle object for the button text
+   */
   const getTextStyle = () => {
+    // Base text styling
     let baseStyle: TextStyle = {
-      fontWeight: "600",
-      textAlign: "center",
+      fontWeight: "600",            // Semi-bold text
+      textAlign: "center",          // Center text alignment
     };
     
+    // === VARIANT-SPECIFIC TEXT STYLING ===
+    
+    // Primary Button Text: Contrast with primary background
     if (variant === "primary") {
       baseStyle = {
         ...baseStyle,
-        color: colors.background,
+        color: colors.background,      // White color for contrast
       };
-    } else if (variant === "secondary") {
+    } 
+    // Secondary Button Text: Contrast with secondary background
+    else if (variant === "secondary") {
       baseStyle = {
         ...baseStyle,
-        color: colors.text,
+        color: colors.text,            // Default text color
       };
-    } else if (variant === "outline") {
+    } 
+    // Outline Button Text: Match primary color
+    else if (variant === "outline") {
       baseStyle = {
         ...baseStyle,
-        color: colors.primary,
+        color: colors.primary,        // Primary color for outline button
       };
     }
     
+    // === SIZE-SPECIFIC TEXT STYLING ===
+    
+    // Small Size Text: Slightly smaller font
     if (size === "small") {
       baseStyle = {
         ...baseStyle,
         fontSize: Platform.select({ ios: 16, android: 15, default: 15 }),
       };
-    } else if (size === "medium") {
+    } 
+    // Medium Size Text: Default font size
+    else if (size === "medium") {
       baseStyle = {
         ...baseStyle,
         fontSize: Platform.select({ ios: 18, android: 17, default: 17 }),
       };
-    } else if (size === "large") {
+    } 
+    // Large Size Text: Increased font size for emphasis
+    else if (size === "large") {
       baseStyle = {
         ...baseStyle,
         fontSize: Platform.select({ ios: 20, android: 19, default: 19 }),

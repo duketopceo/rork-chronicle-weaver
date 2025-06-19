@@ -1,49 +1,130 @@
+/**
+ * AI Service - Narrative Generation and Game Logic for Chronicle Weaver
+ * 
+ * This service handles all AI-powered features of Chronicle Weaver:
+ * - Dynamic narrative generation based on player choices
+ * - Character backstory creation
+ * - World building and lore generation
+ * - Consequence calculation and story branching
+ * - Integration with external AI APIs
+ * 
+ * Key Features:
+ * - Type-safe API communication with validation
+ * - Debug mode for development and testing
+ * - Error handling and fallback mechanisms
+ * - Performance metrics and monitoring
+ * - Historical accuracy and context awareness
+ * 
+ * Architecture:
+ * - Uses Firebase Functions for scalable AI processing
+ * - Implements retry logic for API reliability
+ * - Maintains conversation context for coherent narratives
+ * - Provides both synchronous and asynchronous operations
+ * 
+ * AI Models:
+ * - Narrative generation using advanced language models
+ * - Historical fact-checking and context validation
+ * - Character personality and behavior modeling
+ * - Dynamic world state management
+ */
+
 import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "@/types/game";
 import { ChronicleDebugState, ApiCompletion } from "@/types/global";
 import { useGameStore } from "@/store/gameStore";
 import { fetchFromFirebaseFunction } from "@/services/firebaseUtils";
 
+/**
+ * Content Part Type
+ * 
+ * Defines the structure for AI message content.
+ * Supports both text and image inputs for rich interactions.
+ */
 type ContentPart = 
-  | { type: 'text'; text: string; }
-  | { type: 'image'; image: string };
+  | { type: 'text'; text: string; }      // Text-based content
+  | { type: 'image'; image: string };    // Image-based content (base64 or URL)
 
+/**
+ * Core Message Type
+ * 
+ * Represents the conversation structure for AI interactions.
+ * Follows standard chat completion format with role-based messaging.
+ */
 type CoreMessage = 
-  | { role: 'system'; content: string; }  
-  | { role: 'user'; content: string | Array<ContentPart>; }
-  | { role: 'assistant'; content: string | Array<ContentPart>; };
+  | { role: 'system'; content: string; }                    // System instructions and context
+  | { role: 'user'; content: string | Array<ContentPart>; } // User input (text or multimodal)
+  | { role: 'assistant'; content: string | Array<ContentPart>; }; // AI responses
 
-// --- Global type declarations ---
+// === GLOBAL TYPE DECLARATIONS ===
+
+/**
+ * Global Debug Interface
+ * 
+ * Extends the global object to include Chronicle Weaver debug state.
+ * Used for development monitoring and API call tracking.
+ */
 interface GlobalWithDebug {
   __CHRONICLE_DEBUG__?: ChronicleDebugState;
 }
 
+/**
+ * Global Type Augmentation
+ * 
+ * Extends standard global interfaces with Chronicle Weaver specific functionality.
+ * Provides enhanced Headers API and debug state access.
+ */
 declare global {
   interface Headers {
-    entries(): IterableIterator<[string, string]>;
-    forEach(callback: (value: string, key: string) => void): void;
+    entries(): IterableIterator<[string, string]>;          // Headers iteration
+    forEach(callback: (value: string, key: string) => void): void; // Headers traversal
   }
   
-  var __CHRONICLE_DEBUG__: ChronicleDebugState;
+  var __CHRONICLE_DEBUG__: ChronicleDebugState;             // Debug state singleton
 }
 
-// --- Debug state configuration ---
+// === DEBUG CONFIGURATION ===
+
+/**
+ * Debug Mode Flag
+ * 
+ * Controls verbose logging and development features.
+ * Set to true during development for enhanced debugging.
+ */
 let DEBUG_MODE = false;
 
-// --- Type guards ---
+// === TYPE GUARD FUNCTIONS ===
+
+/**
+ * API Completion Type Guard
+ * 
+ * Validates that an unknown response matches the expected API completion format.
+ * Provides type safety for external API responses.
+ */
 function isApiCompletion(data: unknown): data is ApiCompletion<unknown> {
   return typeof data === 'object' && data !== null && 'completion' in data;
 }
 
+/**
+ * Error Type Guard
+ * 
+ * Safely identifies Error objects for proper error handling.
+ * Handles both standard Error instances and error-like objects.
+ */
 function isError(error: unknown): error is Error {
   return error instanceof Error || (typeof error === 'object' && error !== null && 'message' in error);
 }
 
+/**
+ * Debug State Initializer
+ * 
+ * Ensures debug state is properly initialized on the global object.
+ * Creates singleton debug state for consistent monitoring.
+ */
 function ensureDebugState(): ChronicleDebugState {
   const g = globalThis as typeof globalThis & GlobalWithDebug;
   if (!g.__CHRONICLE_DEBUG__) {
     g.__CHRONICLE_DEBUG__ = {
-      callCount: 0,
-      apiCallHistory: []
+      callCount: 0,        // Track number of API calls
+      apiCallHistory: []   // Store API call history for debugging
     };
   }
   return g.__CHRONICLE_DEBUG__;

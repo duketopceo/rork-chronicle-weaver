@@ -1,53 +1,85 @@
+/**
+ * Game Store - Central State Management for Chronicle Weaver
+ * 
+ * This Zustand store manages all game state for Chronicle Weaver, including:
+ * - Character data and progression
+ * - Game world state and systems
+ * - Player choices and narrative history
+ * - Setup and configuration state
+ * - Communication with AI systems (Chronos)
+ * 
+ * Features:
+ * - Persistent storage using AsyncStorage for mobile
+ * - Type-safe state management with TypeScript
+ * - Reactive state updates for UI components
+ * - Modular action organization
+ * 
+ * Architecture:
+ * - Uses Zustand for lightweight state management
+ * - Implements persistence middleware for save games
+ * - Separates setup state from active game state
+ * - Provides both optimistic and confirmed state updates
+ */
+
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "@/types/game";
 
+/**
+ * Game Store Interface
+ * 
+ * Defines the complete state structure and available actions
+ * for the Chronicle Weaver game store.
+ */
 interface GameStore {
-  // Current game state
-  currentGame: GameState | null;
-  gameSetup: GameSetupState;
-  isLoading: boolean;
-  error: string | null;
-  chronosMessages: ChronosMessage[];
-  narrative: GameSegment | null;
+  // === CORE GAME STATE ===
+  currentGame: GameState | null;     // Active game session data
+  gameSetup: GameSetupState;         // Character and world setup state
+  isLoading: boolean;                // Loading state for async operations
+  error: string | null;              // Error state for user feedback
+  chronosMessages: ChronosMessage[]; // AI communication history
+  narrative: GameSegment | null;     // Current story segment
 
-  // User type
-  userType: "free" | "paid";
+  // === USER PROFILE ===
+  userType: "free" | "paid";         // User subscription status
 
-  // Game setup actions
-  setEra: (era: string) => void;
-  setTheme: (theme: string) => void;
-  setDifficulty: (difficulty: number) => void;
-  setCharacterName: (name: string) => void;
-  setGenerateBackstory: (generate: boolean) => void;
-  setCustomEra: (era: string) => void;
-  setCustomTheme: (theme: string) => void;
-  nextSetupStep: () => void;
-  resetSetup: () => void;
+  // === GAME SETUP ACTIONS ===
+  // These actions manage the initial game creation flow
+  setEra: (era: string) => void;              // Set historical time period
+  setTheme: (theme: string) => void;          // Set narrative theme
+  setDifficulty: (difficulty: number) => void; // Set challenge level
+  setCharacterName: (name: string) => void;   // Set character name
+  setGenerateBackstory: (generate: boolean) => void; // Toggle AI backstory generation
+  setCustomEra: (era: string) => void;        // Set custom historical period
+  setCustomTheme: (theme: string) => void;    // Set custom narrative theme
+  nextSetupStep: () => void;                  // Progress through setup wizard
+  resetSetup: () => void;                     // Reset setup to initial state
 
-  // Game actions
-  startNewGame: () => void;
-  makeChoice: (choiceId: string) => Promise<void>;
-  updateGameSegment: (segment: GameSegment) => void;
-  addMemory: (memory: Memory) => void;
-  addLoreEntry: (lore: LoreEntry) => void;
-  updateCharacterStats: (stats: Partial<CharacterStats>) => void;
-  updateCharacterBackstory: (backstory: string) => void;
-  addInventoryItem: (item: InventoryItem) => void;
-  removeInventoryItem: (itemId: string) => void;
-  updateWorldSystems: (systems: Partial<WorldSystems>) => void;
-  endGame: () => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  setUserType: (type: "free" | "paid") => void;
+  // === ACTIVE GAME ACTIONS ===
+  // These actions manage ongoing gameplay
+  startNewGame: () => void;                           // Initialize new game session
+  makeChoice: (choiceId: string) => Promise<void>;   // Process player choice
+  updateGameSegment: (segment: GameSegment) => void; // Update current narrative
+  addMemory: (memory: Memory) => void;               // Add to player's memory log
+  addLoreEntry: (lore: LoreEntry) => void;          // Add world lore discovery
+  updateCharacterStats: (stats: Partial<CharacterStats>) => void; // Modify character stats
+  updateCharacterBackstory: (backstory: string) => void; // Update character background
+  addInventoryItem: (item: InventoryItem) => void;   // Add item to inventory
+  removeInventoryItem: (itemId: string) => void;     // Remove item from inventory
+  updateWorldSystems: (systems: Partial<WorldSystems>) => void; // Update world state
+  endGame: () => void;                               // Conclude game session
+  setLoading: (loading: boolean) => void;            // Control loading state
+  setError: (error: string | null) => void;         // Handle error states
+  setUserType: (type: "free" | "paid") => void;     // Update user subscription
 
-  // Kronos communication
-  addChronosMessage: (message: string) => void;
-  updateChronosResponse: (messageId: string, response: string) => void;
-  markChronosMessageResolved: (messageId: string) => void;
+  // === CHRONOS COMMUNICATION ===
+  // These actions manage AI advisor interactions
+  addChronosMessage: (message: string) => void;              // Send message to AI
+  updateChronosResponse: (messageId: string, response: string) => void; // Receive AI response
+  markChronosMessageResolved: (messageId: string) => void;   // Mark conversation complete
 
-  // Narrative actions
+  // === NARRATIVE ACTIONS ===
   updateNarrative: (newNarrative: GameSegment) => void;
 }
 
