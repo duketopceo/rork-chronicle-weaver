@@ -125,19 +125,22 @@ export default function DebugPanel() {
   const getWarningIcon = () => (
     <AlertTriangle size={16} color={colors.debugWarning} />
   );
-
   const getDebugInfo = (): DebugInfo | null => {
     if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {
       return {
-        platform: Platform.OS,
-        version: Platform.Version.toString(),
-        deviceType: SCREEN_WIDTH > 768 ? "tablet" : "phone",
-        screenDimensions: {
-          width: SCREEN_WIDTH,
-          height: SCREEN_HEIGHT,
+        callCount: 0,
+        apiCallHistory: [],
+        systemInfo: {
+          platform: Platform.OS,
+          version: Platform.Version.toString(),
+          deviceType: SCREEN_WIDTH > 768 ? "tablet" : "phone",
+          screenDimensions: {
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
+          },
+          orientation: SCREEN_HEIGHT > SCREEN_WIDTH ? "portrait" : "landscape",
+          isDebug: __DEV__,
         },
-        orientation: SCREEN_HEIGHT > SCREEN_WIDTH ? "portrait" : "landscape",
-        isDebug: __DEV__,
       };
     }
     return null;
@@ -983,9 +986,8 @@ export default function DebugPanel() {
               </View>
               
               <View style={styles.subSection}>
-                <Text style={styles.subSectionTitle}>Call Types:</Text>
-                {Object.entries(apiAnalytics.callTypes).map(([type, count]) => (
-                  <Text key={type} style={styles.debugText}>{`${type}`}: {count}</Text>
+                <Text style={styles.subSectionTitle}>Call Types:</Text>                {Object.entries(apiAnalytics.callTypes).map(([type, count]) => (
+                  <Text key={type} style={styles.debugText}>{`${type}`}: {String(count)}</Text>
                 ))}
               </View>
             </View>
