@@ -115,7 +115,7 @@ export default function NarrativeText({
       }
     }, Platform.select({ ios: 16, android: 20, default: 30 })); // Very fast intervals
     
-    setAnimationTimer(timer);
+    setAnimationTimer(timer as any);
 
     return () => {
       if (timer) clearInterval(timer);

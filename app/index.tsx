@@ -23,16 +23,15 @@
  */
 
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
-import DebugPanel from "@/components/DebugPanel";
-import { EnhancedDebugPanel } from "@/components/EnhancedDebugPanel";
-import { Scroll, Crown, Feather, History, Bug, X } from "lucide-react-native";
+import { UltraDebugPanel } from "@/components/UltraDebugPanel";
+import { Scroll, Crown, Feather, History, Bug } from "lucide-react-native";
 import { logStep, updateStep, logError } from "@/utils/debugSystem";
 
 /**
@@ -44,27 +43,21 @@ import { logStep, updateStep, logError } from "@/utils/debugSystem";
 export default function HomeScreen() {
   const router = useRouter();
   const { currentGame, resetSetup } = useGameStore();
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const [showEnhancedDebug, setShowEnhancedDebug] = useState(false);
+  const [showUltraDebug, setShowUltraDebug] = useState(false);
 
   // Log home screen mounting
   React.useEffect(() => {
     const stepId = logStep('HOME', 'Home screen mounted and ready');
     updateStep(stepId, 'success', 'Home screen initialization completed');
   }, []);
-
   /**
-   * Toggle Debug Panel Visibility
+   * Toggle Ultra Debug Panel Visibility
    * 
-   * Shows/hides the full-screen debug panel for development monitoring.
+   * Shows/hides the unified debug panel with both user and developer views.
    * Only available in development builds for security.
    */
-  const toggleDebugPanel = () => {
-    setShowDebugPanel(!showDebugPanel);
-  };
-
-  const toggleEnhancedDebug = () => {
-    setShowEnhancedDebug(!showEnhancedDebug);
+  const toggleUltraDebug = () => {
+    setShowUltraDebug(!showUltraDebug);
   };
 
   /**
@@ -158,53 +151,24 @@ export default function HomeScreen() {
               />
             )}          </View>
         </ScrollView>
-      </LinearGradient>      {/* Development Debug Panel Toggle Button */}
+      </LinearGradient>      {/* Development Ultra Debug Panel Toggle Button */}
       {__DEV__ && (
         <View style={styles.debugButtons}>
           <TouchableOpacity
             style={styles.debugToggle}
-            onPress={toggleDebugPanel}
+            onPress={toggleUltraDebug}
             activeOpacity={0.8}
           >
             <Bug size={20} color={colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.debugToggle, { top: 110 }]}
-            onPress={toggleEnhancedDebug}
-            activeOpacity={0.8}
-          >
-            <History size={20} color={colors.text} />
-          </TouchableOpacity>
         </View>
       )}
 
-      {/* Enhanced Debug Panel */}
-      <EnhancedDebugPanel 
-        visible={showEnhancedDebug} 
-        onClose={() => setShowEnhancedDebug(false)} 
+      {/* Ultra Debug Panel */}
+      <UltraDebugPanel 
+        visible={showUltraDebug} 
+        onClose={() => setShowUltraDebug(false)} 
       />
-
-      {/* Original Debug Panel Modal */}
-      <Modal
-        visible={showDebugPanel}
-        animationType="slide"
-        presentationStyle="fullScreen"
-        onRequestClose={() => setShowDebugPanel(false)}
-      >
-        <SafeAreaView style={styles.debugModalContainer}>
-          <View style={styles.debugHeader}>
-            <Text style={styles.debugTitle}>Chronicle Weaver - Debug Panel</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowDebugPanel(false)}
-              activeOpacity={0.8}
-            >
-              <X size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-          <DebugPanel />
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -322,8 +286,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     justifyContent: "center",
-    alignItems: "center",
-    shadowColor: colors.primary,
+    alignItems: "center",    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -331,31 +294,5 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     marginBottom: 10,
-  },
-  debugModalContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  debugHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  debugTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  closeButton: {
-    backgroundColor: colors.error,
-    borderRadius: 25,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

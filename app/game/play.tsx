@@ -45,10 +45,9 @@ import { useGameStore } from "@/store/gameStore";
 import NarrativeText from "@/components/NarrativeText";
 import ChoiceButton from "@/components/ChoiceButton";
 import CustomChoiceInput from "@/components/CustomChoiceInput";
-import DebugPanel from "@/components/DebugPanel";
 import Button from "@/components/Button";
 import { generateInitialStory, generateNextSegment } from "@/services/aiService";
-import { User, ArrowLeft, MessageCircle, Crown, Feather } from "lucide-react-native";
+import { User, ArrowLeft, MessageCircle, Crown, Feather, Bug } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
 // Get screen dimensions for responsive layout
@@ -86,8 +85,7 @@ export default function GamePlayScreen() {
   const [showChoices, setShowChoices] = useState(false);           // Control choice visibility
   const [initializing, setInitializing] = useState(true);         // Track initialization state
   const [showCustomInput, setShowCustomInput] = useState(false);  // Custom choice input visibility
-  const [processingChoice, setProcessingChoice] = useState(false); // Choice processing state
-  const [narrativeKey, setNarrativeKey] = useState(0);            // Force narrative re-render
+  const [processingChoice, setProcessingChoice] = useState(false); // Choice processing state  const [narrativeKey, setNarrativeKey] = useState(0);            // Force narrative re-render
   const [animationSpeed, setAnimationSpeed] = useState(1);        // Text animation speed control
   const scrollViewRef = useRef<ScrollView>(null);                 // Scroll view reference
   
@@ -407,13 +405,27 @@ What will you do to begin your chronicle?`,
   };
 
   // === LOADING AND ERROR STATES ===
-  // Render different UI states based on the game status
-  if (!currentGame) {
+  // Render different UI states based on the game status  if (!currentGame) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <DebugPanel />
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading chronicle...</Text>
+        
+        {/* Debug toggle for development */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.debugToggle}
+            onPress={() => setShowUltraDebug(!showUltraDebug)}
+            activeOpacity={0.8}
+          >
+            <Bug size={20} color={colors.text} />
+          </TouchableOpacity>
+        )}
+
+        {/* Ultra Debug Panel */}
+        <UltraDebugPanel 
+          visible={showUltraDebug} 
+          onClose={() => setShowUltraDebug(false)}        />
       </SafeAreaView>
     );
   }
@@ -421,7 +433,6 @@ What will you do to begin your chronicle?`,
   if (initializing) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <DebugPanel />
         <View style={styles.loadingContent}>
           <Crown size={Platform.select({ ios: 80, android: 72, default: 72 })} color={colors.primary} />
           <Text style={styles.loadingTitle}>Kronos Weaves Your Chronicle</Text>
@@ -440,6 +451,22 @@ What will you do to begin your chronicle?`,
             </View>
           )}
         </View>
+        
+        {/* Debug toggle for development */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.debugToggle}
+            onPress={() => setShowUltraDebug(!showUltraDebug)}
+            activeOpacity={0.8}
+          >
+            <Bug size={20} color={colors.text} />
+          </TouchableOpacity>
+        )}
+
+        {/* Ultra Debug Panel */}
+        <UltraDebugPanel 
+          visible={showUltraDebug} 
+          onClose={() => setShowUltraDebug(false)}        />
       </SafeAreaView>
     );
   }
@@ -447,7 +474,6 @@ What will you do to begin your chronicle?`,
   if (error) {
     return (
       <SafeAreaView style={styles.errorContainer}>
-        <DebugPanel />
         <Crown size={Platform.select({ ios: 56, android: 48, default: 48 })} color={colors.error} />
         <Text style={styles.errorTitle}>Chronicle Interrupted</Text>
         <Text style={styles.errorMessage}>{error}</Text>
@@ -468,16 +494,30 @@ What will you do to begin your chronicle?`,
             </TouchableOpacity>
           </View>
         )}
+        
+        {/* Debug toggle for development */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.debugToggle}
+            onPress={() => setShowUltraDebug(!showUltraDebug)}
+            activeOpacity={0.8}
+          >
+            <Bug size={20} color={colors.text} />
+          </TouchableOpacity>
+        )}
+
+        {/* Ultra Debug Panel */}
+        <UltraDebugPanel 
+          visible={showUltraDebug} 
+          onClose={() => setShowUltraDebug(false)} 
+        />
       </SafeAreaView>
     );
   }
-
   // === MAIN GAMEPLAY UI ===
   // Render the main interface for playing the game
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <DebugPanel />
-      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton} onPress={navigateToHome}>
@@ -647,19 +687,18 @@ What will you do to begin your chronicle?`,
           <Feather size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Chronicle</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+          <TouchableOpacity 
           style={styles.navButton} 
           onPress={navigateToSystems}
           activeOpacity={0.7}
         >
           <Crown size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Systems</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+        </TouchableOpacity>        </View>
+        
+      </SafeAreaView>
+    );
+  }
 
 const styles = StyleSheet.create({
   container: {
@@ -973,10 +1012,23 @@ const styles = StyleSheet.create({
     padding: Platform.select({ ios: 24, android: 20, default: 20 }),
     flex: 1,
     alignItems: "center",
-  },
-  debugButtonText: {
+  },  debugButtonText: {
     color: colors.background,
     fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
     fontWeight: "700",
+  },
+  debugToggle: {
+    position: "absolute",
+    top: Platform.select({ ios: 60, android: 50, default: 50 }),
+    right: Platform.select({ ios: 20, android: 16, default: 16 }),
+    backgroundColor: colors.cardBackground,
+    borderRadius: Platform.select({ ios: 24, android: 20, default: 20 }),
+    padding: Platform.select({ ios: 12, android: 10, default: 10 }),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
   },
 });
