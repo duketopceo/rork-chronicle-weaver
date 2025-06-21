@@ -151,17 +151,6 @@ export default function DebugPanel({ visible, onClose }: DebugPanelProps) {
               <Text style={styles.label}>Character Name:</Text>
               <Text style={styles.value}>{gameSetup.characterName}</Text>
             </View>
-            <View style={styles.infoRow}>              <Text style={styles.label}>Character Name:</Text>
-              <Text style={styles.value}>{gameSetup.characterName}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Era:</Text>
-              <Text style={styles.value}>{gameSetup.era}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Theme:</Text>
-              <Text style={styles.value}>{gameSetup.theme}</Text>
-            </View>
           </>
         )}
       </View>

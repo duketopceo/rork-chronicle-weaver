@@ -23,6 +23,22 @@ export type ChronicleDebugState = {
 
 declare global {
   var __CHRONICLE_DEBUG__: ChronicleDebugState;
+
+  // Google Analytics gtag function
+  interface Window {
+    gtag?: (
+      command: 'config' | 'event' | 'js' | 'set',
+      targetId: string,
+      config?: {
+        cookie_domain?: string;
+        cookie_flags?: string;
+        anonymize_ip?: boolean;
+        allow_google_signals?: boolean;
+        allow_ad_personalization_signals?: boolean;
+        [key: string]: any;
+      }
+    ) => void;
+  }
 }
 
 export type ApiCompletion<T = unknown> = {

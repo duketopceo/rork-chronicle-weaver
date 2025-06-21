@@ -62,14 +62,41 @@ try {
 }
 
 // Initialize Firebase Analytics only on web platform when supported
-// This provides user engagement and performance analytics
+// This provides user engagement and performance analytics with proper cookie domain configuration
 if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
   import('firebase/analytics').then(({ getAnalytics, isSupported }) => {
     isSupported().then((supported) => {
       if (supported) {
         try {
-          getAnalytics(app);
-          console.log('Firebase Analytics initialized');
+          // Determine the correct cookie domain based on the current hostname
+          const hostname = window.location.hostname;
+          let cookieDomain = 'auto'; // Default to auto-detection
+          
+          if (hostname === 'chronicleweaver.com' || hostname.endsWith('.chronicleweaver.com')) {
+            cookieDomain = '.chronicleweaver.com';
+          } else if (hostname.includes('chronicle-weaver-460713.web.app')) {
+            cookieDomain = '.chronicle-weaver-460713.web.app';
+          } else if (hostname.includes('firebaseapp.com')) {
+            cookieDomain = hostname;
+          }
+          
+          // Initialize Analytics with proper configuration
+          const analytics = getAnalytics(app);
+          
+          // Configure Google Analytics with the correct cookie domain
+          // Check if gtag is available (loaded by Firebase Analytics)
+          const gtag = (window as any).gtag;
+          if (typeof gtag === 'function') {
+            gtag('config', firebaseConfig.measurementId, {
+              cookie_domain: cookieDomain,
+              cookie_flags: 'SameSite=None;Secure',
+              anonymize_ip: true,
+              allow_google_signals: false,
+              allow_ad_personalization_signals: false
+            });
+          }
+          
+          console.log(`Firebase Analytics initialized with cookie domain: ${cookieDomain}`);
         } catch (error) {
           console.warn('Firebase Analytics failed to initialize:', error);
         }
