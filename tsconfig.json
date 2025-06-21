@@ -4,14 +4,12 @@
     "module": "esnext",
     "jsx": "react",
     "lib": ["es2020", "dom"],
-    "types": ["node"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "node",
     "noEmit": true,
     "paths": {
       "@/*": [
