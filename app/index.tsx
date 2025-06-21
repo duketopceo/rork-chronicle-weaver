@@ -49,9 +49,22 @@ export default function HomeScreen() {
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
 
-  // Log home screen mounting
+  // Log home screen mounting and signal loading screen to hide
   React.useEffect(() => {
     const stepId = logStep('HOME', 'Home screen mounted and ready');
+    
+    // Signal to loading screen that React has mounted
+    if (typeof window !== 'undefined') {
+      // Set a flag that the loading screen can detect
+      (window as any).reactAppMounted = true;
+      
+      // Also trigger a custom event
+      const event = new CustomEvent('reactAppMounted', { detail: { timestamp: Date.now() } });
+      window.dispatchEvent(event);
+      
+      console.log('🚀 React app fully mounted and ready');
+    }
+    
     updateStep(stepId, 'success', 'Home screen initialization completed');
   }, []);
   /**
