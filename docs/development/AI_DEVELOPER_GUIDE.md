@@ -74,8 +74,8 @@ services/
 
 ### Key Commands
 ```bash
-# Development
-npm start                    # Start development server
+# Development (Updated June 21, 2025)
+npx expo start --web -c     # Start with cleared cache (recommended after fixes)
 npm run build               # Build for production  
 npm run build:production     # Clean production build
 npm run deploy              # Deploy to Firebase hosting
@@ -88,7 +88,11 @@ firebase deploy             # Manual deployment
 firebase serve              # Local hosting preview
 
 # Debug
-# Use the UltraDebugPanel (Bug icon in dev mode)
+# Enhanced debugging capabilities:
+# - UltraDebugPanel accessible via home screen OR error boundary
+# - Comprehensive error logging with stack traces
+# - Real-time performance monitoring
+# - API call inspection and retry mechanisms
 # CI/CD: GitHub Actions runs automatically on push to main
 ```
 
@@ -98,97 +102,88 @@ firebase serve              # Local hosting preview
 
 ### UltraDebugPanel
 **Location**: `components/UltraDebugPanel.tsx`  
-**Activation**: Tap the Bug icon in the top-right corner (dev mode only).  
-**Features**:
-- **User Mode**: Simplified view for beta testers to report bugs.
-- **Dev Mode**: Advanced view with state inspection, performance metrics, and system logs.
+**Access**: Available through home screen debug button OR error boundary fallback
 
-### Early Debug Console ⭐ NEW!
-**Location**: Built into `dist/index.html` loading screen  
-**Purpose**: Captures all `console.log`, `console.warn`, and `console.error` calls *before* the main React application loads. This is critical for debugging initial load errors, script failures, or race conditions.
-**How it Works**: A small script intercepts console methods and displays them in a simple, color-coded overlay. It ensures no log is missed during the app's bootstrap phase.
+#### **Enhanced Error Handling (June 21, 2025)**
+The application now features robust error handling that ensures debug access even during startup failures:
 
-**What You'll See**:
-```
-[12:34:56] 🐛 Chronicle Debug Console initialized
-[12:34:56] 🔍 Capturing all console output...
-[12:34:57] ✅ Firebase initialized successfully
-[12:34:57] ℹ️ Analytics disabled on Firebase subdomain to prevent cookie issues
-[12:34:58] 🔍 RootLayout component mounting...
-[12:34:58] ✅ React app detected! Loading successful.
-```
+**ErrorBoundary Integration**:
+- Wraps entire application in `app/_layout.tsx`
+- Catches any React component errors during rendering
+- Displays user-friendly error screen with debug panel access
+- Provides retry mechanism and error reporting capabilities
 
-**Benefits**:
-- **Debug Early Issues**: See exactly what happens during app startup
-- **Monitor Firebase**: Track Firebase and Analytics initialization in real-time  
-- **Catch Errors**: Spot problems before React debug tools are available
-- **Production Debugging**: Works on live deployments for troubleshooting
+**Debug Panel Access Methods**:
+1. **Normal Operation**: Bug icon on home screen (development mode)
+2. **Error State**: "Show Debug Panel" button on error boundary screen
+3. **Startup Failures**: Debug panel accessible even if main app fails to load
 
-### 💡 **NEW: React App Loading Solution**
-**Problem**: The React app would not reliably load after the initial `index.html` loading screen, causing the app to hang.
+**Critical Debugging Features**:
+- Step-by-step initialization logging
+- Real-time performance metrics
+- Error tracking with stack traces
+- API call history and response monitoring
+- Game state inspection and manipulation
+- Browser/device compatibility information
 
-**Solution**:
-1.  **Improved Detection**: The loading screen's JavaScript was updated to more robustly detect when React takes over the DOM. Instead of checking for child elements, it now looks for the *absence* of the loading screen's specific HTML elements.
-2.  **Fade-Out Transition**: A CSS fade-out animation was added to the loading screen. When the React app is detected, the `fade-out` class is applied, providing a smooth visual transition from the loading screen to the main application.
-3.  **DOM Cleanup**: After the fade-out transition completes, the loading screen's HTML is removed from the DOM to prevent any interference with the React app.
-4.  **Signal from React**: The React app now dispatches a custom event (`react-mounted`) when it has successfully mounted. The loading screen listens for this event as a definitive signal to begin the transition.
-
-**File Modified**: `dist/index.html`
-
-### 🔐 **NEW: Content Security Policy (CSP) for Production**
-
-**Problem**: The production application was encountering `Minified React error #185` and `gtag function not available` errors. These were caused by a strict default Content Security Policy that blocked scripts from Google Analytics and other necessary third-party services.
-
-**Solution**:
-1.  **Implemented CSP**: A `Content-Security-Policy` header was added to `firebase.json`.
-2.  **Allowed Sources**: The policy explicitly permits scripts and connections from:
-    *   `'self'` (the application's own origin)
-    *   Google Analytics (`https://www.google-analytics.com`, `https://www.googletagmanager.com`)
-    *   Google Fonts & Static Content (`https://www.gstatic.com`)
-    *   Firebase services (`https://*.firebaseio.com`, `https://*.googleapis.com`)
-3.  **Inline Scripts**: `'unsafe-inline'` was included for styles and scripts as required by the current build configuration. This should be reviewed in the future for an even stricter policy.
-
-**Result**: This change resolves the React and `gtag` errors, allowing the application to load correctly in a production environment while maintaining a strong security posture.
-
-**File Modified**: `firebase.json`
+#### **TypeScript and Build Issues Resolution**
+**Common Issues Fixed**:
+- `import.meta` syntax errors → Metro transformer handles all occurrences
+- Path alias resolution → Use relative imports for type safety
+- Missing dependencies → `babel-plugin-module-resolver` installed
+- Color constants → Updated to match actual color palette properties
 
 ---
 
-## 💳 Subscription & Monetization (Stripe Integration)
+## 🛠️ Error Handling and Recovery (NEW SECTION)
 
-This section details the integration of Stripe for managing user subscriptions and premium features.
+### Enhanced Error Boundary System
+Chronicle Weaver implements a multi-layered error handling approach:
 
-### Core Components
-- `components/SubscriptionGate.tsx`: Wraps premium features and displays an `UpgradePrompt` if the user lacks access.
-- `components/UpgradePrompt.tsx`: A UI component that encourages users to upgrade their plan.
-- `components/BillingPanel.tsx`: Shows the user their current plan, status, and billing cycle via the Stripe Customer Portal.
-- `components/UsageIndicator.tsx`: Tracks usage quotas for free-tier users (e.g., turn limits).
-- `components/SubscriptionPanel.tsx`: A new UI panel on the home screen that combines the `BillingPanel`, `UsageIndicator`, and `UpgradePrompt`.
+**Primary Error Boundary**: 
+- Located in `components/ErrorBoundary.tsx`
+- Catches React component errors during rendering
+- Displays informative error screen with recovery options
+- Integrates UltraDebugPanel for immediate debugging access
 
-### State Management (`store/gameStore.ts`)
-The `gameStore` now includes a `subscription` state object:
-```typescript
-subscription: {
-  plan: string;
-  status: string;
-  current_period_end?: number;
-} | null;
-```
-- This state is updated via the `setSubscription` action, which should be called after fetching the user's subscription status from your backend.
+**Error Recovery Flow**:
+1. Error occurs during app initialization or runtime
+2. ErrorBoundary catches the error and logs details
+3. User sees friendly error screen with error ID
+4. "Reload Application" button attempts recovery
+5. "Show Debug Panel" provides detailed diagnostics
+6. Debug panel shows step-by-step logs and error context
 
-### Protecting Premium Features
-To restrict a feature to subscribers, wrap it with the `SubscriptionGate` component:
-```tsx
-import SubscriptionGate from '@/components/SubscriptionGate';
+**Debug Panel Features**:
+- **Initialization Steps**: Track app startup progress
+- **Performance Metrics**: Monitor render times and memory usage
+- **Error Logs**: Complete stack traces and error context
+- **API Monitoring**: Track AI service calls and responses
+- **State Inspection**: View and modify game state in real-time
+- **Browser Info**: Device and browser compatibility details
 
-<SubscriptionGate feature="unlimited-saves">
-  <SaveGameButton />
-</SubscriptionGate>
+### Import and Build Issue Resolution
+**Metro Transformer Configuration**:
+- Handles `import.meta` syntax for web compatibility
+- Strips ES module syntax that breaks in browser environments
+- Located in `config/metro-transformer.js`
+
+**TypeScript Configuration**:
+- Removed invalid `expo/tsconfig.base` extends
+- Uses standard TypeScript configuration for better compatibility
+- Path aliases may cause issues - prefer relative imports
+
+**Common Solutions**:
+```bash
+# Clear all caches if encountering import issues
+npx expo start --web -c
+rm -rf node_modules/.cache
+npm install
 ```
 
 ---
 
-## 🚨 Error Handling
+## 🐛 Error Handling
 
 ### ErrorBoundary System
 **Location**: `components/ErrorBoundary.tsx`

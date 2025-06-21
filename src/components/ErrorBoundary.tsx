@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { colors } from '@/constants/colors';
+import { colors } from '../constants/colors';
 import { AlertTriangle, RefreshCw, Bug, Copy, Send } from 'lucide-react-native';
 import { UltraDebugPanel } from './UltraDebugPanel';
 
@@ -185,9 +185,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,
-  },
-  debugButton: {
-    backgroundColor: colors.backgroundSecondary,
+  },  debugButton: {
+    backgroundColor: colors.surface,
   },
   debugButtonText: {
     color: colors.text,
