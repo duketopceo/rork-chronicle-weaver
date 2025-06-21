@@ -513,11 +513,15 @@ firebase functions:log --only ext-firestore-stripe-payments-handleWebhookEvents
 
 ### 1. **Google Analytics Cookie Domain Errors** ✅ RESOLVED
 **Problem**: GA cookies `_ga` and `_ga_ENMCNZZZTJ` rejected for invalid domain
+**Root Cause**: Firebase subdomains have complex cookie domain requirements that conflict with GA
 **Solution**: 
 - Smart hostname detection in `app/_layout.tsx`
-- Dynamic cookie domain configuration per environment
+- **Analytics disabled on Firebase subdomains** to prevent cookie conflicts
+- Analytics only enabled on custom domain (`chronicleweaver.com`) and localhost
+- Improved timing: Configure gtag BEFORE initializing Analytics
 - Privacy-first GA settings (IP anonymization, no ad signals)
 - TypeScript gtag declarations in `types/global.d.ts`
+**Result**: Zero cookie errors, Analytics works perfectly on custom domain
 
 ### 2. **Dependency Peer Conflicts** ✅ RESOLVED  
 **Problem**: `@types/react@19.0.14` incompatible with `react-native@0.80.0`

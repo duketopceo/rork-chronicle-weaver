@@ -70,33 +70,47 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
         try {
           // Determine the correct cookie domain based on the current hostname
           const hostname = window.location.hostname;
-          let cookieDomain = 'auto'; // Default to auto-detection
+          let shouldInitializeAnalytics = true;
+          let cookieDomain = 'auto';
           
+          // Only enable Analytics on the custom domain to avoid cookie issues
           if (hostname === 'chronicleweaver.com' || hostname.endsWith('.chronicleweaver.com')) {
             cookieDomain = '.chronicleweaver.com';
-          } else if (hostname.includes('chronicle-weaver-460713.web.app')) {
-            cookieDomain = '.chronicle-weaver-460713.web.app';
-          } else if (hostname.includes('firebaseapp.com')) {
-            cookieDomain = hostname;
+          } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+            // Allow Analytics on localhost for development
+            cookieDomain = 'none';
+          } else {
+            // Disable Analytics on Firebase subdomains to prevent cookie errors
+            console.log('Analytics disabled on Firebase subdomain to prevent cookie issues');
+            shouldInitializeAnalytics = false;
           }
           
-          // Initialize Analytics with proper configuration
-          const analytics = getAnalytics(app);
-          
-          // Configure Google Analytics with the correct cookie domain
-          // Check if gtag is available (loaded by Firebase Analytics)
-          const gtag = (window as any).gtag;
-          if (typeof gtag === 'function') {
-            gtag('config', firebaseConfig.measurementId, {
-              cookie_domain: cookieDomain,
-              cookie_flags: 'SameSite=None;Secure',
-              anonymize_ip: true,
-              allow_google_signals: false,
-              allow_ad_personalization_signals: false
-            });
+          if (shouldInitializeAnalytics) {
+            // Wait a moment for gtag to be fully loaded
+            setTimeout(() => {
+              try {
+                // Configure gtag BEFORE initializing Analytics
+                const gtag = (window as any).gtag;
+                if (typeof gtag === 'function') {
+                  gtag('config', firebaseConfig.measurementId, {
+                    cookie_domain: cookieDomain,
+                    cookie_flags: 'SameSite=None;Secure',
+                    anonymize_ip: true,
+                    allow_google_signals: false,
+                    allow_ad_personalization_signals: false
+                  });
+                  
+                  // Now initialize Analytics
+                  const analytics = getAnalytics(app);
+                  console.log(`Firebase Analytics initialized with cookie domain: ${cookieDomain}`);
+                } else {
+                  console.warn('gtag function not available, Analytics not configured');
+                }
+              } catch (error) {
+                console.warn('Firebase Analytics configuration failed:', error);
+              }
+            }, 100); // Small delay to ensure gtag is ready
           }
-          
-          console.log(`Firebase Analytics initialized with cookie domain: ${cookieDomain}`);
         } catch (error) {
           console.warn('Firebase Analytics failed to initialize:', error);
         }
