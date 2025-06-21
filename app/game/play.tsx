@@ -45,6 +45,7 @@ import { useGameStore } from "@/store/gameStore";
 import NarrativeText from "@/components/NarrativeText";
 import ChoiceButton from "@/components/ChoiceButton";
 import CustomChoiceInput from "@/components/CustomChoiceInput";
+import { UltraDebugPanel } from "@/components/UltraDebugPanel";
 import Button from "@/components/Button";
 import { generateInitialStory, generateNextSegment } from "@/services/aiService";
 import { User, ArrowLeft, MessageCircle, Crown, Feather, Bug } from "lucide-react-native";
@@ -80,13 +81,14 @@ export default function GamePlayScreen() {
   // Get current narrative segment with reactive updates
   const narrative = useGameStore((state) => state.narrative);
   
-  // === LOCAL COMPONENT STATE ===
-  // UI state management for interactive elements
+  // === LOCAL COMPONENT STATE ===  // UI state management for interactive elements
   const [showChoices, setShowChoices] = useState(false);           // Control choice visibility
   const [initializing, setInitializing] = useState(true);         // Track initialization state
   const [showCustomInput, setShowCustomInput] = useState(false);  // Custom choice input visibility
-  const [processingChoice, setProcessingChoice] = useState(false); // Choice processing state  const [narrativeKey, setNarrativeKey] = useState(0);            // Force narrative re-render
+  const [processingChoice, setProcessingChoice] = useState(false); // Choice processing state
+  const [narrativeKey, setNarrativeKey] = useState(0);            // Force narrative re-render
   const [animationSpeed, setAnimationSpeed] = useState(1);        // Text animation speed control
+  const [showUltraDebug, setShowUltraDebug] = useState(false);    // Ultra debug panel visibility
   const scrollViewRef = useRef<ScrollView>(null);                 // Scroll view reference
   
   // === DEVELOPMENT DEBUGGING ===
@@ -403,9 +405,10 @@ What will you do to begin your chronicle?`,
       ]
     );
   };
-
   // === LOADING AND ERROR STATES ===
-  // Render different UI states based on the game status  if (!currentGame) {
+  // Render different UI states based on the game status
+  
+  if (!currentGame) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -420,16 +423,16 @@ What will you do to begin your chronicle?`,
           >
             <Bug size={20} color={colors.text} />
           </TouchableOpacity>
-        )}
-
-        {/* Ultra Debug Panel */}
+        )}        {/* Ultra Debug Panel */}
         <UltraDebugPanel 
           visible={showUltraDebug} 
-          onClose={() => setShowUltraDebug(false)}        />
+          onClose={() => setShowUltraDebug(false)}
+        />
       </SafeAreaView>
     );
   }
 
+  // Loading state while initializing the game
   if (initializing) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -461,12 +464,11 @@ What will you do to begin your chronicle?`,
           >
             <Bug size={20} color={colors.text} />
           </TouchableOpacity>
-        )}
-
-        {/* Ultra Debug Panel */}
+        )}        {/* Ultra Debug Panel */}
         <UltraDebugPanel 
           visible={showUltraDebug} 
-          onClose={() => setShowUltraDebug(false)}        />
+          onClose={() => setShowUltraDebug(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -691,14 +693,27 @@ What will you do to begin your chronicle?`,
           style={styles.navButton} 
           onPress={navigateToSystems}
           activeOpacity={0.7}
-        >
-          <Crown size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
+        >          <Crown size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
           <Text style={styles.navButtonText}>Systems</Text>
-        </TouchableOpacity>        </View>
-        
-      </SafeAreaView>
-    );
-  }
+        </TouchableOpacity>
+      </View>      
+      {/* Debug toggle for development */}
+      {__DEV__ && (
+        <TouchableOpacity
+          style={styles.debugToggle}
+          onPress={() => setShowUltraDebug(!showUltraDebug)}
+          activeOpacity={0.8}
+        >
+          <Bug size={20} color={colors.text} />
+        </TouchableOpacity>
+      )}      {/* Ultra Debug Panel */}
+      <UltraDebugPanel 
+        visible={showUltraDebug} 
+        onClose={() => setShowUltraDebug(false)} 
+      />
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {

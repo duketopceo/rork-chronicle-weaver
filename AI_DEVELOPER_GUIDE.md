@@ -258,7 +258,7 @@ WEBHOOK_SIGNING_SECRET=whsec_... # Server-side only
 - ✅ Tax reporting (US 1099-K, 1099-MISC)
 
 **Business Features**:
-- ✅ Automatic tax calculation
+- ✅ Automatic tax calculation (enabled)
 - ✅ Corporate cards and fund management
 - ✅ Multi-party payments and transfers
 - ✅ Advanced fraud detection
@@ -272,6 +272,9 @@ WEBHOOK_SIGNING_SECRET=whsec_... # Server-side only
 - Single saved character
 
 **Premium Tier ($4.99/month):**
+- **Pricing Model**: Recurring, Monthly
+- **Tax Behavior**: Auto (tax included in price)
+- **Lookup Key**: `premium_monthly`
 - Unlimited story generations
 - All historical eras (100+ periods)
 - Advanced character customization
@@ -279,11 +282,20 @@ WEBHOOK_SIGNING_SECRET=whsec_... # Server-side only
 - Priority AI response times
 
 **Chronicle Master ($9.99/month):**
+- **Pricing Model**: Recurring, Monthly
+- **Tax Behavior**: Auto (tax included in price)
+- **Lookup Key**: `master_monthly`
 - All Premium features
 - Custom historical scenarios
 - Early access to new eras
 - Multiplayer chronicles
 - Advanced analytics and insights
+
+**One-Time Purchase Options** (Future):
+- **Pricing Model**: One-off charges
+- Historical era packs
+- Character customization bundles
+- Premium themes and content
 
 ### Firestore Collections
 
@@ -294,13 +306,33 @@ WEBHOOK_SIGNING_SECRET=whsec_... # Server-side only
   description: "Unlimited stories + all historical eras",
   active: true,
   prices: [{
+    id: "price_premium_monthly",
+    lookup_key: "premium_monthly",
     unit_amount: 499, // $4.99
     currency: "usd",
     type: "recurring",
-    recurring: { interval: "month" }
+    recurring: { interval: "month" },
+    tax_behavior: "inclusive" // Tax included in price
   }],
   metadata: {
     gameFeatures: "unlimited_stories,all_eras,priority_ai"
+  }
+},
+{
+  name: "Chronicle Weaver Master",
+  description: "All premium features + custom scenarios",
+  active: true,
+  prices: [{
+    id: "price_master_monthly", 
+    lookup_key: "master_monthly",
+    unit_amount: 999, // $9.99
+    currency: "usd",
+    type: "recurring",
+    recurring: { interval: "month" },
+    tax_behavior: "inclusive" // Tax included in price
+  }],
+  metadata: {
+    gameFeatures: "unlimited_stories,all_eras,priority_ai,custom_scenarios,multiplayer"
   }
 }
 ```
@@ -455,6 +487,7 @@ firebase functions:log --only ext-firestore-stripe-payments-handleWebhookEvents
 - ✅ Live Stripe account configured and verified
 - ✅ Stripe Terms of Service accepted (June 20, 2025, 10:23 PM)
 - ✅ Account capabilities activated and operational
+- ✅ Automatic tax calculation enabled (`automatic_tax[enabled]=true`)
 - ✅ Production webhook endpoint active
 - ✅ Firebase Extension deployed and operational
 - 🔄 **Next**: Implement subscription gating components

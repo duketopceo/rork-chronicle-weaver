@@ -1,5 +1,11 @@
 {
-  "extends": ["@eslint/js/recommended", "@typescript-eslint/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "react", "react-hooks", "react-native"],
   "env": {
@@ -15,16 +21,34 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "rules": {
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },  "rules": {
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-var-requires": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
+    "react/no-unescaped-entities": "off",
+    "react/react-in-jsx-scope": "off",
+    "no-var": "warn",
+    "prefer-const": "warn",
+    "no-undef": "off",
     "react-native/no-unused-styles": "warn",
     "react-native/no-inline-styles": "off",
     "react-native/no-color-literals": "off"
   },
-  "ignorePatterns": ["dist/", "node_modules/", ".expo/", "*.config.js"]
+  "ignorePatterns": [
+    "dist/", 
+    "node_modules/", 
+    ".expo/", 
+    "*.config.js",
+    "scripts/",
+    "jest.setup.js",
+    "metro-transformer.js"
+  ]
 }

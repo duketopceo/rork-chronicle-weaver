@@ -32,8 +32,5 @@ jest.mock('expo-router', () => ({
   Stack: ({ children }) => children,
 }));
 
-// Mock React Native modules
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
-
 // Global test setup
 global.__DEV__ = true;
