@@ -31,7 +31,9 @@ import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
 import DebugPanel from "@/components/DebugPanel";
+import { EnhancedDebugPanel } from "@/components/EnhancedDebugPanel";
 import { Scroll, Crown, Feather, History, Bug, X } from "lucide-react-native";
+import { logStep, updateStep, logError } from "@/utils/debugSystem";
 
 /**
  * Main Home Screen Component
@@ -43,6 +45,13 @@ export default function HomeScreen() {
   const router = useRouter();
   const { currentGame, resetSetup } = useGameStore();
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showEnhancedDebug, setShowEnhancedDebug] = useState(false);
+
+  // Log home screen mounting
+  React.useEffect(() => {
+    const stepId = logStep('HOME', 'Home screen mounted and ready');
+    updateStep(stepId, 'success', 'Home screen initialization completed');
+  }, []);
 
   /**
    * Toggle Debug Panel Visibility
@@ -54,6 +63,10 @@ export default function HomeScreen() {
     setShowDebugPanel(!showDebugPanel);
   };
 
+  const toggleEnhancedDebug = () => {
+    setShowEnhancedDebug(!showEnhancedDebug);
+  };
+
   /**
    * Handle New Game Creation
    * 
@@ -61,8 +74,15 @@ export default function HomeScreen() {
    * This ensures a fresh start for character and world creation.
    */
   const handleNewGame = () => {
-    resetSetup(); // Clear any previous setup data
-    router.push("/game/setup");
+    const stepId = logStep('NAVIGATION', 'Starting new game');
+    try {
+      resetSetup(); // Clear any previous setup data
+      router.push("/game/setup");
+      updateStep(stepId, 'success', 'Navigated to game setup');
+    } catch (error) {
+      updateStep(stepId, 'error', 'Failed to navigate to game setup');
+      logError(error as Error, 'New Game Navigation', 'medium');
+    }
   };
 
   /**
@@ -138,20 +158,33 @@ export default function HomeScreen() {
               />
             )}          </View>
         </ScrollView>
-      </LinearGradient>
-
-      {/* Development Debug Panel Toggle Button */}
+      </LinearGradient>      {/* Development Debug Panel Toggle Button */}
       {__DEV__ && (
-        <TouchableOpacity
-          style={styles.debugToggle}
-          onPress={toggleDebugPanel}
-          activeOpacity={0.8}
-        >
-          <Bug size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={styles.debugButtons}>
+          <TouchableOpacity
+            style={styles.debugToggle}
+            onPress={toggleDebugPanel}
+            activeOpacity={0.8}
+          >
+            <Bug size={20} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.debugToggle, { top: 110 }]}
+            onPress={toggleEnhancedDebug}
+            activeOpacity={0.8}
+          >
+            <History size={20} color={colors.text} />
+          </TouchableOpacity>
+        </View>
       )}
 
-      {/* Full-Screen Debug Panel Modal */}
+      {/* Enhanced Debug Panel */}
+      <EnhancedDebugPanel 
+        visible={showEnhancedDebug} 
+        onClose={() => setShowEnhancedDebug(false)} 
+      />
+
+      {/* Original Debug Panel Modal */}
       <Modal
         visible={showDebugPanel}
         animationType="slide"
@@ -277,14 +310,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 2,
   },
-  debugToggle: {
+  debugButtons: {
     position: "absolute",
     top: 50,
     right: 20,
+    zIndex: 1000,
+  },
+  debugToggle: {
     backgroundColor: colors.surface,
     borderRadius: 50,
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: colors.primary,
@@ -294,7 +330,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 2,
     borderColor: colors.primary,
-    zIndex: 1000,
+    marginBottom: 10,
   },
   debugModalContainer: {
     flex: 1,

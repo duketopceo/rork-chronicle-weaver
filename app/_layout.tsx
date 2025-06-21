@@ -21,7 +21,7 @@
 
 import React from "react";
 import { Stack } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform } from "react-native";
 import { colors } from "@/constants/colors";
@@ -29,6 +29,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp } from "firebase/app";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { logStep, updateStep, logError, startTimer } from "@/utils/debugSystem";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes
@@ -87,65 +89,97 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
  * Sets up the navigation structure and manages app initialization.
  */
 export default function RootLayout() {
+  const [initTimer] = useState(() => startTimer('App Initialization'));
+  const [isInitialized, setIsInitialized] = useState(false);
+  
   console.log('RootLayout component mounting...');
+  const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
   
   useEffect(() => {
-    console.log('RootLayout useEffect running...');
+    const initStepId = logStep('LAYOUT', 'RootLayout useEffect running');
+    
     // Handle splash screen hiding with platform-specific timing
     // iOS needs slightly more time for smooth transitions
     const hideSplash = async () => {
-      console.log('Attempting to hide splash screen...');
+      const splashStepId = logStep('SPLASH', 'Attempting to hide splash screen');
+      
       await new Promise(resolve => setTimeout(resolve, Platform.select({ 
         ios: 1200,     // iOS needs more time for smooth animations
         android: 1000, // Android can hide splash sooner
         default: 1000  // Default for web and other platforms
       })));
+      
       try {
         await SplashScreen.hideAsync();
-        console.log('Splash screen hidden successfully');
+        updateStep(splashStepId, 'success', 'Splash screen hidden successfully');
       } catch (error) {
-        console.error('Failed to hide splash screen:', error);
+        updateStep(splashStepId, 'error', 'Failed to hide splash screen');
+        logError(error as Error, 'Splash Screen Hiding', 'medium');
       }
     };
     
-    hideSplash();
-  }, []);  /**
+    const initializeApp = async () => {
+      try {
+        await hideSplash();
+        setIsInitialized(true);
+        updateStep(initStepId, 'success', 'App initialization completed');
+        initTimer(); // Complete the timer
+      } catch (error) {
+        updateStep(initStepId, 'error', 'App initialization failed');
+        logError(error as Error, 'App Initialization', 'critical');
+      }
+    };
+    
+    initializeApp();
+    updateStep(mountStepId, 'success', 'RootLayout component mounted');
+  }, [initTimer, mountStepId]);
+
+  const handleGlobalError = (error: Error, errorInfo: any) => {
+    logError(error, 'Global Error Boundary', 'critical');
+    console.error('🚨 Global Error Boundary triggered:', error, errorInfo);
+  };
+
+  /**
    * Main App Render
    * 
    * Sets up the provider hierarchy and navigation structure:
-   * 1. tRPC Provider - Enables type-safe API calls throughout the app
-   * 2. React Query Provider - Manages server state and caching
-   * 3. Navigation Stack - Defines screen routing and transitions
+   * 1. Global Error Boundary - Catches and handles any React errors
+   * 2. tRPC Provider - Enables type-safe API calls throughout the app
+   * 3. React Query Provider - Manages server state and caching
+   * 4. Navigation Stack - Defines screen routing and transitions
    */
   console.log('RootLayout rendering...');
+  const renderStepId = logStep('LAYOUT', 'RootLayout rendering');
   
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <View style={{ 
-          flex: 1, 
-          backgroundColor: colors.background,
-          paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
-        }}>
-          <StatusBar style="light" />
-          <Stack
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: colors.surface,
-              },
-              headerTintColor: colors.text,
-              headerTitleStyle: {
-                fontWeight: "bold",
-                fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                fontFamily: Platform.select({
-                  ios: "Georgia",
-                  android: "serif",
-                  default: "serif",
-                }),
-              },
-              contentStyle: {
-                backgroundColor: colors.background,
-              },
+    <ErrorBoundary onError={handleGlobalError}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <View style={{ 
+            flex: 1, 
+            backgroundColor: colors.background,
+            paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
+          }}>
+            <StatusBar style="light" />
+            <ErrorBoundary onError={(error, errorInfo) => logError(error, 'Navigation Error Boundary', 'high')}>
+              <Stack
+                screenOptions={{
+                  headerStyle: {
+                    backgroundColor: colors.surface,
+                  },
+                  headerTintColor: colors.text,
+                  headerTitleStyle: {
+                    fontWeight: "bold",
+                    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+                    fontFamily: Platform.select({
+                      ios: "Georgia",
+                      android: "serif",
+                      default: "serif",
+                    }),
+                  },
+                  contentStyle: {
+                    backgroundColor: colors.background,
+                  },
               gestureEnabled: true,
             }}
           >
@@ -214,12 +248,13 @@ export default function RootLayout() {
                 presentation: "modal",
                 headerTitleStyle: {
                   fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }
-              }} 
+                }              }} 
             />
           </Stack>
+        </ErrorBoundary>
         </View>
       </QueryClientProvider>
     </trpc.Provider>
+  </ErrorBoundary>
   );
 } // End of RootLayout component

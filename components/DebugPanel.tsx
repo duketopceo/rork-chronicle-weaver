@@ -126,13 +126,12 @@ export default function DebugPanel() {
     <AlertTriangle size={16} color={colors.debugWarning} />
   );
   const getDebugInfo = (): DebugInfo | null => {
-    if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {
-      return {
+    if (typeof global !== 'undefined' && global.__CHRONICLE_DEBUG__) {      return {
         callCount: 0,
         apiCallHistory: [],
         systemInfo: {
           platform: Platform.OS,
-          version: Platform.Version.toString(),
+          version: Platform.Version ? Platform.Version.toString() : (Platform.OS === 'web' ? navigator.userAgent : 'unknown'),
           deviceType: SCREEN_WIDTH > 768 ? "tablet" : "phone",
           screenDimensions: {
             width: SCREEN_WIDTH,
@@ -226,13 +225,12 @@ export default function DebugPanel() {
   };
 
   const debugInfo = getDebugInfo();
-
   // Get platform-specific information
   const getPlatformInfo = () => {
     const platformConstants = Platform.constants || {};
     return {
       os: Platform.OS,
-      version: Platform.Version,
+      version: Platform.Version || (Platform.OS === 'web' ? 'Web Browser' : 'Unknown'),
       isTV: Platform.isTV,
       isTesting: Platform.isTesting,
       screenWidth: SCREEN_WIDTH,
