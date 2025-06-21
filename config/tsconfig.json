@@ -12,9 +12,10 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "bundler",
     "noEmit": true,
+    "baseUrl": "..",
     "paths": {
       "@/*": [
-        "./*"
+        "src/*"
       ]
     }
   },
