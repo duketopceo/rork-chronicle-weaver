@@ -22,15 +22,16 @@
  * - Integrates with game reset functionality
  */
 
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
-import { Scroll, Crown, Feather, History } from "lucide-react-native";
+import DebugPanel from "@/components/DebugPanel";
+import { Scroll, Crown, Feather, History, Bug, X } from "lucide-react-native";
 
 /**
  * Main Home Screen Component
@@ -41,6 +42,17 @@ import { Scroll, Crown, Feather, History } from "lucide-react-native";
 export default function HomeScreen() {
   const router = useRouter();
   const { currentGame, resetSetup } = useGameStore();
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+
+  /**
+   * Toggle Debug Panel Visibility
+   * 
+   * Shows/hides the full-screen debug panel for development monitoring.
+   * Only available in development builds for security.
+   */
+  const toggleDebugPanel = () => {
+    setShowDebugPanel(!showDebugPanel);
+  };
 
   /**
    * Handle New Game Creation
@@ -124,10 +136,42 @@ export default function HomeScreen() {
                 size="large"
                 style={styles.secondaryButton}
               />
-            )}
-          </View>
+            )}          </View>
         </ScrollView>
       </LinearGradient>
+
+      {/* Development Debug Panel Toggle Button */}
+      {__DEV__ && (
+        <TouchableOpacity
+          style={styles.debugToggle}
+          onPress={toggleDebugPanel}
+          activeOpacity={0.8}
+        >
+          <Bug size={24} color={colors.text} />
+        </TouchableOpacity>
+      )}
+
+      {/* Full-Screen Debug Panel Modal */}
+      <Modal
+        visible={showDebugPanel}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setShowDebugPanel(false)}
+      >
+        <SafeAreaView style={styles.debugModalContainer}>
+          <View style={styles.debugHeader}>
+            <Text style={styles.debugTitle}>Chronicle Weaver - Debug Panel</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowDebugPanel(false)}
+              activeOpacity={0.8}
+            >
+              <X size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+          <DebugPanel />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -228,10 +272,54 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
-  },
-  secondaryButton: {
+  },  secondaryButton: {
     borderColor: colors.primary,
     borderRadius: 16,
     borderWidth: 2,
+  },
+  debugToggle: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: colors.surface,
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    zIndex: 1000,
+  },
+  debugModalContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  debugHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  debugTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    backgroundColor: colors.error,
+    borderRadius: 25,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -16,8 +16,9 @@
           sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        background-color: #000000;
+        background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
         color: #ffffff;
+        overflow: hidden;
       }
       
       #root {
@@ -33,21 +34,120 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 20px;
+        text-align: center;
+        padding: 40px;
+        max-width: 800px;
+        gap: 30px;
       }
       
       .spinner {
-        width: 40px;
-        height: 40px;
+        width: 60px;
+        height: 60px;
         border: 4px solid #333;
-        border-top: 4px solid #fff;
+        border-top: 4px solid #d4af37;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 2s linear infinite;
+        margin-bottom: 10px;
+      }
+      
+      .loading-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #d4af37;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin: 0;
+      }
+      
+      .loading-subtitle {
+        font-size: 16px;
+        color: #cccccc;
+        margin: 0;
+        opacity: 0.8;
+      }
+      
+      .quote-container {
+        max-width: 600px;
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(212, 175, 55, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        backdrop-filter: blur(10px);
+      }
+      
+      .quote-text {
+        font-size: 18px;
+        font-style: italic;
+        line-height: 1.6;
+        color: #ffffff;
+        margin: 0 0 15px 0;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      
+      .quote-text.active {
+        opacity: 1;
+      }
+      
+      .quote-author {
+        font-size: 14px;
+        color: #d4af37;
+        font-weight: bold;
+        text-align: right;
+        margin: 0;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out 0.2s;
+      }
+      
+      .quote-author.active {
+        opacity: 1;
+      }
+      
+      .loading-progress {
+        width: 300px;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #d4af37, #f4e99b);
+        border-radius: 2px;
+        animation: progress 8s ease-in-out infinite;
       }
       
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes progress {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+      
+      /* Subtle background animation */
+      body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+        animation: backgroundShift 10s ease-in-out infinite;
+        z-index: -1;
+      }
+      
+      @keyframes backgroundShift {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
       }
     </style>
   </head>
@@ -55,8 +155,113 @@
     <div id="root">
       <div class="loading">
         <div class="spinner"></div>
-        <p>Loading Chronicle Weaver...</p>
+        <h1 class="loading-title">Chronicle Weaver</h1>
+        <p class="loading-subtitle">Initializing your historical journey...</p>
+        
+        <div class="quote-container">
+          <p class="quote-text" id="quote-text"></p>
+          <p class="quote-author" id="quote-author"></p>
+        </div>
+        
+        <div class="loading-progress">
+          <div class="progress-bar"></div>
+        </div>
       </div>
     </div>
+    
+    <script>
+      // Historical quotes from antiquity - Civilization style
+      const historicalQuotes = [
+        {
+          text: "The whole life of man is but a point of time; let us enjoy it.",
+          author: "Plutarch"
+        },
+        {
+          text: "History is the witness that testifies to the passing of time.",
+          author: "Cicero"
+        },
+        {
+          text: "Those who cannot remember the past are condemned to repeat it.",
+          author: "George Santayana"
+        },
+        {
+          text: "The only thing new in the world is the history you do not know.",
+          author: "Harry S. Truman"
+        },
+        {
+          text: "I have learned throughout my life as a composer chiefly through my mistakes and pursuits of false assumptions, not by my exposure to founts of wisdom and knowledge.",
+          author: "Igor Stravinsky"
+        },
+        {
+          text: "Fortune favors the bold.",
+          author: "Virgil"
+        },
+        {
+          text: "Know thyself.",
+          author: "Socrates"
+        },
+        {
+          text: "The unexamined life is not worth living.",
+          author: "Socrates"
+        },
+        {
+          text: "In war, truth is the first casualty.",
+          author: "Aeschylus"
+        },
+        {
+          text: "Time is the most valuable thing we can spend.",
+          author: "Theophrastus"
+        },
+        {
+          text: "The measure of a man is what he does with power.",
+          author: "Plato"
+        },
+        {
+          text: "Victory at all costs, victory in spite of all terror, victory however long and hard the road may be; for without victory, there is no survival.",
+          author: "Winston Churchill"
+        },
+        {
+          text: "An empire founded by war has to maintain itself by war.",
+          author: "Charles de Montesquieu"
+        },
+        {
+          text: "The art of war is simple enough. Find out where your enemy is. Get at him as soon as you can. Strike him as hard as you can, and keep moving on.",
+          author: "Ulysses S. Grant"
+        },
+        {
+          text: "History will be kind to me for I intend to write it.",
+          author: "Winston Churchill"
+        }
+      ];
+      
+      let currentQuoteIndex = 0;
+      
+      function displayQuote() {
+        const quoteText = document.getElementById('quote-text');
+        const quoteAuthor = document.getElementById('quote-author');
+        const quote = historicalQuotes[currentQuoteIndex];
+        
+        // Fade out
+        quoteText.classList.remove('active');
+        quoteAuthor.classList.remove('active');
+        
+        setTimeout(() => {
+          quoteText.textContent = `"${quote.text}"`;
+          quoteAuthor.textContent = `— ${quote.author}`;
+          
+          // Fade in
+          quoteText.classList.add('active');
+          quoteAuthor.classList.add('active');
+        }, 250);
+        
+        currentQuoteIndex = (currentQuoteIndex + 1) % historicalQuotes.length;
+      }
+      
+      // Initialize first quote
+      displayQuote();
+      
+      // Change quote every 4 seconds
+      setInterval(displayQuote, 4000);
+    </script>
   </body>
 </html>
