@@ -88,6 +88,34 @@ export default function DebugPanel({ visible, onClose }: DebugPanelProps) {
   const renderStateTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>👤 Authentication</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Status:</Text>
+          <Text style={styles.value}>
+            {gameState.user?.isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+          </Text>
+        </View>
+        {gameState.user && (
+          <>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>User Type:</Text>
+              <Text style={styles.value}>
+                {gameState.user.isAnonymous ? 'Guest' : 'Registered'}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.value}>{gameState.user.email || 'N/A'}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>UID:</Text>
+              <Text style={styles.value}>{gameState.user.uid}</Text>
+            </View>
+          </>
+        )}
+      </View>
+      
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>🎮 Game State</Text>
         <View style={styles.infoRow}>
           <Text style={styles.label}>Current Game:</Text>

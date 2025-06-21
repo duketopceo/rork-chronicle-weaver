@@ -96,23 +96,17 @@ firebase serve              # Local hosting preview
 
 ## 🐛 Debug System (CRITICAL FOR DEVELOPMENT)
 
+### UltraDebugPanel
+**Location**: `components/UltraDebugPanel.tsx`  
+**Activation**: Tap the Bug icon in the top-right corner (dev mode only).  
+**Features**:
+- **User Mode**: Simplified view for beta testers to report bugs.
+- **Dev Mode**: Advanced view with state inspection, performance metrics, and system logs.
+
 ### Early Debug Console ⭐ NEW!
 **Location**: Built into `dist/index.html` loading screen  
-**Purpose**: Capture ALL initialization logs before React loads
-
-**Features**:
-- ✅ **Immediate Visibility**: Shows logs from the very first page load
-- ✅ **Console Interception**: Captures Firebase, Analytics, and React initialization logs
-- ✅ **Real-Time Updates**: Live scrolling log display with timestamps
-- ✅ **Color-Coded Levels**: SUCCESS (green), ERROR (red), WARNING (yellow), INFO (blue), DEBUG (purple)
-- ✅ **Persistent Display**: Stays visible until React takes over, then fades to background
-- ✅ **Smart Filtering**: Highlights Firebase, Analytics, and RootLayout messages
-
-**How to Access**:
-1. Open any page (local or production)
-2. Look for the "🐛 Chronicle Debug Console" in bottom-right corner
-3. Watch real-time logs during app initialization
-4. Console automatically fades when React loads but remains accessible
+**Purpose**: Captures all `console.log`, `console.warn`, and `console.error` calls *before* the main React application loads. This is critical for debugging initial load errors, script failures, or race conditions.
+**How it Works**: A small script intercepts console methods and displays them in a simple, color-coded overlay. It ensures no log is missed during the app's bootstrap phase.
 
 **What You'll See**:
 ```
@@ -130,28 +124,38 @@ firebase serve              # Local hosting preview
 - **Catch Errors**: Spot problems before React debug tools are available
 - **Production Debugging**: Works on live deployments for troubleshooting
 
-### UltraDebugPanel Features
-**Location**: `components/UltraDebugPanel.tsx`
+---
 
-**Two Modes**:
-1. **User Mode**: Simplified view showing app health, performance, and recent activity
-2. **Developer Mode**: Full technical details with tabs for steps, errors, metrics, and system info
+## 💳 Subscription & Monetization (Stripe Integration)
 
-**Access**: 
-- In development builds, tap the Bug icon (🐛) in the top-right corner
-- Toggle between Simple/Advanced modes with the switch in the header
+This section details the integration of Stripe for managing user subscriptions and premium features.
 
-**Debug System** (`utils/debugSystem.ts`):
+### Core Components
+- `components/SubscriptionGate.tsx`: Wraps premium features and displays an `UpgradePrompt` if the user lacks access.
+- `components/UpgradePrompt.tsx`: A UI component that encourages users to upgrade their plan.
+- `components/BillingPanel.tsx`: Shows the user their current plan, status, and billing cycle via the Stripe Customer Portal.
+- `components/UsageIndicator.tsx`: Tracks usage quotas for free-tier users (e.g., turn limits).
+- `components/SubscriptionPanel.tsx`: A new UI panel on the home screen that combines the `BillingPanel`, `UsageIndicator`, and `UpgradePrompt`.
+
+### State Management (`store/gameStore.ts`)
+The `gameStore` now includes a `subscription` state object:
 ```typescript
-// Log development steps
-logStep('USER_ACTION', 'User navigated to game setup');
-updateStep(stepId, 'success', 'Navigation completed');
+subscription: {
+  plan: string;
+  status: string;
+  current_period_end?: number;
+} | null;
+```
+- This state is updated via the `setSubscription` action, which should be called after fetching the user's subscription status from your backend.
 
-// Log errors with context
-logError(error, 'Game State Loading', 'critical');
+### Protecting Premium Features
+To restrict a feature to subscribers, wrap it with the `SubscriptionGate` component:
+```tsx
+import SubscriptionGate from '@/components/SubscriptionGate';
 
-// Track performance metrics
-logPerformanceMetric('api_response_time', responseTime, 'ms');
+<SubscriptionGate feature="unlimited-saves">
+  <SaveGameButton />
+</SubscriptionGate>
 ```
 
 ---
@@ -198,8 +202,81 @@ interface GameState {
 - **Firestore**: Game save data and user progress
 - **Hosting**: Static web app deployment
 - **Functions**: Server-side AI processing (optional)
+- **Identity Platform**: Enhanced authentication features
 
-**Configuration**: 
+### Firebase Identity Platform Configuration
+**Project**: `chronicle-weaver-460713`  
+**API Key**: `AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0`  
+**Auth Domain**: `chronicle-weaver-460713.firebaseapp.com`
+
+**Web Integration Snippet**:
+```html
+<script src="https://www.gstatic.com/firebasejs/8.0/firebase.js"></script>
+<script>
+  var config = {
+    apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+    authDomain: "chronicle-weaver-460713.firebaseapp.com",
+  };
+  firebase.initializeApp(config);
+</script>
+```
+
+**React Native/Expo Configuration**:
+```typescript
+// services/firebaseUtils.ts
+const firebaseConfig = {
+  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+  authDomain: "chronicle-weaver-460713.firebaseapp.com",
+  projectId: "chronicle-weaver-460713",
+  storageBucket: "chronicle-weaver-460713.appspot.com",
+  messagingSenderId: "your-sender-id",
+  appId: "your-app-id"
+};
+```
+
+**Authentication Features Available**:
+- Email/Password authentication
+- Google Sign-In integration
+- Anonymous authentication for guest users
+- Custom claims for subscription tiers
+- Multi-factor authentication support
+
+**Implementation Status**:
+- ✅ Identity Platform configured and active
+- ✅ Authentication domain verified
+- ✅ API keys generated and secured
+- ✅ **NEW**: Authentication flow integrated in app components
+- ✅ **NEW**: User state management connected to game store
+- ✅ **NEW**: Auth panel available on home screen (User icon)
+- ✅ **NEW**: Authentication state monitoring in debug panel
+- 🔄 **Next**: Connect authentication to subscription management
+- 🔄 **Next**: Add protected routes for authenticated users
+
+**Authentication Components Implemented**:
+- `components/AuthPanel.tsx`: Complete sign in/sign up interface
+- Email/password authentication with account creation
+- Anonymous guest user support
+- Authentication state persistence in game store
+- Real-time auth state monitoring in `app/_layout.tsx`
+- User authentication display in debug panel
+
+**Usage in Game Store**:
+```typescript
+// Authentication state in gameStore
+user: {
+  uid: string | null;
+  email: string | null;
+  isAnonymous: boolean;
+  isAuthenticated: boolean;
+} | null;
+```
+
+**Available on Home Screen**:
+- **User Icon**: Access authentication panel (sign in/sign up/guest mode)
+- **Star Icon**: Access subscription management panel
+- **Bug Icon**: Access debug panel (dev mode only)
+
+**Configuration**:
 - Environment variables in `.env.local`
 - Firebase config in `firebase.json`
 - Service initialization in `services/firebaseUtils.ts`
@@ -540,56 +617,6 @@ firebase functions:log --only ext-firestore-stripe-payments-handleWebhookEvents
 - **User Agent**: Firefox 139.0 on Windows 10
 - **Capabilities**: All payment methods enabled (13+ capabilities active)
 - **Requirements**: All onboarding requirements satisfied
-
----
-
-## 🔧 Current Production Status (June 20, 2025)
-
-### ✅ **DEPLOYMENT STATUS**
-- **Live URLs**: 
-  - Production: https://chronicleweaver.com
-  - Firebase: https://chronicle-weaver-460713.web.app
-- **Build Status**: All production builds successful (3.42 MB optimized)
-- **CI/CD Pipeline**: Active GitHub Actions workflow with automated deployment
-- **Dependencies**: All peer dependency conflicts resolved (@types/react@^19.1.0)
-
-### ✅ **CRITICAL FIXES IMPLEMENTED**
-- **Google Analytics**: Cookie domain errors resolved with smart hostname detection
-- **TypeScript**: All type errors fixed, full compilation success
-- **React Native**: Updated to 0.80.0 with compatible dependencies
-- **Error Boundaries**: Comprehensive error handling across all components
-- **Debug System**: UltraDebugPanel with dual-mode (User/Developer) interface
-- **Early Debug Console**: ⭐ **NEW** - Captures all logs from page load start
-
-### ✅ **INFRASTRUCTURE**
-- **Firebase Hosting**: Custom domain with SSL, optimized asset delivery
-- **GitHub Actions**: Matrix testing (Node 18.x/20.x), automated deployment
-- **Dependency Management**: Bun package manager, clean lockfile
-- **Error Monitoring**: Real-time debug logging with step tracking
-- **Early Debugging**: Pre-React console interception for complete visibility
-
-### 🍪 **Google Analytics Configuration**
-**Fixed Cookie Domain Issues:**
-- **Smart Detection**: Automatic cookie domain configuration per hostname
-- **Multi-Domain Support**: Works on both custom domain and Firebase subdomain
-- **Privacy Compliance**: IP anonymization, no ad personalization signals
-- **TypeScript Safety**: Proper gtag type declarations in global.d.ts
-
-### 🧪 **Testing & Quality Assurance**
-- **Jest Testing**: Basic test suite configured and passing
-- **TypeScript**: Strict mode enabled, all errors resolved
-- **ESLint**: Code linting with warnings allowed in CI/CD
-- **Cross-Platform**: Web, iOS, Android compatibility verified
-- **Performance**: Bundle optimization and efficient loading
-- **Debug Coverage**: Early console + UltraDebugPanel = complete visibility
-
-### 🐛 **Advanced Debugging Capabilities**
-- **Early Debug Console**: Immediate log capture from page load
-- **UltraDebugPanel**: Comprehensive React-based debug interface
-- **Console Interception**: All Firebase, Analytics, and React logs captured
-- **Real-Time Monitoring**: Live updates during initialization
-- **Production Debugging**: Works on live deployments for troubleshooting
-- **Color-Coded Logs**: Visual distinction between log levels and sources
 
 ---
 

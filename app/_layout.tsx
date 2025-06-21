@@ -31,6 +31,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp } from "firebase/app";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "@/utils/debugSystem";
+import { onAuthStateChange } from "@/services/firebaseUtils";
+import { useGameStore } from "@/store/gameStore";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes
@@ -132,6 +134,7 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
   const [isInitialized, setIsInitialized] = useState(false);
+  const { setUser } = useGameStore(state => ({ setUser: state.setUser }));
   
   console.log('RootLayout component mounting...');
   const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
@@ -139,15 +142,36 @@ export default function RootLayout() {
   useEffect(() => {
     const initStepId = logStep('LAYOUT', 'RootLayout useEffect running');
     
-    // Handle splash screen hiding with platform-specific timing
+    // Set up authentication state monitoring
+    const unsubscribe = onAuthStateChange((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          isAnonymous: firebaseUser.isAnonymous,
+          isAuthenticated: true
+        });
+        logStep('AUTH', `User authenticated: ${firebaseUser.isAnonymous ? 'Guest' : firebaseUser.email}`);
+      } else {
+        setUser(null);
+        logStep('AUTH', 'User signed out');
+      }
+    });
+      // Handle splash screen hiding with platform-specific timing
     // iOS needs slightly more time for smooth transitions
     const hideSplash = async () => {
       const splashStepId = logStep('SPLASH', 'Attempting to hide splash screen');
       
+      // For web development, we don't need to hide splash screen
+      if (Platform.OS === 'web') {
+        updateStep(splashStepId, 'success', 'Web platform - no splash screen to hide');
+        return;
+      }
+      
       await new Promise(resolve => setTimeout(resolve, Platform.select({ 
         ios: 1200,     // iOS needs more time for smooth animations
         android: 1000, // Android can hide splash sooner
-        default: 1000  // Default for web and other platforms
+        default: 500   // Faster for other platforms
       })));
       
       try {
@@ -167,13 +191,17 @@ export default function RootLayout() {
         initTimer(); // Complete the timer
       } catch (error) {
         updateStep(initStepId, 'error', 'App initialization failed');
-        logError(error as Error, 'App Initialization', 'critical');
-      }
+        logError(error as Error, 'App Initialization', 'critical');      }
     };
     
     initializeApp();
     updateStep(mountStepId, 'success', 'RootLayout component mounted');
-  }, [initTimer, mountStepId]);
+    
+    // Cleanup auth listener on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [initTimer, mountStepId]); // Removed setUser from dependencies to prevent infinite loop
 
   const handleGlobalError = (error: Error, errorInfo: any) => {
     logError(error, 'Global Error Boundary', 'critical');

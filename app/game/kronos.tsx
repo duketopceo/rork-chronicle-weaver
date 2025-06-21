@@ -103,7 +103,7 @@ export default function KronosScreen() {
                         <Text style={styles.kronosName}>Kronos</Text>
                       </View>
                       <Text style={styles.messageText}>{message.response}</Text>
-                      {!message.resolved && (
+                      {message.status !== "answered" && (
                         <TouchableOpacity 
                           style={styles.resolveButton}
                           onPress={() => handleMarkResolved(message.id)}

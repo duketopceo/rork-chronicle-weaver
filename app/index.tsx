@@ -31,8 +31,10 @@ import { colors } from "@/constants/colors";
 import Button from "@/components/Button";
 import { useGameStore } from "@/store/gameStore";
 import { UltraDebugPanel } from "@/components/UltraDebugPanel";
-import { Scroll, Crown, Feather, History, Bug } from "lucide-react-native";
+import { Scroll, Crown, Feather, History, Bug, Star, User } from "lucide-react-native";
 import { logStep, updateStep, logError } from "@/utils/debugSystem";
+import SubscriptionPanel from "@/components/SubscriptionPanel";
+import AuthPanel from "@/components/AuthPanel";
 
 /**
  * Main Home Screen Component
@@ -44,6 +46,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const { currentGame, resetSetup } = useGameStore();
   const [showUltraDebug, setShowUltraDebug] = useState(false);
+  const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(false);
+  const [showAuthPanel, setShowAuthPanel] = useState(false);
 
   // Log home screen mounting
   React.useEffect(() => {
@@ -58,6 +62,14 @@ export default function HomeScreen() {
    */
   const toggleUltraDebug = () => {
     setShowUltraDebug(!showUltraDebug);
+  };
+
+  const toggleSubscriptionPanel = () => {
+    setShowSubscriptionPanel(!showSubscriptionPanel);
+  };
+
+  const toggleAuthPanel = () => {
+    setShowAuthPanel(!showAuthPanel);
   };
 
   /**
@@ -98,13 +110,29 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <View style={styles.iconContainer}>
-                <Scroll size={64} color={colors.primary} />
+                <Scroll color={colors.primary} size={32} />
               </View>
-              <View style={styles.titleTextContainer}>
-                <Text style={styles.title}>Chronicle Weaver</Text>
-                <Text style={styles.subtitle}>Shape Your History</Text>
-              </View>
+              <Text style={styles.title}>Chronicle Weaver</Text>
             </View>
+            <TouchableOpacity onPress={toggleUltraDebug} style={styles.debugIcon}>
+              <Bug color={colors.text} size={24} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleSubscriptionPanel} style={styles.debugIcon}>
+              <Star color={colors.text} size={24} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleAuthPanel} style={styles.debugIcon}>
+              <User color={colors.text} size={24} />
+            </TouchableOpacity>
+          </View>
+
+          {showUltraDebug && <UltraDebugPanel visible={showUltraDebug} onClose={toggleUltraDebug} />}
+          {showSubscriptionPanel && <SubscriptionPanel />}
+          {showAuthPanel && <AuthPanel />}
+
+          <View style={styles.content}>
+            <Text style={styles.subtitle}>
+              Shape Your History
+            </Text>
           </View>
 
           <View style={styles.featuresContainer}>
@@ -222,6 +250,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: "italic",
   },
+  content: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
   featuresContainer: {
     marginBottom: 32,
     gap: 16,
@@ -294,5 +326,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     marginBottom: 10,
+  },
+  debugIcon: {
+    marginLeft: 16,
   },
 });

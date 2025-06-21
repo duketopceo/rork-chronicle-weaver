@@ -278,9 +278,9 @@ export type GameSetupState = {
 export type ChronosMessage = {
   id: string;          // Unique message identifier
   message: string;    // The message content
-  response?: string;  // AI response to the message
   timestamp: number;   // When the message was sent
-  resolved: boolean;   // Whether the message has been resolved
+  response?: string;  // AI response to the message
+  status: "pending" | "answered" | "failed"; // Status of the message
 };
 
 /**

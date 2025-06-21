@@ -43,6 +43,17 @@ interface GameStore {
 
   // === USER PROFILE ===
   userType: "free" | "paid";         // User subscription status
+  user: {
+    uid: string | null;
+    email: string | null;
+    isAnonymous: boolean;
+    isAuthenticated: boolean;
+  } | null;
+  subscription: {
+    plan: string;
+    status: string;
+    current_period_end?: number;
+  } | null;
 
   // === GAME SETUP ACTIONS ===
   // These actions manage the initial game creation flow
@@ -72,6 +83,8 @@ interface GameStore {
   setLoading: (loading: boolean) => void;            // Control loading state
   setError: (error: string | null) => void;         // Handle error states
   setUserType: (type: "free" | "paid") => void;     // Update user subscription
+  setUser: (user: { uid: string | null; email: string | null; isAnonymous: boolean; isAuthenticated: boolean } | null) => void;
+  setSubscription: (subscription: { plan: string; status: string; current_period_end?: number } | null) => void;
 
   // === CHRONOS COMMUNICATION ===
   // These actions manage AI advisor interactions
@@ -100,34 +113,21 @@ export const useGameStore = create<GameStore>()(
       chronosMessages: [],
       narrative: null,
       userType: "free",
+      user: null,
+      subscription: null,      // === GAME SETUP ACTIONS ===
+      setEra: (era) => set((state) => ({ gameSetup: { ...state.gameSetup, era } })),
 
-      setEra: (era) => set((state) => ({
-        gameSetup: { ...state.gameSetup, era }
-      })),
+      setTheme: (theme) => set((state) => ({ gameSetup: { ...state.gameSetup, theme } })),
 
-      setTheme: (theme) => set((state) => ({
-        gameSetup: { ...state.gameSetup, theme }
-      })),
+      setDifficulty: (difficulty) => set((state) => ({ gameSetup: { ...state.gameSetup, difficulty } })),
 
-      setDifficulty: (difficulty) => set((state) => ({
-        gameSetup: { ...state.gameSetup, difficulty }
-      })),
+      setCharacterName: (characterName) => set((state) => ({ gameSetup: { ...state.gameSetup, characterName } })),
 
-      setCharacterName: (characterName) => set((state) => ({
-        gameSetup: { ...state.gameSetup, characterName }
-      })),
+      setGenerateBackstory: (generateBackstory) => set((state) => ({ gameSetup: { ...state.gameSetup, generateBackstory } })),
 
-      setGenerateBackstory: (generateBackstory) => set((state) => ({
-        gameSetup: { ...state.gameSetup, generateBackstory }
-      })),
+      setCustomEra: (customEra) => set((state) => ({ gameSetup: { ...state.gameSetup, customEra } })),
 
-      setCustomEra: (customEra) => set((state) => ({
-        gameSetup: { ...state.gameSetup, customEra }
-      })),
-
-      setCustomTheme: (customTheme) => set((state) => ({
-        gameSetup: { ...state.gameSetup, customTheme }
-      })),
+      setCustomTheme: (customTheme) => set((state) => ({ gameSetup: { ...state.gameSetup, customTheme } })),
 
       nextSetupStep: () => set((state) => {
         const currentStep = state.gameSetup.setupStep;
@@ -154,13 +154,16 @@ export const useGameStore = create<GameStore>()(
         error: null,
       }),
 
+      // === ACTIVE GAME ACTIONS ===
       startNewGame: () => {
-        const { era, theme, difficulty, characterName } = get().gameSetup;
+        const { gameSetup } = get();
         
-        console.log("[GameStore] 🎮 Starting new game with:", { era, theme, difficulty, characterName });
+        console.log("[GameStore] 🎮 Starting new game with:", gameSetup);
         
+        const { era, theme, difficulty, characterName } = gameSetup;
+
         if (!era || !theme || !characterName) {
-          console.error("[GameStore] ❌ Game setup is incomplete:", { era, theme, characterName });
+          console.error("[GameStore] ❌ Game setup is incomplete:", gameSetup);
           set({ error: "Game setup is incomplete" });
           return;
         }
@@ -401,45 +404,41 @@ export const useGameStore = create<GameStore>()(
         };
       }),
 
+      endGame: () => set({ currentGame: null, narrative: null, chronosMessages: [] }),
+
       setLoading: (loading) => set({ isLoading: loading }),
 
       setError: (error) => set({ error }),
 
-      endGame: () => set({
-        currentGame: null,
-        gameSetup: {
-          era: "",
-          theme: "",
-          difficulty: 0.5,
-          characterName: "",
-          generateBackstory: true,
-          setupStep: "era",
-        },
-        error: null,
-      }),
+      setUserType: (type) => set({ userType: type }),
 
-      addChronosMessage: (message) => set((state) => {
-        const newMessage: ChronosMessage = {
-          id: Date.now().toString(),
-          message,
-          timestamp: Date.now(),
-          resolved: false,
-        };
+      setUser: (user) => set({ user }),
 
-        return {
-          chronosMessages: [newMessage, ...state.chronosMessages.slice(0, 19)] // Keep last 20
-        };
-      }),
+      setSubscription: (subscription) => set({ subscription }),
+
+      // === CHRONOS COMMUNICATION ===
+      addChronosMessage: (message) =>
+        set((state) => ({
+          chronosMessages: [
+            {
+              id: Date.now().toString(),
+              message,
+              timestamp: Date.now(),
+              status: "pending",
+            },
+            ...state.chronosMessages.slice(0, 19),
+          ],
+        })),
 
       updateChronosResponse: (messageId, response) => set((state) => ({
         chronosMessages: state.chronosMessages.map(msg =>
-          msg.id === messageId ? { ...msg, response } : msg
+          msg.id === messageId ? { ...msg, response, status: "answered" } : msg
         )
       })),
 
       markChronosMessageResolved: (messageId) => set((state) => ({
         chronosMessages: state.chronosMessages.map(msg =>
-          msg.id === messageId ? { ...msg, resolved: true } : msg
+          msg.id === messageId ? { ...msg, status: "answered" } : msg
         )
       })),
 
@@ -452,8 +451,6 @@ export const useGameStore = create<GameStore>()(
           // ...existing state updates...
         }));
       },
-
-      setUserType: (type) => set({ userType: type }),
     }),
     {
       name: "chronicle-weaver-storage",

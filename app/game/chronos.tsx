@@ -107,7 +107,7 @@ export default function ChronosScreen() {
                         <Text style={styles.chronosName}>Chronicles</Text>
                       </View>
                       <Text style={styles.messageText}>{message.response}</Text>
-                      {!message.resolved && (
+                      {message.status !== "answered" && (
                         <TouchableOpacity 
                           style={styles.resolveButton}
                           onPress={() => handleMarkResolved(message.id)}
