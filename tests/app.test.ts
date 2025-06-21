@@ -5,7 +5,7 @@
  * More comprehensive tests should be added as the project grows.
  */
 
-import { colors } from '../constants/colors';
+import { colors } from '../src/constants/colors';
 
 describe('Chronicle Weaver', () => {
   describe('Color Constants', () => {
