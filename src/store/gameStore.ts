@@ -24,7 +24,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "@/types/game";
+import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "../types/game";
 
 /**
  * Game Store Interface
@@ -114,21 +114,16 @@ export const useGameStore = create<GameStore>()(
       narrative: null,
       userType: "free",
       user: null,
-      subscription: null,      // === GAME SETUP ACTIONS ===
+      subscription: null,
+      
+      // === GAME SETUP ACTIONS ===
       setEra: (era) => set((state) => ({ gameSetup: { ...state.gameSetup, era } })),
-
       setTheme: (theme) => set((state) => ({ gameSetup: { ...state.gameSetup, theme } })),
-
       setDifficulty: (difficulty) => set((state) => ({ gameSetup: { ...state.gameSetup, difficulty } })),
-
       setCharacterName: (characterName) => set((state) => ({ gameSetup: { ...state.gameSetup, characterName } })),
-
       setGenerateBackstory: (generateBackstory) => set((state) => ({ gameSetup: { ...state.gameSetup, generateBackstory } })),
-
       setCustomEra: (customEra) => set((state) => ({ gameSetup: { ...state.gameSetup, customEra } })),
-
       setCustomTheme: (customTheme) => set((state) => ({ gameSetup: { ...state.gameSetup, customTheme } })),
-
       nextSetupStep: () => set((state) => {
         const currentStep = state.gameSetup.setupStep;
         let nextStep: GameSetupState["setupStep"] = "era";
@@ -141,7 +136,6 @@ export const useGameStore = create<GameStore>()(
           gameSetup: { ...state.gameSetup, setupStep: nextStep }
         };
       }),
-
       resetSetup: () => set({
         gameSetup: {
           era: "",
@@ -285,7 +279,7 @@ export const useGameStore = create<GameStore>()(
       addMemory: (memory) => set((state) => {
         if (!state.currentGame) return state;
 
-        // Keep only the last 20 memories to prevent storage bloat
+        // Keep only the last 20 memories to prevent storage bloat, using an immutable approach
         const updatedMemories = [memory, ...state.currentGame.memories].slice(0, 20);
 
         return {
@@ -296,7 +290,6 @@ export const useGameStore = create<GameStore>()(
           }
         };
       }),
-
       addLoreEntry: (lore) => set((state) => {
         if (!state.currentGame) return state;
 

@@ -478,41 +478,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         };
       }
       
-      // Provide a comprehensive fallback for debugging
-      logDebug("Providing enhanced fallback response for debugging");
-      return {
-        backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
-
-Through years of experience and careful observation, ${gameState.character.name} has developed a keen understanding of how power flows through the corridors of influence in their world. They have witnessed the rise and fall of leaders, the ebb and flow of economic fortunes, and the constant struggle between tradition and progress that defines their era.
-
-Their journey has been marked by both triumph and adversity, each experience adding another layer to their complex character. The theme of ${gameState.theme} has been a constant companion, influencing their decisions and shaping their worldview in ways both subtle and profound.
-
-Now, standing at this crucial juncture in their life, ${gameState.character.name} finds themselves uniquely positioned to influence the course of events. Their background has prepared them for the challenges ahead, and their understanding of the world's complexities gives them an advantage that few others possess.
-
-The choices they make in the coming days will not only determine their own fate but may well influence the broader currents of history itself. The stage is set, the players are in position, and the chronicle of ${gameState.character.name} is about to begin in earnest.`,
-        firstSegment: {
-          id: "segment-1",
-          text: `The year unfolds within the era of ${gameState.era}, and you are ${gameState.character.name}, standing at the crossroads of destiny. The world around you pulses with the energy of ${gameState.theme}, a force that shapes every decision and colors every interaction in this complex tapestry of human experience.
-
-The morning sun casts long shadows across the landscape as you find yourself in a position of significant consequence. The air is thick with possibility and tension, as the political undercurrents of your time swirl around you like invisible currents in a vast ocean. You can feel the weight of history pressing down upon your shoulders, yet also sense the opportunity to shape the future through your actions.
-
-Around you, the economic systems of your era function with their own rhythm and logic. Merchants hawk their wares, coins change hands, and the great machinery of commerce continues its eternal dance. You understand that wealth and resources are tools of power, and that your financial decisions will ripple outward to affect not just your own circumstances, but the broader community in which you live.
-
-The social fabric of your world is complex and nuanced, woven from threads of tradition, innovation, conflict, and cooperation. You recognize the faces of those who hold power, those who seek it, and those who are content to live their lives in the shadows of greater events. Your reputation precedes you in some circles, while in others you remain an unknown quantity, full of potential for both great achievement and spectacular failure.
-
-As you contemplate your next move, you realize that this moment represents a crucial juncture in your personal chronicle. The choices you make here will set in motion a chain of events that will define not only your immediate future, but potentially the legacy you leave behind. The theme of ${gameState.theme} resonates through every option before you, reminding you that your actions carry weight far beyond their immediate consequences.
-
-The world watches and waits, ready to respond to your decisions with all the complexity and unpredictability that defines this remarkable period in history. Your chronicle begins now, with this single moment of choice that will echo through time.
-
-What path will you choose to begin this new chapter of your chronicle?`,
-          choices: [
-            { id: "1", text: "Seek out the local centers of power and attempt to establish yourself within existing political structures" },
-            { id: "2", text: "Focus on building economic relationships and establishing a network of trade connections" },
-            { id: "3", text: "Take time to observe and gather information before making any significant commitments" }
-          ],
-          customChoiceEnabled: true
-        }
-      };
+      // Re-throw the error to be handled by the UI layer
+      throw new Error(`Failed to parse AI response: ${isError(parseError) ? parseError.message : 'Unknown error'}`);
     }
 
     // Ensure segment text is substantial
@@ -559,41 +526,8 @@ What path will you choose to begin this new chapter of your chronicle?`,
       };
     }
     
-    // Provide a comprehensive fallback response for debugging
-    logDebug("Providing comprehensive fallback response for debugging");
-    return {
-      backstory: `${gameState.character.name} emerges from the complex tapestry of ${gameState.era}, a figure shaped by the tumultuous forces of their time. Born into a world where ${gameState.theme} defines the very essence of existence, they have learned to navigate the intricate web of politics, economics, and social dynamics that characterize this pivotal period in history.
-
-Through years of experience and careful observation, ${gameState.character.name} has developed a keen understanding of how power flows through the corridors of influence in their world. They have witnessed the rise and fall of leaders, the ebb and flow of economic fortunes, and the constant struggle between tradition and progress that defines their era.
-
-Their journey has been marked by both triumph and adversity, each experience adding another layer to their complex character. The theme of ${gameState.theme} has been a constant companion, influencing their decisions and shaping their worldview in ways both subtle and profound.
-
-Now, standing at this crucial juncture in their life, ${gameState.character.name} finds themselves uniquely positioned to influence the course of events. Their background has prepared them for the challenges ahead, and their understanding of the world's complexities gives them an advantage that few others possess.
-
-The choices they make in the coming days will not only determine their own fate but may well influence the broader currents of history itself. The stage is set, the players are in position, and the chronicle of ${gameState.character.name} is about to begin in earnest.`,
-      firstSegment: {
-        id: "segment-1",
-        text: `The year unfolds within the era of ${gameState.era}, and you are ${gameState.character.name}, standing at the crossroads of destiny. The world around you pulses with the energy of ${gameState.theme}, a force that shapes every decision and colors every interaction in this complex tapestry of human experience.
-
-The morning sun casts long shadows across the landscape as you find yourself in a position of significant consequence. The air is thick with possibility and tension, as the political undercurrents of your time swirl around you like invisible currents in a vast ocean. You can feel the weight of history pressing down upon your shoulders, yet also sense the opportunity to shape the future through your actions.
-
-Around you, the economic systems of your era function with their own rhythm and logic. Merchants hawk their wares, coins change hands, and the great machinery of commerce continues its eternal dance. You understand that wealth and resources are tools of power, and that your financial decisions will ripple outward to affect not just your own circumstances, but the broader community in which you live.
-
-The social fabric of your world is complex and nuanced, woven from threads of tradition, innovation, conflict, and cooperation. You recognize the faces of those who hold power, those who seek it, and those who are content to live their lives in the shadows of greater events. Your reputation precedes you in some circles, while in others you remain an unknown quantity, full of potential for both great achievement and spectacular failure.
-
-As you contemplate your next move, you realize that this moment represents a crucial juncture in your personal chronicle. The choices you make here will set in motion a chain of events that will define not only your immediate future, but potentially the legacy you leave behind. The theme of ${gameState.theme} resonates through every option before you, reminding you that your actions carry weight far beyond their immediate consequences.
-
-The world watches and waits, ready to respond to your decisions with all the complexity and unpredictability that defines this remarkable period in history. Your chronicle begins now, with this single moment of choice that will echo through time.
-
-What path will you choose to begin this new chapter of your chronicle?`,
-        choices: [
-          { id: "1", text: "Seek out the local centers of power and attempt to establish yourself within existing political structures" },
-          { id: "2", text: "Focus on building economic relationships and establishing a network of trade connections" },
-          { id: "3", text: "Take time to observe and gather information before making any significant commitments" }
-        ],
-        customChoiceEnabled: true
-      }
-    };
+    // Re-throw the error to be handled by the UI layer, which can then update the store
+    throw new Error(`Failed to generate initial story: ${isError(error) ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -768,28 +702,8 @@ Respond with ONLY this JSON structure (no markdown, no code blocks):
         };
       }
       
-      // Provide fallback for development
-      logDebug("Providing fallback next segment for development");
-      return {
-        id: `segment-${turnCount + 1}`,
-        text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
-
-The consequences of your decision begin to manifest as the world around you responds to your actions. The theme of ${gameState.theme} becomes more apparent as you navigate the complexities of this historical period, and you find yourself facing new challenges that test your resolve and wisdom.
-
-Your choice has set in motion a series of events that ripple through the political, economic, and social systems of your world. You can feel the weight of these changes as they begin to take shape, affecting not only your immediate circumstances but also your long-term prospects in this complex environment.
-
-As you observe the results of your actions, you realize that each decision in this world carries significant weight. The path forward requires careful consideration of your goals, your resources, and the potential consequences of your next move. The theme of ${gameState.theme} continues to influence every aspect of your journey.
-
-The world around you continues to evolve and respond to your presence, creating new opportunities and challenges that will shape the next chapter of your chronicle. Your reputation and relationships are beginning to form, and the choices you make now will have lasting impacts on your future.
-
-What will you do next as this chronicle continues to unfold around you?`,
-        choices: [
-          { id: "1", text: "Take a cautious approach to the new situation and gather more information" },
-          { id: "2", text: "Act boldly to seize the opportunities that have emerged" },
-          { id: "3", text: "Seek allies and build relationships to strengthen your position" }
-        ],
-        customChoiceEnabled: true
-      };
+      // Re-throw the error to be handled by the UI layer
+      throw new Error(`Failed to parse next segment response: ${isError(parseError) ? parseError.message : 'Unknown error'}`);
     }
 
     const nextSegment: GameSegment = {
@@ -818,28 +732,8 @@ What will you do next as this chronicle continues to unfold around you?`,
       };
     }
     
-    // Provide fallback for development
-    logDebug("Providing fallback next segment for development");
-    return {
-      id: `segment-${gameState.turnCount + 1}`,
-      text: `Following your choice to "${selectedChoice.text}", the story continues to unfold in ${gameState.era}. 
-
-The consequences of your decision begin to manifest as the world around you responds to your actions. The theme of ${gameState.theme} becomes more apparent as you navigate the complexities of this historical period, and you find yourself facing new challenges that test your resolve and wisdom.
-
-Your choice has set in motion a series of events that ripple through the political, economic, and social systems of your world. You can feel the weight of these changes as they begin to take shape, affecting not only your immediate circumstances but also your long-term prospects in this complex environment.
-
-As you observe the results of your actions, you realize that each decision in this world carries significant weight. The path forward requires careful consideration of your goals, your resources, and the potential consequences of your next move. The theme of ${gameState.theme} continues to influence every aspect of your journey.
-
-The world around you continues to evolve and respond to your presence, creating new opportunities and challenges that will shape the next chapter of your chronicle. Your reputation and relationships are beginning to form, and the choices you make now will have lasting impacts on your future.
-
-What will you do next as this chronicle continues to unfold around you?`,
-      choices: [
-        { id: "1", text: "Take a cautious approach to the new situation and gather more information" },
-        { id: "2", text: "Act boldly to seize the opportunities that have emerged" },
-        { id: "3", text: "Seek allies and build relationships to strengthen your position" }
-      ],
-      customChoiceEnabled: true
-    };
+    // Re-throw the error to be handled by the UI layer
+    throw new Error(`Failed to generate next segment: ${isError(error) ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -882,7 +776,8 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
     return data.completion || "I apologize, but I am having trouble responding right now. Please try again later.";
   } catch (error) {
     logError("Error processing Kronos message:", error);
-    return "I apologize, but I am having trouble responding right now. Please try again later.";
+    // Re-throw the error to be handled by the UI layer
+    throw new Error(`Failed to process message to Kronos: ${isError(error) ? error.message : 'Unknown error'}`);
   }
 }
 

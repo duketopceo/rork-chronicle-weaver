@@ -12,11 +12,12 @@
 const upstreamTransformer = require('@expo/metro-config/babel-transformer');
 
 module.exports.transform = function ({ src, filename, options }) {
-  // Transform import.meta.env to process.env for web compatibility
-  // Apply this transformation to all files, including node_modules
   if (options && options.platform === 'web') {
+    // Replace import.meta.env -> process.env for web compatibility
     src = src.replace(/import\.meta\.env/g, 'process.env');
+    // Replace any remaining import.meta occurrences to avoid syntax errors
+    src = src.replace(/\bimport\.meta\b/g, '{}');
   }
-  
+
   return upstreamTransformer.transform({ src, filename, options });
 };

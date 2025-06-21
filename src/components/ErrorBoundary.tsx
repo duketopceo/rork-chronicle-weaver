@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
 import { AlertTriangle, RefreshCw, Bug, Copy, Send } from 'lucide-react-native';
+import { UltraDebugPanel } from './UltraDebugPanel';
 
 interface Props {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   errorId: string;
+  showDebug: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -24,6 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null,
       errorId: '',
+      showDebug: false,
     };
   }
 
@@ -98,71 +101,32 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       // Custom fallback UI
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
-      // Default error UI
       return (
         <View style={styles.container}>
           <View style={styles.header}>
             <AlertTriangle size={48} color={colors.error} />
-            <Text style={styles.title}>Something went wrong</Text>
+            <Text style={styles.title}>Application Error</Text>
             <Text style={styles.subtitle}>
-              The app encountered an unexpected error
+              An unexpected error occurred. You can try to reload or view the debug logs.
             </Text>
-          </View>
-
-          <View style={styles.errorDetails}>
             <Text style={styles.errorId}>Error ID: {this.state.errorId}</Text>
-            
-            {__DEV__ && (
-              <ScrollView style={styles.debugInfo}>
-                <Text style={styles.debugTitle}>Debug Information:</Text>
-                <Text style={styles.debugText}>
-                  {this.state.error?.message}
-                </Text>
-                
-                {this.state.error?.stack && (
-                  <View style={styles.stackTrace}>
-                    <Text style={styles.stackTitle}>Stack Trace:</Text>
-                    <Text style={styles.stackText}>
-                      {this.state.error.stack}
-                    </Text>
-                  </View>
-                )}
-                
-                {this.state.errorInfo?.componentStack && (
-                  <View style={styles.componentStack}>
-                    <Text style={styles.stackTitle}>Component Stack:</Text>
-                    <Text style={styles.stackText}>
-                      {this.state.errorInfo.componentStack}
-                    </Text>
-                  </View>
-                )}
-              </ScrollView>
-            )}
           </View>
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
-              <RefreshCw size={20} color={colors.surface} />
-              <Text style={styles.retryText}>Try Again</Text>
+            <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
+              <RefreshCw size={18} color={colors.background} />
+              <Text style={styles.buttonText}>Reload Application</Text>
             </TouchableOpacity>
-
-            {__DEV__ && (
-              <TouchableOpacity style={styles.debugButton} onPress={this.copyErrorDetails}>
-                <Copy size={20} color={colors.primary} />
-                <Text style={styles.debugButtonText}>Copy Details</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={[styles.button, styles.debugButton]} onPress={() => this.setState({ showDebug: true })}>
+              <Bug size={18} color={colors.text} />
+              <Text style={[styles.buttonText, styles.debugButtonText]}>Show Debug Panel</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              If this problem persists, please report it to the development team.
-            </Text>
-          </View>
+          <UltraDebugPanel 
+            visible={this.state.showDebug} 
+            onClose={() => this.setState({ showDebug: false })} 
+          />
         </View>
       );
     }
@@ -174,116 +138,58 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: colors.background,
     padding: 20,
-    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
     marginBottom: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.text,
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 8,
     textAlign: 'center',
-  },
-  errorDetails: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: 16,
     marginBottom: 20,
-    maxHeight: 300,
   },
   errorId: {
     fontSize: 12,
     color: colors.textSecondary,
     fontFamily: 'monospace',
-    marginBottom: 12,
-  },
-  debugInfo: {
-    maxHeight: 200,
-  },
-  debugTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  debugText: {
-    fontSize: 12,
-    color: colors.error,
-    fontFamily: 'monospace',
-    marginBottom: 12,
-  },
-  stackTrace: {
-    marginTop: 12,
-  },
-  componentStack: {
-    marginTop: 12,
-  },
-  stackTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  stackText: {
-    fontSize: 10,
-    color: colors.textSecondary,
-    fontFamily: 'monospace',
-    lineHeight: 14,
   },
   actions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 20,
+    width: '100%',
+    maxWidth: 300,
   },
-  retryButton: {
+  button: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primary,
-    paddingHorizontal: 20,
     paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    gap: 8,
+    marginBottom: 15,
   },
-  retryText: {
-    color: colors.surface,
+  buttonText: {
+    color: colors.background,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
   debugButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    gap: 8,
+    backgroundColor: colors.backgroundSecondary,
   },
   debugButtonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
+    color: colors.text,
   },
 });
