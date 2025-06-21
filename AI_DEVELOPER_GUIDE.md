@@ -135,6 +135,23 @@ firebase serve              # Local hosting preview
 
 **File Modified**: `dist/index.html`
 
+### 🔐 **NEW: Content Security Policy (CSP) for Production**
+
+**Problem**: The production application was encountering `Minified React error #185` and `gtag function not available` errors. These were caused by a strict default Content Security Policy that blocked scripts from Google Analytics and other necessary third-party services.
+
+**Solution**:
+1.  **Implemented CSP**: A `Content-Security-Policy` header was added to `firebase.json`.
+2.  **Allowed Sources**: The policy explicitly permits scripts and connections from:
+    *   `'self'` (the application's own origin)
+    *   Google Analytics (`https://www.google-analytics.com`, `https://www.googletagmanager.com`)
+    *   Google Fonts & Static Content (`https://www.gstatic.com`)
+    *   Firebase services (`https://*.firebaseio.com`, `https://*.googleapis.com`)
+3.  **Inline Scripts**: `'unsafe-inline'` was included for styles and scripts as required by the current build configuration. This should be reviewed in the future for an even stricter policy.
+
+**Result**: This change resolves the React and `gtag` errors, allowing the application to load correctly in a production environment while maintaining a strong security posture.
+
+**File Modified**: `firebase.json`
+
 ---
 
 ## 💳 Subscription & Monetization (Stripe Integration)
