@@ -328,8 +328,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 20,
     backgroundColor: colors.surface,
-  },
-  backButton: {
+  },  backButton: {
     width: "100%",
   },
 });

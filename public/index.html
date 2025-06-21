@@ -235,10 +235,15 @@
       ];
       
       let currentQuoteIndex = 0;
-      
-      function displayQuote() {
+        function displayQuote() {
         const quoteText = document.getElementById('quote-text');
         const quoteAuthor = document.getElementById('quote-author');
+        
+        // Check if elements exist (they might be removed when React takes over)
+        if (!quoteText || !quoteAuthor) {
+          return;
+        }
+        
         const quote = historicalQuotes[currentQuoteIndex];
         
         // Fade out
@@ -246,6 +251,11 @@
         quoteAuthor.classList.remove('active');
         
         setTimeout(() => {
+          // Check again in case elements were removed during timeout
+          if (!quoteText || !quoteAuthor) {
+            return;
+          }
+          
           quoteText.textContent = `"${quote.text}"`;
           quoteAuthor.textContent = `— ${quote.author}`;
           
@@ -255,12 +265,19 @@
         }, 250);
         
         currentQuoteIndex = (currentQuoteIndex + 1) % historicalQuotes.length;
-      }
-        // Initialize first quote
+      }        // Initialize first quote
       displayQuote();
       
       // Change quote every 4 seconds
-      setInterval(displayQuote, 4000);
+      const quoteInterval = setInterval(() => {
+        // Stop if React has taken over
+        const quoteText = document.getElementById('quote-text');
+        if (!quoteText) {
+          clearInterval(quoteInterval);
+          return;
+        }
+        displayQuote();
+      }, 4000);
       
       // Debug: Monitor for React app loading
       let checkCount = 0;
@@ -278,9 +295,9 @@
           rootChildren: root ? root.children.length : 0,
           rootHTML: root ? root.innerHTML.substring(0, 100) + '...' : 'No root'
         });
-        
-        if (hasReactContent) {
+          if (hasReactContent) {
           console.log('✅ React app detected! Loading successful.');
+          clearInterval(quoteInterval); // Stop the quote rotation
           return;
         }
         
