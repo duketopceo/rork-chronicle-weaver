@@ -25,11 +25,21 @@ module.exports = {
   
   // === ENTRY POINT ===
   entry: './app/index.tsx', // Main application entry point for Chronicle Weaver
-  
-  // === OUTPUT CONFIGURATION ===
+    // === OUTPUT CONFIGURATION ===
   output: {
     path: path.resolve(__dirname, 'dist'), // Output directory for built files
     filename: 'bundle.js',                 // Main bundle filename
+    library: {
+      type: 'module',                       // Output as ES module
+    },
+    environment: {
+      module: true,                         // Enable ES module environment
+    },
+  },
+  
+  // === EXPERIMENTS ===
+  experiments: {
+    outputModule: true,                     // Enable ES module output
   },
   
   // === MODULE RESOLUTION ===

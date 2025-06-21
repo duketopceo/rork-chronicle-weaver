@@ -256,12 +256,66 @@
         
         currentQuoteIndex = (currentQuoteIndex + 1) % historicalQuotes.length;
       }
-      
-      // Initialize first quote
+        // Initialize first quote
       displayQuote();
       
       // Change quote every 4 seconds
       setInterval(displayQuote, 4000);
+      
+      // Debug: Monitor for React app loading
+      let checkCount = 0;
+      const maxChecks = 30; // Check for 30 seconds
+      
+      const checkForReactApp = () => {
+        checkCount++;
+        
+        // Check if React has taken over the root element
+        const root = document.getElementById('root');
+        const hasReactContent = root && root.children.length > 1;
+        
+        console.log(`[DEBUG ${checkCount}/${maxChecks}] Checking for React app...`, {
+          hasReactContent,
+          rootChildren: root ? root.children.length : 0,
+          rootHTML: root ? root.innerHTML.substring(0, 100) + '...' : 'No root'
+        });
+        
+        if (hasReactContent) {
+          console.log('✅ React app detected! Loading successful.');
+          return;
+        }
+        
+        if (checkCount >= maxChecks) {
+          console.error('❌ React app failed to load after 30 seconds');
+          
+          // Show debug info on screen
+          const debugDiv = document.createElement('div');
+          debugDiv.style.cssText = `
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            background: rgba(255,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            font-size: 12px; 
+            max-width: 300px; 
+            z-index: 9999;
+          `;
+          debugDiv.innerHTML = `
+            <strong>React App Failed to Load</strong><br>
+            Check browser console for errors.<br>
+            Time: ${new Date().toLocaleTimeString()}
+          `;
+          document.body.appendChild(debugDiv);
+          return;
+        }
+        
+        setTimeout(checkForReactApp, 1000);
+      };
+      
+      // Start monitoring after 2 seconds (give initial load time)
+      setTimeout(checkForReactApp, 2000);
     </script>
   </body>
 </html>

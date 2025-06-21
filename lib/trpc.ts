@@ -6,13 +6,17 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
-    return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_API_BASE_URL;
   }
-
-  throw new Error(
-    "No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL"
-  );
+  
+  // Fallback for development or if env var is missing
+  if (typeof window !== 'undefined') {
+    return window.location.origin; // Use current domain
+  }
+  
+  // Final fallback
+  return "https://chronicleweaver.com";
 };
 
 export const trpcClient = trpc.createClient({
@@ -20,6 +24,14 @@ export const trpcClient = trpc.createClient({
     httpLink({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
+      // Add error handling for network issues
+      fetch: (url, options) => {
+        console.log('tRPC calling:', url);
+        return fetch(url, options).catch(error => {
+          console.error('tRPC fetch error:', error);
+          throw error;
+        });
+      },
     }),
   ],
 });

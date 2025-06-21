@@ -29,7 +29,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp } from "firebase/app";
-import Constants from "expo-constants";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes
@@ -42,27 +41,42 @@ const queryClient = new QueryClient();
 // Firebase configuration for Chronicle Weaver
 // Uses environment variables for security and flexibility across environments
 const firebaseConfig = {
-  apiKey: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-  authDomain: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "chronicle-weaver-460713.firebaseapp.com",
-  projectId: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "chronicle-weaver-460713",
-  storageBucket: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "chronicle-weaver-460713.appspot.com",
-  messagingSenderId: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "927289740022",
-  appId: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_APP_ID || "1:927289740022:web:bcb19bdbcce16cb9227ad7",
-  measurementId: Constants.expoConfig?.extra?.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-ENMCNZZZTJ"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "chronicle-weaver-460713.firebaseapp.com",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "chronicle-weaver-460713",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "chronicle-weaver-460713.appspot.com",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "927289740022",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:927289740022:web:bcb19bdbcce16cb9227ad7",
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-ENMCNZZZTJ"
 };
 
 // Initialize Firebase app instance
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Firebase initialization failed:', error);
+}
 
 // Initialize Firebase Analytics only on web platform when supported
 // This provides user engagement and performance analytics
-if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
   import('firebase/analytics').then(({ getAnalytics, isSupported }) => {
     isSupported().then((supported) => {
       if (supported) {
-        getAnalytics(app);
+        try {
+          getAnalytics(app);
+          console.log('Firebase Analytics initialized');
+        } catch (error) {
+          console.warn('Firebase Analytics failed to initialize:', error);
+        }
       }
+    }).catch((error) => {
+      console.warn('Analytics support check failed:', error);
     });
+  }).catch((error) => {
+    console.warn('Firebase Analytics import failed:', error);
   });
 }
 
@@ -73,16 +87,25 @@ if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
  * Sets up the navigation structure and manages app initialization.
  */
 export default function RootLayout() {
+  console.log('RootLayout component mounting...');
+  
   useEffect(() => {
+    console.log('RootLayout useEffect running...');
     // Handle splash screen hiding with platform-specific timing
     // iOS needs slightly more time for smooth transitions
     const hideSplash = async () => {
+      console.log('Attempting to hide splash screen...');
       await new Promise(resolve => setTimeout(resolve, Platform.select({ 
         ios: 1200,     // iOS needs more time for smooth animations
         android: 1000, // Android can hide splash sooner
         default: 1000  // Default for web and other platforms
       })));
-      await SplashScreen.hideAsync();
+      try {
+        await SplashScreen.hideAsync();
+        console.log('Splash screen hidden successfully');
+      } catch (error) {
+        console.error('Failed to hide splash screen:', error);
+      }
     };
     
     hideSplash();
@@ -94,6 +117,8 @@ export default function RootLayout() {
    * 2. React Query Provider - Manages server state and caching
    * 3. Navigation Stack - Defines screen routing and transitions
    */
+  console.log('RootLayout rendering...');
+  
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
