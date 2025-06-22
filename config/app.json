@@ -14,7 +14,13 @@
       "backgroundColor": "#ffffff"
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "chronicle-weaver-460713"
+      }
     },
     "plugins": [
       [
