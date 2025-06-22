@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGameStore } from "@/store/gameStore";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
+import { useGameStore } from "../../store/gameStore";
+import { colors } from "../../constants/colors";
+import Button from "../../components/Button";
 import { useRouter } from "expo-router";
-import { LoreEntry } from "@/types/game";
+import { LoreEntry } from "../../types/game";
 import { BookOpen, User, MapPin, Calendar, Filter } from "lucide-react-native";
 
 type CategoryFilter = "all" | "historical" | "character" | "location" | "event" | "politics" | "economics" | "war" | "culture" | "technology";

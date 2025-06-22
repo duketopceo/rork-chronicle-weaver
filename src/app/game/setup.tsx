@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
-import TextInput from "@/components/TextInput";
-import CustomSlider from "@/components/CustomSlider";
-import { useGameStore } from "@/store/gameStore";
+import { colors } from "../../constants/colors";
+import Button from "../../components/Button";
+import TextInput from "../../components/TextInput";
+import CustomSlider from "../../components/CustomSlider";
+import { useGameStore } from "../../store/gameStore";
 import { User, Palette, Crown, History, Shuffle } from "lucide-react-native";
 
 // Simplified examples

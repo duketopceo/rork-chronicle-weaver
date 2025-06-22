@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, Animated, Platform } from "react-native";
-import { GameChoice } from "@/types/game";
-import { colors } from "@/constants/colors";
+import { GameChoice } from "../types/game";
+import { colors } from "../constants/colors";
 import * as Haptics from "expo-haptics";
 import { Feather } from "lucide-react-native";
 

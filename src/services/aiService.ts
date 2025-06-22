@@ -28,10 +28,10 @@
  * - Dynamic world state management
  */
 
-import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "@/types/game";
-import { ChronicleDebugState, ApiCompletion } from "@/types/global";
-import { useGameStore } from "@/store/gameStore";
-import { fetchFromFirebaseFunction } from "@/services/firebaseUtils";
+import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "../types/game";
+import { ChronicleDebugState, ApiCompletion } from "../types/global";
+import { useGameStore } from "../store/gameStore";
+import { fetchFromFirebaseFunction } from "./firebaseUtils";
 
 /**
  * Content Part Type

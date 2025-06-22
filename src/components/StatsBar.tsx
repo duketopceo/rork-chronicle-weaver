@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { CharacterStats } from "@/types/game";
-import { colors } from "@/constants/colors";
+import { CharacterStats } from "../types/game";
+import { colors } from "../constants/colors";
 import { Shield, Brain, Coins, Award } from "lucide-react-native";
 
 type StatsBarProps = {

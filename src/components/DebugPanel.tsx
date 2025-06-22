@@ -17,9 +17,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import { colors } from '@/constants/colors';
-import { useGameStore } from '@/store/gameStore';
-import { debugSystem } from '@/utils/debugSystem';
+import { colors } from '../constants/colors';
+import { useGameStore } from '../store/gameStore';
+import { debugSystem } from '../utils/debugSystem';
 import { Bug, X, Activity, Database, Wifi, Smartphone, CreditCard, CloudLightning } from 'lucide-react-native';
 
 interface DebugPanelProps {

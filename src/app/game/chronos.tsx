@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGameStore } from "@/store/gameStore";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
-import TextInput from "@/components/TextInput";
+import { useGameStore } from "../../store/gameStore";
+import { colors } from "../../constants/colors";
+import Button from "../../components/Button";
+import TextInput from "../../components/TextInput";
 import { useRouter } from "expo-router";
-import { processKronosMessage } from "@/services/aiService";
+import { processKronosMessage } from "../../services/aiService";
 import { MessageCircle, Send, Clock, CheckCircle, History } from "lucide-react-native";
 
 export default function ChronosScreen() {

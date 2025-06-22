@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGameStore } from "@/store/gameStore";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
-import MemoryList from "@/components/MemoryList";
+import { useGameStore } from "../../store/gameStore";
+import { colors } from "../../constants/colors";
+import Button from "../../components/Button";
+import MemoryList from "../../components/MemoryList";
 import { useRouter } from "expo-router";
 import { Clock } from "lucide-react-native";
 

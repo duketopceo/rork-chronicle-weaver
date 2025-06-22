@@ -24,15 +24,15 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform } from "react-native";
-import { colors } from "@/constants/colors";
+import { colors } from "../constants/colors";
 import * as SplashScreen from "expo-splash-screen";
-import { trpc, trpcClient } from "@/lib/trpc";
+import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp } from "firebase/app";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { logStep, updateStep, logError, startTimer } from "@/utils/debugSystem";
-import { onAuthStateChange } from "@/services/firebaseUtils";
-import { useGameStore } from "@/store/gameStore";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
+import { onAuthStateChange } from "../services/firebaseUtils";
+import { useGameStore } from "../store/gameStore";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes

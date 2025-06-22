@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Text, StyleSheet, View, Animated, TouchableOpacity, Platform } from "react-native";
-import { colors } from "@/constants/colors";
+import { colors } from "../constants/colors";
 import * as Haptics from "expo-haptics";
 import { Crown, Feather } from "lucide-react-native";
 

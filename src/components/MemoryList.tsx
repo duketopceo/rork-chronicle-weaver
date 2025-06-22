@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
-import { Memory } from "@/types/game";
-import { colors } from "@/constants/colors";
-import { formatDate } from "@/utils/dateUtils";
+import { Memory } from "../types/game";
+import { colors } from "../constants/colors";
+import { formatDate } from "../utils/dateUtils";
 import { Clock, ChevronRight } from "lucide-react-native";
 
 type MemoryListProps = {

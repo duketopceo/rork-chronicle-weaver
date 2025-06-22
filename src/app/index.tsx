@@ -27,14 +27,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
-import { useGameStore } from "@/store/gameStore";
-import { UltraDebugPanel } from "@/components/UltraDebugPanel";
+import { colors } from "../constants/colors";
+import Button from "../components/Button";
+import { useGameStore } from "../store/gameStore";
+import { UltraDebugPanel } from "../components/UltraDebugPanel";
 import { Scroll, Crown, Feather, History, Bug, Star, User } from "lucide-react-native";
-import { logStep, updateStep, logError } from "@/utils/debugSystem";
-import SubscriptionPanel from "@/components/SubscriptionPanel";
-import AuthPanel from "@/components/AuthPanel";
+import { logStep, updateStep, logError } from "../utils/debugSystem";
+import SubscriptionPanel from "../components/SubscriptionPanel";
+import AuthPanel from "../components/AuthPanel";
 
 /**
  * Main Home Screen Component

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Switch } from 'react-native';
-import { colors } from '@/constants/colors';
+import { colors } from '../constants/colors';
 import { 
   Bug, X, RefreshCw, AlertTriangle, CheckCircle, Clock, Activity, Database, 
   Zap, Eye, Trash2, Download, Settings, User, Code, BarChart3, Shield,
@@ -16,7 +16,7 @@ import {
   DebugError,
   DebugPerformanceMetric
 } from '@/utils/debugSystem';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '../store/gameStore';
 
 interface UltraDebugPanelProps {
   visible: boolean;

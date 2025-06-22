@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGameStore } from "@/store/gameStore";
-import { colors } from "@/constants/colors";
-import StatsBar from "@/components/StatsBar";
-import Button from "@/components/Button";
+import { useGameStore } from "../../store/gameStore";
+import { colors } from "../../constants/colors";
+import StatsBar from "../../components/StatsBar";
+import Button from "../../components/Button";
 import { useRouter } from "expo-router";
 import { Shield, Brain, Coins, Award, User, MapPin, Palette } from "lucide-react-native";
 

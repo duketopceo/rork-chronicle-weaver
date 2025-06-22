@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
-import { colors } from "@/constants/colors";
-import Button from "@/components/Button";
+import { colors } from "../constants/colors";
+import Button from "./Button";
 import { X, Feather } from "lucide-react-native";
 
 type CustomChoiceInputProps = {
