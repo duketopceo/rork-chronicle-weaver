@@ -1,15 +1,15 @@
 /**
  * Metro Configuration for Chronicle Weaver
  * 
- * This configuration ensures proper ES module handling for web builds,
- * resolving the import.meta syntax issues that were preventing the
- * React app from loading in the browser.
+ * Enhanced configuration to ensure proper ES module handling for both
+ * development and production builds, resolving import.meta syntax issues.
  * 
  * Key Features:
- * - Proper resolver configuration for cross-platform compatibility
+ * - Enhanced resolver configuration for cross-platform compatibility
  * - Web-specific platform extensions
  * - Node modules support for web deployment
- * - Custom transformer to handle import.meta syntax issues
+ * - Custom transformer to handle import.meta syntax in all modes
+ * - Development-specific optimizations
  * 
  * @format
  */
@@ -28,7 +28,7 @@ config.resolver.symlinks = false;
 // Add web-specific platform extensions for better resolution
 config.resolver.platforms = ['native', 'web', 'ios', 'android'];
 
-// Configure web-specific transformations to handle import.meta
+// Enhanced transformer configuration for all modes (dev and production)
 config.transformer.getTransformOptions = async () => ({
   transform: {
     experimentalImportSupport: false,
@@ -36,7 +36,10 @@ config.transformer.getTransformOptions = async () => ({
   },
 });
 
-// Add custom transformer to handle import.meta syntax
+// Apply custom transformer to handle import.meta syntax in all modes
 config.transformer.babelTransformerPath = require.resolve('./metro-transformer.js');
+
+// Enhanced resolver configuration
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'jsx', 'tsx'];
 
 module.exports = config;

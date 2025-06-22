@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "description": "A historical role-playing game with AI-powered narrative generation",
   "author": "Rork <duketopceo@gmail.com>",
-  "license": "Private",
-  "scripts": {
+  "license": "Private",  "scripts": {
     "start": "bunx rork start -p 09d7jjhyh29mlo0qd2rjr --tunnel",
     "start-web": "bunx rork start -p 09d7jjhyh29mlo0qd2rjr --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p 09d7jjhyh29mlo0qd2rjr --web --tunnel",
+    "postinstall": "patch-package",
     "build": "expo export -p web",
     "build:web": "npx expo export",
     "build:webpack": "webpack --mode production",
@@ -91,6 +91,8 @@
     "jest": "^30.0.2",
     "jest-expo": "^53.0.7",
     "module-resolver": "^1.0.0",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.4.0",
