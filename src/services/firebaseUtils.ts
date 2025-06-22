@@ -16,9 +16,15 @@ const validateEnvVars = () => {
 
   const missing = requiredVars.filter(varName => !process.env[varName]);
   
+  console.log('[Firebase] 🔍 Environment variables check:');
+  requiredVars.forEach(varName => {
+    const value = process.env[varName];
+    console.log(`[Firebase] ${varName}: ${value ? `${value.substring(0, 10)}...` : 'MISSING'}`);
+  });
+  
   if (missing.length > 0) {
-    console.error('[Firebase] Missing environment variables:', missing);
-    console.error('[Firebase] Available env vars:', Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC_')));
+    console.error('[Firebase] ❌ Missing environment variables:', missing);
+    console.log('[Firebase] Available env vars:', Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC_')));
     return false;
   }
 
