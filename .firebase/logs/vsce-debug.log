@@ -5562,3 +5562,21 @@ E0621 10:52:31.313794    1868 watch.go:76] watchAllDir unable to walk dir `c:\Us
  {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0621 10:57:41.300759    1868 load.go:23] Could not load config from \"c:\\\\Users\\\\kimba\\\\Documents\\\\Current rork app\\\\rork-chronicle-weaver\\\\dataconnect\": could not find dataconnect.yaml in `c:\\Users\\kimba\\Documents\\Current rork app\\rork-chronicle-weaver\\dataconnect`\n"}}
 [debug] [2025-06-21T16:57:51.310Z] E0621 10:57:51.310387    1868 load.go:23] Could not load config from "c:\\Users\\kimba\\Documents\\Current rork app\\rork-chronicle-weaver\\dataconnect": could not find dataconnect.yaml in `c:\Users\kimba\Documents\Current rork app\rork-chronicle-weaver\dataconnect`
  {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0621 10:57:51.310387    1868 load.go:23] Could not load config from \"c:\\\\Users\\\\kimba\\\\Documents\\\\Current rork app\\\\rork-chronicle-weaver\\\\dataconnect\": could not find dataconnect.yaml in `c:\\Users\\kimba\\Documents\\Current rork app\\rork-chronicle-weaver\\dataconnect`\n"}}
+[debug] [2025-06-22T03:34:17.462Z] [Firebase Plugin] Activating Firebase extension.
+[debug] [2025-06-22T03:34:24.945Z] [Firebase Plugin] requireAuthWrapper
+[debug] [2025-06-22T03:34:24.950Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-06-22T03:34:24.951Z] > authorizing via signed-in user (duketopceo@gmail.com)
+[debug] [2025-06-22T03:34:24.957Z] Checked if tokens are valid: false, expires at: 1750550909344
+[debug] [2025-06-22T03:34:24.958Z] Checked if tokens are valid: false, expires at: 1750550909344
+[debug] [2025-06-22T03:34:24.959Z] > refreshing access token with scopes: []
+[debug] [2025-06-22T03:34:24.962Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-06-22T03:34:24.963Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-06-22T03:34:24.989Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[debug] [2025-06-22T03:34:25.427Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-06-22T03:34:25.427Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-06-22T03:34:25.446Z] [Firebase Plugin] User found:  duketopceo@gmail.com
+[info] [Firebase Plugin] (Core:Project) New user detected, fetching projects
+[debug] [2025-06-22T03:34:25.449Z] Checked if tokens are valid: true, expires at: 1750566864427
+[debug] [2025-06-22T03:34:25.451Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[debug] [2025-06-22T03:34:25.701Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2025-06-22T03:34:25.701Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]

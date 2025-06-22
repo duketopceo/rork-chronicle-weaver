@@ -643,6 +643,52 @@ firebase functions:log --only ext-firestore-stripe-payments-handleWebhookEvents
 
 ---
 
+## 🔄 Latest Updates (June 21, 2025)
+
+### Import Path Best Practices
+When working with imports, use relative paths instead of alias paths:
+```typescript
+// ✅ Correct
+import { colors } from '../constants/colors';
+import { publicProcedure } from '../../../create-context';
+
+// ❌ Avoid
+import { colors } from '@/constants/colors';
+import { publicProcedure } from '@/backend/trpc/create-context';
+```
+
+### State Management Guidelines
+The game store (`gameStore.ts`) now includes:
+- Comprehensive TypeScript interfaces
+- AsyncStorage persistence for mobile
+- Memory management (latest 20 memories kept)
+- Turn limits based on user type (free: 50, paid: 10000)
+- Optimistic updates with error handling
+
+### Debug System Features
+UltraDebugPanel now provides:
+- Game state inspection
+- Memory usage monitoring
+- Turn count tracking
+- Subscription status
+- AI communication history
+
+### Build & Deploy Workflow
+1. Check TypeScript errors: `npx tsc --noEmit`
+2. Verify import paths are relative
+3. Run local build: `npm run build:production`
+4. Test in Expo Go
+5. Deploy using Firebase hosting
+
+### Common Issues & Solutions
+- **Import Errors**: Use relative paths, verify file exists
+- **TypeScript Errors**: Run type-check before commits
+- **Build Failures**: Clear cache with `npx expo start --web -c`
+- **State Updates**: Always use immutable updates in Zustand
+```
+
+---
+
 ## 🎯 Project Goals & Vision
 
 **Chronicle Weaver** aims to be the definitive historical RPG experience, allowing players to explore any era through AI-generated narratives. The app combines educational value with engaging gameplay, making history accessible and interactive.
