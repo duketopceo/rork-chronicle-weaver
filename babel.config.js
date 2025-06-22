@@ -12,7 +12,6 @@ module.exports = function (api) {
         },
       ],
       "react-native-web",
-      "expo-router/babel",
     ],
   };
 };
