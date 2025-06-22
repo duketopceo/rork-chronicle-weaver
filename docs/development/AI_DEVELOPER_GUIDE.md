@@ -1,9 +1,11 @@
 # AI Developer Onboarding Guide
 ## Chronicle Weaver - Historical RPG App
 
-### 🚀 Quick Start for AI Coders
+### 🚀 COMPREHENSIVE FILE ANALYSIS & DEVELOPMENT GUIDE
 
-This file provides comprehensive context for any AI developer working on Chronicle Weaver. Read this first to understand the project architecture, current state, and development workflow.
+This file provides complete context for any AI developer working on Chronicle Weaver, including detailed analysis of every file in the project. Read this to understand the project architecture, current state, issues, and development workflow.
+
+**UPDATED:** June 21, 2025 - Complete file-by-file analysis
 
 ---
 
