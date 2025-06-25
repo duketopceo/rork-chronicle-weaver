@@ -7,6 +7,9 @@
 
 import { colors } from '../src/constants/colors';
 
+// Mock __DEV__ for testing
+(global as any).__DEV__ = true;
+
 describe('Chronicle Weaver', () => {
   describe('Color Constants', () => {
     test('should have defined primary color', () => {
