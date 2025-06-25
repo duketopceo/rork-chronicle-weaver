@@ -5,6 +5,42 @@
 
 This file provides comprehensive context for any AI developer working on Chronicle Weaver. Read this first to understand the project architecture, current state, and development workflow.
 
+## 🔒 MANDATORY AI DEVELOPMENT PARAMETERS
+
+**⚠️ CRITICAL: These parameters are NON-NEGOTIABLE. Every AI must follow these rules.**
+
+### 1. VERIFICATION PROTOCOL - MANDATORY AFTER EVERY CHANGE
+```bash
+# Run this script EVERY TIME you make ANY change
+node scripts/ai-verification.js
+```
+
+### 2. CORE DEVELOPMENT PARAMETERS (DO NOT DEVIATE)
+- **Header Comments**: EVERY file must have a comprehensive header comment
+- **TypeScript Strict**: NO `any` types allowed (use proper interfaces)
+- **Error Handling**: EVERY async operation must have try-catch blocks
+- **File Structure**: Follow established patterns, do NOT reorganize without verification
+- **Code Style**: Use existing ESLint config, do NOT modify rules
+- **Testing**: Run type-check and build after EVERY change
+- **Documentation**: Update relevant docs when changing functionality
+
+### 3. CHANGE VERIFICATION CHECKLIST (MANDATORY)
+After making ANY change, you MUST:
+1. ✅ Run `npm run type-check` - MUST pass with 0 errors
+2. ✅ Run `node scripts/error-scanner.js` - Review all findings
+3. ✅ Run `npm run build:production` - MUST complete successfully
+4. ✅ Verify header comments are intact and accurate
+5. ✅ Check that no critical functionality was broken
+6. ✅ Update documentation if interfaces/APIs changed
+
+### 4. FORBIDDEN ACTIONS
+- ❌ NEVER remove or modify existing header comments
+- ❌ NEVER change the auto-debugger configuration without verification
+- ❌ NEVER modify package.json dependencies without explicit need
+- ❌ NEVER reorganize file structure without running consolidate script
+- ❌ NEVER ignore TypeScript errors or ESLint critical errors
+- ❌ NEVER deploy without running full verification protocol
+
 ---
 
 ## 📱 Project Overview
@@ -643,49 +679,54 @@ firebase functions:log --only ext-firestore-stripe-payments-handleWebhookEvents
 
 ---
 
-## 🔄 Latest Updates (June 21, 2025)
+## 🔒 MANDATORY VERIFICATION WORKFLOW
 
-### Import Path Best Practices
-When working with imports, use relative paths instead of alias paths:
-```typescript
-// ✅ Correct
-import { colors } from '../constants/colors';
-import { publicProcedure } from '../../../create-context';
+### STEP-BY-STEP VERIFICATION (REQUIRED AFTER EVERY CHANGE)
 
-// ❌ Avoid
-import { colors } from '@/constants/colors';
-import { publicProcedure } from '@/backend/trpc/create-context';
+**⚠️ ANY AI THAT SKIPS THESE STEPS VIOLATES PROTOCOL**
+
+```bash
+# 1. IMMEDIATE VERIFICATION (run after ANY change)
+node scripts/ai-verification.js
+
+# 2. TYPE CHECK (must pass with 0 errors)
+npm run type-check
+
+# 3. ERROR SCAN (review all findings)  
+node scripts/error-scanner.js
+
+# 4. BUILD TEST (must complete successfully)
+npm run build:production
 ```
 
-### State Management Guidelines
-The game store (`gameStore.ts`) now includes:
-- Comprehensive TypeScript interfaces
-- AsyncStorage persistence for mobile
-- Memory management (latest 20 memories kept)
-- Turn limits based on user type (free: 50, paid: 10000)
-- Optimistic updates with error handling
+### LINE-BY-LINE CHECKING PARAMETERS
 
-### Debug System Features
-UltraDebugPanel now provides:
-- Game state inspection
-- Memory usage monitoring
-- Turn count tracking
-- Subscription status
-- AI communication history
+**EVERY AI MUST:**
+1. **Read existing code BEFORE making changes** - Use `read_file` tool first
+2. **Verify imports and exports** - Check all dependencies are correct
+3. **Maintain header comments** - Never modify existing header structure
+4. **Preserve error handling** - Keep all try-catch blocks intact
+5. **Validate TypeScript types** - No `any` types, proper interfaces only
+6. **Check file references** - Ensure all file paths are correct
+7. **Test functionality** - Verify changes don't break existing features
 
-### Build & Deploy Workflow
-1. Check TypeScript errors: `npx tsc --noEmit`
-2. Verify import paths are relative
-3. Run local build: `npm run build:production`
-4. Test in Expo Go
-5. Deploy using Firebase hosting
+### CRITICAL FILE PROTECTION
 
-### Common Issues & Solutions
-- **Import Errors**: Use relative paths, verify file exists
-- **TypeScript Errors**: Run type-check before commits
-- **Build Failures**: Clear cache with `npx expo start --web -c`
-- **State Updates**: Always use immutable updates in Zustand
-```
+**NEVER MODIFY WITHOUT EXPLICIT INSTRUCTION:**
+- `.vscode/launch.json` (auto-debugger configuration)
+- `package.json` (dependencies and scripts)
+- `tsconfig.json` (TypeScript configuration)
+- `scripts/error-scanner.js` (error detection system)
+- `scripts/ai-verification.js` (this verification system)
+
+### ERROR ESCALATION PROTOCOL
+
+**IF VERIFICATION FAILS:**
+1. **STOP IMMEDIATELY** - Do not proceed with other changes
+2. **IDENTIFY ROOT CAUSE** - Read error messages carefully
+3. **FIX SYSTEMATICALLY** - Address one issue at a time
+4. **RE-VERIFY** - Run full verification again
+5. **DOCUMENT FIXES** - Update relevant documentation
 
 ---
 

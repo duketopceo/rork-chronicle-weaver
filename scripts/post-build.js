@@ -1,3 +1,17 @@
+/**
+ * Post-Build Script for Chronicle Weaver
+ * 
+ * This script runs after the production build to optimize the generated index.html
+ * for better module loading and compatibility.
+ * 
+ * Purpose: Adds type="module" to script tags for ES module compatibility.
+ * 
+ * References:
+ * - File: scripts/post-build.js
+ * - Part of Chronicle Weaver build pipeline
+ * - Called automatically by npm run build:production
+ */
+
 const fs = require('fs');
 const path = require('path');
 

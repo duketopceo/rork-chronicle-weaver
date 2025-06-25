@@ -62,5 +62,7 @@ jest.mock('firebase/firestore', () => ({
   deleteDoc: jest.fn(),
 }));
 
-// Mock React Native modules
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Mock React Native modules (commented out due to module resolution issues)
+// jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => {
+//   return {};
+// });
