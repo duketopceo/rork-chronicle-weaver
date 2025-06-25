@@ -1,3 +1,16 @@
+/**
+ * Memory List Component
+ * 
+ * Display component for player memories and historical choices.
+ * 
+ * Purpose: Shows chronological list of player decisions and their consequences.
+ * 
+ * References:
+ * - File: src/components/MemoryList.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { Memory } from "../types/game";

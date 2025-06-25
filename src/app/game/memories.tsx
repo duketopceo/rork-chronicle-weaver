@@ -1,3 +1,16 @@
+/**
+ * Memory Repository Screen
+ * 
+ * Archive of player choices, decisions, and their historical consequences.
+ * 
+ * Purpose: Tracks and displays player decision history and outcomes.
+ * 
+ * References:
+ * - File: src/app/game/memories.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

@@ -1,3 +1,16 @@
+/**
+ * Upgrade Prompt Component
+ * 
+ * Modal component prompting users to upgrade to premium features.
+ * 
+ * Purpose: Encourages subscription upgrades and displays premium benefits.
+ * 
+ * References:
+ * - File: src/components/UpgradePrompt.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 
 import React from 'react';
 import { View, Text, Button } from 'react-native';

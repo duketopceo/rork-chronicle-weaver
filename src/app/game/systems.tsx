@@ -1,3 +1,16 @@
+/**
+ * Game Systems Overview Screen
+ * 
+ * Documentation and explanation of game mechanics and systems.
+ * 
+ * Purpose: Educates players about Chronicle Weaver game mechanics.
+ * 
+ * References:
+ * - File: src/app/game/systems.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

@@ -1,3 +1,16 @@
+/**
+ * Billing Management Panel Component
+ * 
+ * Comprehensive billing and subscription management interface for Chronicle Weaver.
+ * 
+ * Purpose: Manages user subscriptions, payment methods, and billing history.
+ * 
+ * References:
+ * - File: src/components/BillingPanel.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 
 import React from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';

@@ -1,3 +1,16 @@
+/**
+ * Custom Slider Component
+ * 
+ * Customizable slider component for numeric value selection.
+ * 
+ * Purpose: Provides interactive numeric input controls for game settings.
+ * 
+ * References:
+ * - File: src/components/CustomSlider.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import { colors } from "../constants/colors";

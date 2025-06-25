@@ -1,3 +1,15 @@
+/**
+ * consolidate-structure.js
+ * 
+ * Source file for Chronicle Weaver application.
+ * 
+ * Purpose: Implements functionality for consolidate-structure.
+ * 
+ * References:
+ * - File: scripts/consolidate-structure.js
+ * - Part of Chronicle Weaver application
+ */
+
 #!/usr/bin/env node
 
 /**

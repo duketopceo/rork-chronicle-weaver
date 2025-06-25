@@ -1,3 +1,16 @@
+/**
+ * ESLint Configuration
+ * 
+ * ESLint linting rules and code quality configuration.
+ * 
+ * Purpose: Enforces code quality standards and style consistency.
+ * 
+ * References:
+ * - File: eslint.config.js
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';

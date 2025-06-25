@@ -1,3 +1,16 @@
+/**
+ * Kronos AI Advisor Screen
+ * 
+ * AI advisor interface for guidance and strategic consultation.
+ * 
+ * Purpose: Provides AI-powered advice and historical context to players.
+ * 
+ * References:
+ * - File: src/app/game/kronos.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

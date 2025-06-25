@@ -1,3 +1,15 @@
+/**
+ * jest.setup.js
+ * 
+ * Source file for Chronicle Weaver application.
+ * 
+ * Purpose: Implements functionality for jest.setup.
+ * 
+ * References:
+ * - File: jest.setup.js
+ * - Part of Chronicle Weaver application
+ */
+
 import '@testing-library/jest-native/extend-expect';
 
 // Define React Native globals for testing

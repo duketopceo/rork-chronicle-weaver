@@ -1,3 +1,15 @@
+/**
+ * error-scanner.js
+ * 
+ * Source file for Chronicle Weaver application.
+ * 
+ * Purpose: Implements functionality for error-scanner.
+ * 
+ * References:
+ * - File: scripts/error-scanner.js
+ * - Part of Chronicle Weaver application
+ */
+
 #!/usr/bin/env node
 
 /**

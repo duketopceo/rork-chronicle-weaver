@@ -1,3 +1,16 @@
+/**
+ * Character Management Screen
+ * 
+ * Character sheet and management interface for player progression.
+ * 
+ * Purpose: Allows players to view and manage their character attributes and progress.
+ * 
+ * References:
+ * - File: src/app/game/character.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

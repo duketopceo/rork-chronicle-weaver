@@ -1,3 +1,16 @@
+/**
+ * Narrative Text Component
+ * 
+ * Styled text component for displaying game narrative and story content.
+ * 
+ * Purpose: Renders formatted narrative text with historical theming.
+ * 
+ * References:
+ * - File: src/components/NarrativeText.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useEffect, useState, useRef } from "react";
 import { Text, StyleSheet, View, Animated, TouchableOpacity, Platform } from "react-native";
 import { colors } from "../constants/colors";

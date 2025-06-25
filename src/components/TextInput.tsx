@@ -1,3 +1,16 @@
+/**
+ * Styled Text Input Component
+ * 
+ * Customizable text input component with consistent theming.
+ * 
+ * Purpose: Provides standardized text input interface across the application.
+ * 
+ * References:
+ * - File: src/components/TextInput.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { 
   TextInput as RNTextInput, 

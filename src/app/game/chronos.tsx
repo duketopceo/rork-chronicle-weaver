@@ -1,3 +1,16 @@
+/**
+ * Chronos Time Management Screen
+ * 
+ * Time manipulation and historical period management interface.
+ * 
+ * Purpose: Manages temporal aspects of gameplay and historical period selection.
+ * 
+ * References:
+ * - File: src/app/game/chronos.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

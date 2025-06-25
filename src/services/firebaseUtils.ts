@@ -1,3 +1,16 @@
+/**
+ * Firebase Utilities and Configuration
+ * 
+ * Firebase service initialization, authentication, and database utilities.
+ * 
+ * Purpose: Centralized Firebase configuration and utility functions.
+ * 
+ * References:
+ * - File: src/services/firebaseUtils.ts
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";

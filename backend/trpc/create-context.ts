@@ -1,3 +1,15 @@
+/**
+ * create-context.ts
+ * 
+ * Source file for Chronicle Weaver application.
+ * 
+ * Purpose: Implements functionality for create-context.
+ * 
+ * References:
+ * - File: backend/trpc/create-context.ts
+ * - Part of Chronicle Weaver application
+ */
+
 import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";

@@ -1,4 +1,8 @@
 {
+  "_comment": "Firebase Project Configuration",
+  "_description": "Firebase hosting, functions, and service configuration.",
+  "_purpose": "Configures Firebase services and deployment settings.",
+
   "hosting": {
     "public": "dist",
     "ignore": [

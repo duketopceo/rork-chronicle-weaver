@@ -1,3 +1,16 @@
+/**
+ * Authentication Panel Component
+ * 
+ * User authentication interface with sign-in/sign-out functionality and user profile display.
+ * 
+ * Purpose: Handles user authentication state and provides authentication controls.
+ * 
+ * References:
+ * - File: src/components/AuthPanel.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useGameStore } from '../store/gameStore';

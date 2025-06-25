@@ -1,3 +1,16 @@
+/**
+ * Jest Testing Configuration
+ * 
+ * Jest test framework configuration and testing environment setup.
+ * 
+ * Purpose: Configures unit testing environment and test execution.
+ * 
+ * References:
+ * - File: jest.config.js
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],

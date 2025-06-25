@@ -1,3 +1,16 @@
+/**
+ * Usage Indicator Component
+ * 
+ * Visual indicator showing API usage, quotas, and limits.
+ * 
+ * Purpose: Displays current usage statistics and remaining quotas.
+ * 
+ * References:
+ * - File: src/components/UsageIndicator.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';

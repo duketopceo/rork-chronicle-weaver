@@ -1,3 +1,16 @@
+/**
+ * Character Stats Bar Component
+ * 
+ * Visual representation of character statistics and attributes.
+ * 
+ * Purpose: Displays character progress and attribute values in gameplay.
+ * 
+ * References:
+ * - File: src/components/StatsBar.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { CharacterStats } from "../types/game";

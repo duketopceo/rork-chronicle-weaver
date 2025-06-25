@@ -1,3 +1,16 @@
+/**
+ * Ultra Debug Panel Component
+ * 
+ * Advanced debugging interface with user and developer modes.
+ * 
+ * Purpose: Provides comprehensive debugging and monitoring capabilities.
+ * 
+ * References:
+ * - File: src/components/UltraDebugPanel.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Switch } from 'react-native';
 import { colors } from '../constants/colors';

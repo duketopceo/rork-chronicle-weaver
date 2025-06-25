@@ -1,3 +1,16 @@
+/**
+ * Game Choice Button Component
+ * 
+ * Interactive button for player choices in narrative gameplay.
+ * 
+ * Purpose: Handles player decision inputs and choice selection in game scenes.
+ * 
+ * References:
+ * - File: src/components/ChoiceButton.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, Animated, Platform } from "react-native";
 import { GameChoice } from "../types/game";

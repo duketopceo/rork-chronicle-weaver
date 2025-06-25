@@ -1,3 +1,16 @@
+/**
+ * Custom Choice Input Component
+ * 
+ * Text input component for custom player choices and responses.
+ * 
+ * Purpose: Allows players to create custom responses and choices in gameplay.
+ * 
+ * References:
+ * - File: src/components/CustomChoiceInput.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { colors } from "../constants/colors";

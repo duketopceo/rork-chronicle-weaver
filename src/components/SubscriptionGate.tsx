@@ -1,3 +1,16 @@
+/**
+ * Subscription Gate Component
+ * 
+ * Access control component for premium features and content.
+ * 
+ * Purpose: Manages access to premium features based on subscription status.
+ * 
+ * References:
+ * - File: src/components/SubscriptionGate.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import UpgradePrompt from '../components/UpgradePrompt';

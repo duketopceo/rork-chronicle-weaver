@@ -1,4 +1,8 @@
 {
+  "_comment": "Expo App Configuration",
+  "_description": "Expo application configuration for mobile and web deployment.",
+  "_purpose": "Configures Expo build settings and platform-specific options.",
+
   "expo": {
     "name": "Chronicle Weaver",
     "slug": "chronicle-weaver",

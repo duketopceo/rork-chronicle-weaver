@@ -1,3 +1,16 @@
+/**
+ * Game Setup and Character Creation Screen
+ * 
+ * Initial game setup including character creation and world configuration.
+ * 
+ * Purpose: Guides new players through character creation and game initialization.
+ * 
+ * References:
+ * - File: src/app/game/setup.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

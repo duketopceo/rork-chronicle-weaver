@@ -1,4 +1,8 @@
 {
+  "_comment": "tsconfig.json",
+  "_description": "Source file for Chronicle Weaver application.",
+  "_purpose": "Implements functionality for tsconfig.json.",
+
   "compilerOptions": {
     "target": "es2020",
     "module": "esnext",

@@ -1,3 +1,16 @@
+/**
+ * Lore and Knowledge Screen
+ * 
+ * Historical knowledge base and discovered lore repository.
+ * 
+ * Purpose: Displays accumulated knowledge and historical discoveries.
+ * 
+ * References:
+ * - File: src/app/game/lore.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

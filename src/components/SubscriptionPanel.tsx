@@ -1,3 +1,16 @@
+/**
+ * Subscription Management Panel
+ * 
+ * User interface for managing subscriptions and premium features.
+ * 
+ * Purpose: Handles subscription upgrades, downgrades, and feature access.
+ * 
+ * References:
+ * - File: src/components/SubscriptionPanel.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
