@@ -12,7 +12,7 @@
  */
 
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check";
+// import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check"; // Temporarily disabled
 import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -94,11 +94,16 @@ export const db = getFirestore(app);
 // Initialize AppCheck instance with error handling
 let appCheckInstance;
 try {
+  // Temporarily disable AppCheck to avoid reCAPTCHA issues in production
+  console.log('[Firebase] ℹ️ AppCheck temporarily disabled for stable deployment');
+  // TODO: Configure proper reCAPTCHA v3 key and re-enable
+  /*
   appCheckInstance = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'), // <-- Replace with your actual reCAPTCHA v3 key
+    provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'),
     isTokenAutoRefreshEnabled: true,
   });
   console.log('[Firebase] ✅ AppCheck initialized successfully');
+  */
 } catch (error) {
   console.warn('[Firebase] ⚠️ AppCheck initialization failed (continuing without it):', error);
   // Continue without AppCheck - it's not critical for basic functionality
@@ -171,10 +176,10 @@ export const getCurrentUser = (): User | null => {
  * @param payload - The payload to send to the function.
  * @returns The response from the Firebase Function.
  */
-export async function fetchFromFirebaseFunction(functionName: string, payload: any): Promise<any> {
+export async function fetchFromFirebaseFunction(functionName: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
-    // Retrieve the App Check token
-    const appCheckToken = await getToken(appCheckInstance);
+    // Skip App Check token since it's temporarily disabled
+    // const appCheckToken = await getToken(appCheckInstance);
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -190,7 +195,7 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: a
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${idToken}`,
-        "X-Firebase-AppCheck": appCheckToken.token,
+        // "X-Firebase-AppCheck": appCheckToken.token, // Temporarily disabled
       },
       body: JSON.stringify(payload),
     });
