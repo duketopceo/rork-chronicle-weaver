@@ -2,10 +2,10 @@
 
 ## Complete Step-by-Step Guide to Deploy on Firebase Hosting with Custom Domain
 
-**Target Domain**: chronicleweaver.com  
+**Target Domain**: [Configure your custom domain]  
 **Project**: Chronicle Weaver - Historical RPG with AI-powered narrative  
-**Author**: Rork <duketopceo@gmail.com>  
-**Date**: June 18, 2025
+**Author**: Chronicle Weaver Team  
+**Date**: July 12, 2025
 
 ---
 
@@ -515,11 +515,11 @@ bun run deploy
 
 **Project Resources:**
 - **Repository**: https://github.com/your-username/chronicle-weaver
-- **Developer**: Rork <duketopceo@gmail.com>
-- **Domain**: chronicleweaver.com
+- **Team**: Chronicle Weaver Development Team
+- **Domain**: [Configure your custom domain]
 
-**Emergency Contacts:**
-- **Primary Developer**: duketopceo@gmail.com
+**Support Resources:**
+- **Project Issues**: GitHub repository
 - **Firebase Support**: https://firebase.google.com/support
 
 ---

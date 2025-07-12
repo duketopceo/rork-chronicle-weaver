@@ -1,6 +1,6 @@
 # Chronicle Weaver - Firebase Deployment Quick Start
-# Author: Rork <duketopceo@gmail.com>
-# Date: June 18, 2025
+# Author: Chronicle Weaver Team
+# Date: July 12, 2025
 
 Write-Host "🚀 Chronicle Weaver Firebase Deployment Quick Start" -ForegroundColor Cyan
 Write-Host "=" * 60 -ForegroundColor Cyan
@@ -209,4 +209,4 @@ try {
 Write-Host "`n✅ Deployment process completed!" -ForegroundColor Green
 Write-Host "📋 Check the deployment log: $LogFile" -ForegroundColor Cyan
 Write-Host "📖 For detailed instructions, see: FIREBASE_DEPLOYMENT_PLAN.md" -ForegroundColor Cyan
-Write-Host "📧 Support: duketopceo@gmail.com" -ForegroundColor Cyan
+Write-Host "📧 Support: See GitHub repository for issues" -ForegroundColor Cyan

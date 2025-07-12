@@ -1,20 +1,20 @@
 # Chronicle Weaver - Contact Information
 
-## Primary Developer
-**Name**: Rork  
-**Email**: duketopceo@gmail.com  
-**Role**: Lead Developer & Project Owner
+## Development Team
+**Project**: Chronicle Weaver  
+**Status**: Open Source Project  
+**License**: MIT
 
 ## Project Information
-**Repository**: https://github.com/duketopceo/rork-chronicle-weaver  
-**Live Site**: https://chronicleweaver.com (when deployed)  
-**Firebase Project**: chronicle-weaver-460713
+**Repository**: https://github.com/username/chronicle-weaver  
+**Live Site**: [To be determined]  
+**Firebase Project**: [Configure your own]
 
 ## Support Channels
-For technical issues, feature requests, or collaboration inquiries, please contact duketopceo@gmail.com.
+For technical issues, feature requests, or collaboration inquiries, please create an issue in the GitHub repository.
 
-## Development Team
-Currently a solo project by Rork, but open to collaboration and contributions.
+## Contributing
+This is an open source project. Contributions and collaboration are welcome!
 
 ---
-Last Updated: June 18, 2025
+Last Updated: July 12, 2025

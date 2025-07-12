@@ -1,7 +1,7 @@
 # Chronicle Weaver
 *A Historical Role-Playing Game*
 
-Created by Rork
+An open-source historical RPG with AI-powered storytelling
 
 ## 🏛️ Project Overview
 
@@ -129,10 +129,10 @@ bun run start-web
 ```
 
 ### Environment Setup
-1. Configure Firebase project
-2. Update Firebase config in `app/_layout.tsx`
-3. Set up tRPC endpoints
-4. Configure AI service integration
+1. Copy `.env.example` to `.env` and configure your values
+2. Set up Firebase project and add credentials to `.env`
+3. Configure AI service integration (optional)
+4. Update any custom domain settings
 
 ## 🔧 Development
 
@@ -157,8 +157,17 @@ bun run start-web
 
 ## 🔐 Security & Privacy
 
-See `security.md` for detailed security considerations and privacy policy.
+**Important Security Notes:**
+- Never commit `.env` files to version control
+- All API keys and sensitive data should be in environment variables
+- Firebase configuration uses environment variables for security
+- See `docs/security.md` for detailed security considerations
+
+**Environment Variables Required:**
+- Firebase configuration (API keys, project ID, etc.)
+- AI service credentials (if using external AI)
+- Custom domain settings
 
 ## 📄 License
 
-Private project - All rights reserved.
+MIT License - Open source project

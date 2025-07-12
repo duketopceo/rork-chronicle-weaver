@@ -1,6 +1,6 @@
 # Chronicle Weaver - One-Click Firebase Deployment
 # Quick deployment script for Chronicle Weaver
-# Author: Rork <duketopceo@gmail.com>
+# Author: Chronicle Weaver Team
 
 Write-Host "🚀 Chronicle Weaver - Quick Firebase Deploy" -ForegroundColor Cyan
 

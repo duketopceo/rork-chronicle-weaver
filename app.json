@@ -5,40 +5,20 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "chronicleweaver",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },    "web": {
-      "favicon": "./assets/images/favicon.png",
-      "bundler": "metro",
-      "config": {
-        "firebase": {
-          "apiKey": "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-          "authDomain": "chronicle-weaver-460713.firebaseapp.com",
-          "projectId": "chronicle-weaver-460713",
-          "storageBucket": "chronicle-weaver-460713.firebasestorage.app",
-          "messagingSenderId": "927289740022",
-          "appId": "1:927289740022:web:bcb19bdbcce16cb9227ad7",
-          "measurementId": "G-ENMCNZZZTJ"
-        }
-      }
     },
-    "extra": {
-      "eas": {
-        "projectId": "chronicle-weaver-460713"
-      }
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://rork.com/"
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true

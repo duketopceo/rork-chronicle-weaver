@@ -1,8 +1,8 @@
 # 🚀 Firebase Deployment Ready Checklist
 **Chronicle Weaver - Final Deployment Checklist**  
-**Author**: Rork <duketopceo@gmail.com>  
-**Target**: chronicleweaver.com on Firebase Hosting  
-**Date**: June 18, 2025
+**Author**: Chronicle Weaver Team  
+**Target**: Custom domain on Firebase Hosting  
+**Date**: July 12, 2025
 
 ---
 
@@ -198,7 +198,7 @@ firebase use your-project-id
 - **Documentation**: `FIREBASE_DEPLOYMENT_PLAN.md` (comprehensive guide)
 - **Scripts**: `deploy-to-firebase.ps1` (interactive deployment)
 - **Quick Deploy**: `quick-deploy.ps1` (one-click deployment)
-- **Developer**: Rork <duketopceo@gmail.com>
+- **Support**: GitHub repository issues
 - **Firebase Docs**: https://firebase.google.com/docs/hosting
 
 ---

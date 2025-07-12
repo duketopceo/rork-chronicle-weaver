@@ -15,8 +15,8 @@ const getBaseUrl = () => {
     return window.location.origin; // Use current domain
   }
   
-  // Final fallback
-  return "https://chronicleweaver.com";
+  // Final fallback for development
+  return "http://localhost:3000";
 };
 
 export const trpcClient = trpc.createClient({

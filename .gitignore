@@ -29,9 +29,22 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Environment variables and sensitive data
 .env
+.env*.local
+.env.production
+.env.development
+.firebase-config.json
+firebase-adminsdk-*.json
+secrets.json
+
+# API keys and credentials
+api-keys.json
+credentials/
+config/private/
+config/secrets.*
+*.key
+*.pem
 
 # typescript
 *.tsbuildinfo
