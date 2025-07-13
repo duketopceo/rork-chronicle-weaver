@@ -1,3 +1,16 @@
+/**
+ * React Error Boundary Component
+ * 
+ * Error boundary for catching and handling React component errors gracefully.
+ * 
+ * Purpose: Provides error recovery and fallback UI for application errors.
+ * 
+ * References:
+ * - File: src/components/ErrorBoundary.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';

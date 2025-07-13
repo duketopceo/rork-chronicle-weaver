@@ -1,4 +1,8 @@
 {
+  "_comment": "TypeScript Configuration",
+  "_description": "TypeScript compiler configuration and type checking settings.",
+  "_purpose": "Defines TypeScript compilation rules and module resolution.",
+
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "baseUrl": ".",

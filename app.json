@@ -1,17 +1,29 @@
 {
+<<<<<<< HEAD
+=======
+  "_comment": "Expo App Configuration",
+  "_description": "Expo application configuration for mobile and web deployment.",
+  "_purpose": "Configures Expo build settings and platform-specific options.",
+
+>>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
   "expo": {
     "name": "Chronicle Weaver",
     "slug": "chronicle-weaver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+<<<<<<< HEAD
     "scheme": "chronicleweaver",
+=======
+    "scheme": "myapp",
+>>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+<<<<<<< HEAD
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -19,6 +31,35 @@
     },
     "plugins": [
       "expo-router"
+=======
+    },    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro",
+      "config": {
+        "firebase": {
+          "apiKey": "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+          "authDomain": "chronicle-weaver-460713.firebaseapp.com",
+          "projectId": "chronicle-weaver-460713",
+          "storageBucket": "chronicle-weaver-460713.appspot.com",
+          "messagingSenderId": "927289740022",
+          "appId": "1:927289740022:web:bcb19bdbcce16cb9227ad7",
+          "measurementId": "G-ENMCNZZZTJ"
+        }
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "chronicle-weaver-460713"
+      }
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://rork.com/"
+        }
+      ]
+>>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
     ],
     "experiments": {
       "typedRoutes": true

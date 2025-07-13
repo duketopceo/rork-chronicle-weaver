@@ -1,35 +1,33 @@
 /**
- * AI Service - Narrative Generation and Game Logic for Chronicle Weaver
+ * aiService.ts - AI/LLM Integration Service
  * 
- * This service handles all AI-powered features of Chronicle Weaver:
- * - Dynamic narrative generation based on player choices
- * - Character backstory creation
- * - World building and lore generation
- * - Consequence calculation and story branching
- * - Integration with external AI APIs
+ * Purpose: Core AI service for narrative generation, character development, and game logic
+ * Location: src/services/aiService.ts
  * 
  * Key Features:
- * - Type-safe API communication with validation
- * - Debug mode for development and testing
- * - Error handling and fallback mechanisms
- * - Performance metrics and monitoring
- * - Historical accuracy and context awareness
- * 
- * Architecture:
- * - Uses Firebase Functions for scalable AI processing
- * - Implements retry logic for API reliability
- * - Maintains conversation context for coherent narratives
- * - Provides both synchronous and asynchronous operations
- * 
- * AI Models:
- * - Narrative generation using advanced language models
- * - Historical fact-checking and context validation
+ * - Dynamic narrative generation using advanced language models
+ * - Historical fact-checking and context validation  
  * - Character personality and behavior modeling
  * - Dynamic world state management
+ * - Performance metrics and error handling
+ * 
+ * Referenced by: 
+ * - src/app/game/play.tsx (main game loop)
+ * - src/app/game/setup.tsx (character creation)
+ * - src/app/game/lore.tsx (world building)
+ * - src/components/UltraDebugPanel.tsx (debugging)
+ * 
+ * References:
+ * - src/types/game.ts (GameState, GameChoice, GameSegment types)
+ * - src/types/global.d.ts (ChronicleDebugState, ApiCompletion types)
+ * - src/store/gameStore.ts (game state management)
+ * - src/services/firebaseUtils.ts (cloud function calls)
+ * 
+ * Last updated: 2025-06-24
  */
 
 import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "../types/game";
-import { ChronicleDebugState, ApiCompletion } from "../types/global";
+import { ChronicleDebugState, ApiCompletion } from "../types/global.d";
 import { useGameStore } from "../store/gameStore";
 import { fetchFromFirebaseFunction } from "./firebaseUtils";
 

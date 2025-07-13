@@ -1,3 +1,15 @@
+/**
+ * trpc.ts
+ * 
+ * Source file for Chronicle Weaver application.
+ * 
+ * Purpose: Implements functionality for trpc.
+ * 
+ * References:
+ * - File: src/lib/trpc.ts
+ * - Part of Chronicle Weaver application
+ */
+
 import { createTRPCReact } from "@trpc/react-query";
 import { httpLink } from "@trpc/client";
 import type { AppRouter } from "../../backend/trpc/app-router";

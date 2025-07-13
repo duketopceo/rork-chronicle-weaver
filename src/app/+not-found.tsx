@@ -1,3 +1,16 @@
+/**
+ * Not Found Page Component
+ * 
+ * 404 error page for handling invalid routes and missing content.
+ * 
+ * Purpose: Provides user-friendly error handling for navigation failures.
+ * 
+ * References:
+ * - File: src/app/+not-found.tsx
+ * - Part of Chronicle Weaver game system
+ * - Integrates with game state and navigation
+ */
+
 import React from "react";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
