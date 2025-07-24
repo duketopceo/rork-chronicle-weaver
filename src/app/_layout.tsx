@@ -33,6 +33,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
 import { onAuthStateChange } from "../services/firebaseUtils";
 import { useGameStore } from "../store/gameStore";
+import { errorLogger } from "../utils/errorLogger";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes

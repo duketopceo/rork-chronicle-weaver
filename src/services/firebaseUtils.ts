@@ -94,14 +94,6 @@ export const db = getFirestore(app);
 // Initialize AppCheck instance with error handling
 let appCheckInstance;
 try {
-<<<<<<< HEAD
-  // Temporarily disable AppCheck to prevent initialization issues
-  // appCheckInstance = initializeAppCheck(app, {
-  //   provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'), // <-- Replace with your actual reCAPTCHA v3 key
-  //   isTokenAutoRefreshEnabled: true,
-  // });
-  console.log('[Firebase] ⚠️ AppCheck temporarily disabled for development');
-=======
   // Temporarily disable AppCheck to avoid reCAPTCHA issues in production
   console.log('[Firebase] ℹ️ AppCheck temporarily disabled for stable deployment');
   // TODO: Configure proper reCAPTCHA v3 key and re-enable
@@ -112,7 +104,6 @@ try {
   });
   console.log('[Firebase] ✅ AppCheck initialized successfully');
   */
->>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
 } catch (error) {
   console.warn('[Firebase] ⚠️ AppCheck initialization failed (continuing without it):', error);
   // Continue without AppCheck - it's not critical for basic functionality
@@ -187,17 +178,8 @@ export const getCurrentUser = (): User | null => {
  */
 export async function fetchFromFirebaseFunction(functionName: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
-<<<<<<< HEAD
-    // Skip App Check token if appCheckInstance is not available
-    let appCheckToken = null;
-    if (appCheckInstance) {
-      appCheckToken = await getToken(appCheckInstance);
-    }
-    
-=======
     // Skip App Check token since it's temporarily disabled
     // const appCheckToken = await getToken(appCheckInstance);
->>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -213,22 +195,14 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: R
     };
 
     // Only add App Check header if token is available
-    if (appCheckToken) {
-      headers["X-Firebase-AppCheck"] = appCheckToken.token;
-    }
+    // if (appCheckToken) {
+    //   headers["X-Firebase-AppCheck"] = appCheckToken.token;
+    // }
 
     // Use the correct region and project ID for your Firebase Functions endpoint
     const response = await fetch(`https://us-central1-chronicle-weaver-460713.cloudfunctions.net/${functionName}`, {
       method: "POST",
-<<<<<<< HEAD
       headers,
-=======
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${idToken}`,
-        // "X-Firebase-AppCheck": appCheckToken.token, // Temporarily disabled
-      },
->>>>>>> cbd5f1e4b7ac2735596c3d51f791e58f1c628502
       body: JSON.stringify(payload),
     });
 
