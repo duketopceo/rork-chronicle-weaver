@@ -168,6 +168,41 @@ bun run start-web
 - AI service credentials (if using external AI)
 - Custom domain settings
 
-## 📄 License
+## � Deployment
+
+### Automated Deployment
+- Automated deploys occur on push to main via GitHub Actions
+- Preview deployments are created for pull requests
+- Only chronicleweaver.com is supported as the production domain
+
+### Manual Deployment
+For local deployment:
+```bash
+# Build the production version
+npm run build:chronicleweaver
+
+# Deploy to Firebase hosting
+firebase deploy
+```
+
+### Available Build Commands
+- `npm run build`: Standard web build
+- `npm run build:chronicleweaver`: Production build for chronicleweaver.com
+- `npm run deploy`: Build and deploy to production
+- `npm run deploy:preview`: Deploy to preview channel
+
+### Preview Channels
+Create preview deployments for testing:
+```bash
+firebase hosting:channel:deploy preview_name
+```
+
+### Environment Configuration
+- Production environment uses `.env.production`
+- Staging and development use `.env.local`
+- Never commit actual environment files
+- Use GitHub Secrets for CI/CD environment variables
+
+## �📄 License
 
 MIT License - Open source project

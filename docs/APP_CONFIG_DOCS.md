@@ -37,7 +37,7 @@ This file defines the Expo configuration for Chronicle Weaver, a historical RPG 
 
 ### Expo Plugins Configuration
 - **expo-router**: File-based routing system for navigation
-  - **origin**: "https://rork.com/" - Base URL for deep linking and SEO optimization
+  - **origin**: "https://chronicleweaver.com/" - Base URL for deep linking and SEO optimization
 
 ### Experimental Features
 - **typedRoutes**: true - Enables TypeScript type generation for file-based routes
