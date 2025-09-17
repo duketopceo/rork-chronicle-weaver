@@ -16,51 +16,8 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Validate environment variables
-const validateEnvVars = () => {
-  const requiredVars = [
-    'EXPO_PUBLIC_FIREBASE_API_KEY',
-    'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
-    'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
-    'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    'EXPO_PUBLIC_FIREBASE_APP_ID'
-  ];
-
-  const missing = requiredVars.filter(varName => !process.env[varName]);
-  
-  console.log('[Firebase] 🔍 Environment variables check:');
-  requiredVars.forEach(varName => {
-    const value = process.env[varName];
-    console.log(`[Firebase] ${varName}: ${value ? `${value.substring(0, 10)}...` : 'MISSING'}`);
-  });
-  
-  if (missing.length > 0) {
-    console.error('[Firebase] ❌ Missing environment variables:', missing);
-    console.log('[Firebase] Available env vars:', Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC_')));
-    return false;
-  }
-
-  console.log('[Firebase] ✅ All required environment variables found');
-  return true;
-};
-
-// Backup configuration for production (fallback)
-const productionConfig = {
-  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-  authDomain: "chronicle-weaver-460713.firebaseapp.com",
-  projectId: "chronicle-weaver-460713",
-  storageBucket: "chronicle-weaver-460713.firebasestorage.app",
-  messagingSenderId: "927289740022",
-  appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
-  measurementId: "G-ENMCNZZZTJ"
-};
-
-// Check if environment variables are available
-const hasEnvVars = validateEnvVars();
-
-// Firebase configuration - use env vars if available, otherwise use hardcoded production config
-const firebaseConfig = hasEnvVars ? {
+// Firebase configuration - directly use environment variables
+const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
@@ -68,7 +25,27 @@ const firebaseConfig = hasEnvVars ? {
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
-} : productionConfig;
+};
+
+// Validate that all required environment variables are present
+const requiredVars = [
+  'EXPO_PUBLIC_FIREBASE_API_KEY',
+  'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
+  'EXPO_PUBLIC_FIREBASE_APP_ID'
+];
+
+const missingVars = requiredVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  const message = `[Firebase] ❌ Missing critical environment variables: ${missingVars.join(', ')}. The app will likely fail. Please check your .env file.`;
+  console.error(message);
+  // In a real app, you might want to throw an error here to prevent initialization
+  // For now, we will log a prominent error.
+  // throw new Error(message);
+} else {
+  console.log('[Firebase] ✅ All required environment variables are present.');
+}
 
 console.log('[Firebase] 🔥 Initializing Firebase with config:', {
   apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'MISSING',

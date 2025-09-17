@@ -135,7 +135,7 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
   const [isInitialized, setIsInitialized] = useState(false);
-  const { setUser } = useGameStore(state => ({ setUser: state.setUser }));
+  const setUser = useGameStore(state => state.setUser);
   
   console.log('RootLayout component mounting...');
   const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
@@ -202,7 +202,7 @@ export default function RootLayout() {
     return () => {
       unsubscribe();
     };
-  }, [initTimer, mountStepId]); // Removed setUser from dependencies to prevent infinite loop
+  }, [initTimer, mountStepId, setUser]);
 
   const handleGlobalError = (error: Error, errorInfo: any) => {
     logError(error, 'Global Error Boundary', 'critical');
@@ -270,55 +270,6 @@ export default function RootLayout() {
                 headerShown: false,
                 gestureEnabled: false,
               }} 
-            />
-            <Stack.Screen 
-              name="game/character" 
-              options={{ 
-                title: "Character",
-                presentation: "modal",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }
-              }} 
-            />
-            <Stack.Screen 
-              name="game/memories" 
-              options={{ 
-                title: "Chronicle Memories",
-                presentation: "modal",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }
-              }} 
-            />
-            <Stack.Screen 
-              name="game/lore" 
-              options={{ 
-                title: "Chronicle Lore",
-                presentation: "modal",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }
-              }} 
-            />
-            <Stack.Screen 
-              name="game/systems" 
-              options={{ 
-                title: "World Systems",
-                presentation: "modal",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }
-              }} 
-            />
-            <Stack.Screen 
-              name="game/kronos" 
-              options={{ 
-                title: "Speak with Kronos",
-                presentation: "modal",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-                }              }} 
             />
           </Stack>
         </ErrorBoundary>
