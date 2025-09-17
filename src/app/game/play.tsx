@@ -379,21 +379,6 @@ What will you do to begin your chronicle?`,
 
   // === NAVIGATION HANDLERS ===
   // Functions to navigate between different screens in the app
-  const navigateToCharacter = () => {
-    router.push("/game/character");
-  };
-
-  const navigateToLore = () => {
-    router.push("/game/lore");
-  };
-
-  const navigateToSystems = () => {
-    router.push("/game/systems");
-  };
-
-  const navigateToKronos = () => {
-    router.push("/game/kronos");
-  };
 
   const navigateToHome = () => {
     Alert.alert(
@@ -534,9 +519,6 @@ What will you do to begin your chronicle?`,
           <Text style={styles.turnText}>Turn {currentGame.turnCount} • {currentGame.era}</Text>
         </View>
         
-        <TouchableOpacity style={styles.headerButton} onPress={navigateToKronos}>
-          <MessageCircle size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.primary} />
-        </TouchableOpacity>
       </View>
       
       {/* Main Content - Full screen narrative until scroll */}
@@ -670,33 +652,6 @@ What will you do to begin your chronicle?`,
         )}
       </View>
       
-      {/* Bottom Navigation - Improved mobile spacing */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity 
-          style={styles.navButton} 
-          onPress={navigateToCharacter}
-          activeOpacity={0.7}
-        >
-          <User size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
-          <Text style={styles.navButtonText}>Character</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navButton} 
-          onPress={navigateToLore}
-          activeOpacity={0.7}
-        >
-          <Feather size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
-          <Text style={styles.navButtonText}>Chronicle</Text>
-        </TouchableOpacity>
-          <TouchableOpacity 
-          style={styles.navButton} 
-          onPress={navigateToSystems}
-          activeOpacity={0.7}
-        >          <Crown size={Platform.select({ ios: 26, android: 22, default: 22 })} color={colors.textMuted} />
-          <Text style={styles.navButtonText}>Systems</Text>
-        </TouchableOpacity>
-      </View>      
       {/* Debug toggle for development */}
       {__DEV__ && (
         <TouchableOpacity
