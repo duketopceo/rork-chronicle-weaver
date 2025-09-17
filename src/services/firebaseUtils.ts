@@ -1,18 +1,5 @@
-/**
- * Firebase Utilities and Configuration
- * 
- * Firebase service initialization, authentication, and database utilities.
- * 
- * Purpose: Centralized Firebase configuration and utility functions.
- * 
- * References:
- * - File: src/services/firebaseUtils.ts
- * - Part of Chronicle Weaver game system
- * - Integrates with game state and navigation
- */
-
 import { initializeApp, getApp, getApps } from "firebase/app";
-// import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check"; // Temporarily disabled
+import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -94,16 +81,12 @@ export const db = getFirestore(app);
 // Initialize AppCheck instance with error handling
 let appCheckInstance;
 try {
-  // Temporarily disable AppCheck to avoid reCAPTCHA issues in production
-  console.log('[Firebase] ℹ️ AppCheck temporarily disabled for stable deployment');
-  // TODO: Configure proper reCAPTCHA v3 key and re-enable
-  /*
-  appCheckInstance = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'),
-    isTokenAutoRefreshEnabled: true,
-  });
-  console.log('[Firebase] ✅ AppCheck initialized successfully');
-  */
+  // Temporarily disable AppCheck to prevent initialization issues
+  // appCheckInstance = initializeAppCheck(app, {
+  //   provider: new ReCaptchaV3Provider('6LeUcBMpAAAAAOG9QwQw7Qw7Qw7Qw7Qw7Qw7Qw7Q'), // <-- Replace with your actual reCAPTCHA v3 key
+  //   isTokenAutoRefreshEnabled: true,
+  // });
+  console.log('[Firebase] ⚠️ AppCheck temporarily disabled for development');
 } catch (error) {
   console.warn('[Firebase] ⚠️ AppCheck initialization failed (continuing without it):', error);
   // Continue without AppCheck - it's not critical for basic functionality
@@ -176,10 +159,14 @@ export const getCurrentUser = (): User | null => {
  * @param payload - The payload to send to the function.
  * @returns The response from the Firebase Function.
  */
-export async function fetchFromFirebaseFunction(functionName: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+export async function fetchFromFirebaseFunction(functionName: string, payload: any): Promise<any> {
   try {
-    // Skip App Check token since it's temporarily disabled
-    // const appCheckToken = await getToken(appCheckInstance);
+    // Skip App Check token if appCheckInstance is not available
+    let appCheckToken = null;
+    if (appCheckInstance) {
+      appCheckToken = await getToken(appCheckInstance);
+    }
+    
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -195,9 +182,9 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: R
     };
 
     // Only add App Check header if token is available
-    // if (appCheckToken) {
-    //   headers["X-Firebase-AppCheck"] = appCheckToken.token;
-    // }
+    if (appCheckToken) {
+      headers["X-Firebase-AppCheck"] = appCheckToken.token;
+    }
 
     // Use the correct region and project ID for your Firebase Functions endpoint
     const response = await fetch(`https://us-central1-chronicle-weaver-460713.cloudfunctions.net/${functionName}`, {
