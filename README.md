@@ -1,7 +1,12 @@
 # Chronicle Weaver
 *A Historical Role-Playing Game*
 
-An open-source historical RPG with AI-powered storytelling
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-chronicleweaver.com-blue)](https://chronicleweaver.com)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#deployment)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.79-blue)](https://reactnative.dev/)
+
+An open-source historical RPG with AI-powered storytelling, deployed at [chronicleweaver.com](https://chronicleweaver.com)
 
 ## 🏛️ Project Overview
 
@@ -26,9 +31,11 @@ Chronicle Weaver is an immersive historical role-playing game built with React N
 - **NativeWind**: Tailwind CSS for React Native styling
 - **TypeScript**: Type-safe development
 
-### Backend
-- **Hono**: Lightweight web framework
-- **tRPC**: End-to-end type-safe APIs
+### Backend Infrastructure
+- **Firebase Hosting**: Web deployment and CDN
+- **Firebase App Hosting**: Backend API services (configured but not implemented)
+- **Hono**: Lightweight web framework (ready for implementation)
+- **tRPC**: End-to-end type-safe APIs (structure defined)
 - **Firebase**: Authentication and data persistence
 - **Zod**: Schema validation
 
@@ -38,71 +45,162 @@ Chronicle Weaver is an immersive historical role-playing game built with React N
 - **Haptic Feedback**: Enhanced mobile experience
 - **Responsive Design**: Optimized for all screen sizes
 
-## 📁 Project Structure
+## 📁 Current Project Structure
+
+### 🚨 Empty/Placeholder Files Status
+**The following files exist but are empty or minimal placeholders:**
+- ❌ `backend/functions/hono.ts` - **EMPTY** - Main Hono server not implemented
+- ⚠️ `backend/trpc/routes/example/hi/route.ts` - Only example route, no real functionality
+- ⚠️ Several game screens have basic structure but need full implementation
 
 ```
-/app                    # Main application screens (Expo Router)
-  /_layout.tsx         # Root layout with providers
-  /index.tsx           # Home screen
-  /game/               # Game-specific screens
-    /setup.tsx         # Character and world setup
-    /play.tsx          # Main gameplay interface
-    /character.tsx     # Character management
-    /memories.tsx      # Player's story history
-    /lore.tsx          # World lore and information
-    /systems.tsx       # Game systems overview
-    /chronos.tsx       # Time management features
-    /kronos.tsx        # Advanced time mechanics
-
-/components             # Reusable UI components
-  /Button.tsx          # Custom button component
-  /ChoiceButton.tsx    # Game choice interface
-  /TextInput.tsx       # Styled text input
-  /CustomSlider.tsx    # Game settings slider
-  /NarrativeText.tsx   # Story text display
-  /StatsBar.tsx        # Character stats visualization
-  /MemoryList.tsx      # Memory management UI
-  /DebugPanel.tsx      # Development debugging tools
-
-/store                  # State management
-  /gameStore.ts        # Central game state with Zustand
-
-/types                  # TypeScript type definitions
-  /game.ts             # Game-related types and schemas
-  /global.d.ts         # Global type declarations
-
-/services               # External service integrations
-  /aiService.ts        # AI narrative generation
-  /firebaseUtils.ts    # Firebase helper functions
-
-/backend                # Server-side code
-  /hono.ts             # Main server setup
-  /trpc/               # tRPC API routes
-    /app-router.ts     # Main router configuration
-    /create-context.ts # Request context creation
-    /routes/           # API route definitions
-
-/constants              # App-wide constants
-  /colors.ts           # Color theme definitions
-
-/utils                  # Utility functions
-  /dateUtils.ts        # Date/time helper functions
-
-/assets                 # Static assets
-  /images/             # App icons and graphics
-
-/lib                    # Library configurations
-  /trpc.ts             # tRPC client setup
+Chronicle Weaver/
+├── 📱 src/app/                    # Expo Router screens (file-based routing)
+│   ├── _layout.tsx               # ✅ Root layout with providers & error boundaries
+│   ├── index.tsx                 # ✅ Home screen with era selection
+│   ├── +not-found.tsx            # ✅ 404 error page
+│   └── game/                     # Game-specific screens
+│       ├── setup.tsx             # ✅ Character & world setup (fully functional)
+│       ├── play.tsx              # ✅ Main gameplay interface (fully functional)
+│       ├── character.tsx         # ✅ Character stats & inventory management
+│       ├── memories.tsx          # ✅ Player's story history viewer
+│       ├── lore.tsx              # ⚠️ World lore browser (basic implementation)
+│       ├── systems.tsx           # ⚠️ Game systems overview (basic implementation)
+│       ├── chronos.tsx           # ⚠️ Time management (basic implementation)
+│       └── kronos.tsx            # ⚠️ Advanced time mechanics (basic implementation)
+│
+├── 🧩 src/components/             # Reusable UI components
+│   ├── AuthPanel.tsx             # ✅ Firebase authentication
+│   ├── BillingPanel.tsx          # ⚠️ Subscription management (basic structure)
+│   ├── Button.tsx                # ✅ Custom styled button
+│   ├── ChoiceButton.tsx          # ✅ Interactive story choice buttons
+│   ├── CustomChoiceInput.tsx     # ✅ Custom choice input field
+│   ├── CustomSlider.tsx          # ✅ Settings slider component
+│   ├── DebugPanel.tsx            # ✅ Development debugging interface
+│   ├── EnhancedDebugPanel.tsx    # ✅ Advanced debugging tools
+│   ├── UltraDebugPanel.tsx       # ✅ Complete debugging interface
+│   ├── ErrorBoundary.tsx         # ✅ React error boundary
+│   ├── MemoryList.tsx            # ✅ Story memory management
+│   ├── NarrativeText.tsx         # ✅ Animated story text display
+│   ├── StatsBar.tsx              # ✅ Character stats visualization
+│   ├── SubscriptionGate.tsx      # ⚠️ Premium feature gating (basic)
+│   ├── SubscriptionPanel.tsx     # ⚠️ Subscription UI (basic)
+│   ├── TextInput.tsx             # ✅ Styled text input component
+│   ├── UpgradePrompt.tsx         # ⚠️ Premium upgrade prompts (basic)
+│   └── UsageIndicator.tsx        # ⚠️ API usage display (basic)
+│
+├── 🗄️ src/store/                  # Zustand state management
+│   └── gameStore.ts              # ✅ Complete game state management
+│
+├── 📐 src/types/                  # TypeScript definitions
+│   ├── game.ts                   # ✅ Complete game type definitions
+│   └── global.d.ts               # ✅ Global type declarations
+│
+├── 🔧 src/services/               # External service integrations
+│   ├── aiService.ts              # ✅ AI narrative generation (OpenAI integration)
+│   └── firebaseUtils.ts          # ✅ Firebase helper functions
+│
+├── 🏗️ backend/                    # Server-side code (MOSTLY EMPTY)
+│   ├── functions/
+│   │   └── hono.ts               # ❌ EMPTY - Main server setup needed
+│   └── trpc/                     # tRPC API structure
+│       ├── app-router.ts         # ⚠️ Basic router setup
+│       ├── create-context.ts     # ⚠️ Basic context creation
+│       └── routes/example/hi/
+│           └── route.ts          # ⚠️ Example route only
+│
+├── 🎨 src/constants/              # App-wide constants
+│   └── colors.ts                 # ✅ Complete color theme
+│
+├── 🛠️ src/utils/                  # Utility functions
+│   ├── dateUtils.ts              # ✅ Date/time helpers
+│   ├── debugSystem.ts            # ✅ Advanced debugging utilities
+│   └── errorLogger.ts            # ✅ Error logging system
+│
+├── 🎯 src/lib/                    # Library configurations
+│   └── trpc.ts                   # ✅ tRPC client setup
+│
+├── 🖼️ assets/images/              # Static assets
+│   ├── adaptive-icon.png         # ✅ App adaptive icon
+│   ├── favicon.png               # ✅ Web favicon
+│   ├── icon.png                  # ✅ App icon
+│   └── splash-icon.png           # ✅ Splash screen icon
+│
+├── 🌐 public/                     # Web assets
+│   └── index.html                # ✅ Web entry point with browser extension fixes
+│
+├── 🧪 tests/                      # Test files
+│   └── app.test.ts               # ⚠️ Basic test structure (needs expansion)
+│
+├── ⚙️ config/                     # Configuration files
+│   ├── app.json                  # ✅ Expo app configuration
+│   ├── babel.config.js           # ✅ Babel configuration
+│   ├── expo-env.d.ts             # ✅ Expo TypeScript definitions
+│   ├── eslint.config.js          # ✅ ESLint configuration
+│   ├── firebase.json             # ✅ Firebase hosting configuration
+│   ├── jest.config.js            # ✅ Jest testing configuration
+│   ├── jest.setup.js             # ✅ Jest setup file
+│   ├── metro.config.js           # ✅ Metro bundler configuration
+│   ├── metro-transformer.js      # ✅ Metro transformer
+│   ├── tsconfig.json             # ✅ TypeScript configuration
+│   └── webpack.config.js         # ✅ Webpack configuration
+│
+├── 📚 docs/                       # Comprehensive documentation
+│   ├── AI_DEVELOPER_GUIDE.md     # ✅ Complete development guide
+│   ├── APP_CONFIG_DOCS.md        # ✅ Configuration documentation
+│   ├── CODE_DOCUMENTATION.md     # ✅ Code structure documentation
+│   ├── DEPLOYMENT_CHECKLIST.md   # ✅ Deployment procedures
+│   ├── FIREBASE_DEPLOYMENT_PLAN.md # ✅ Firebase deployment guide
+│   ├── FIREBASE_DOCS.md          # ✅ Firebase integration docs
+│   ├── PACKAGE_DOCS.md           # ✅ Package management docs
+│   ├── PROJECT_CONTEXT.md        # ✅ Project context & goals
+│   ├── TSCONFIG_DOCS.md          # ✅ TypeScript configuration docs
+│   ├── WORK_HISTORY_DIARY.md     # ✅ Development history log
+│   ├── CONTACT.md                # ✅ Contact information
+│   └── security.md               # ✅ Security guidelines
+│
+├── 🔧 scripts/                    # Build & deployment scripts
+│   └── post-build.js             # ✅ Post-build processing
+│
+└── 📋 Root Configuration Files
+    ├── package.json              # ✅ Dependencies & scripts
+    ├── package-lock.json         # ✅ Dependency lock file (recently fixed)
+    ├── README.md                 # ✅ This file
+    ├── .env.example              # ✅ Environment variables template
+    ├── .env.local                # 🔒 Local development environment
+    ├── .env.production           # 🔒 Production environment
+    ├── .firebaserc               # ✅ Firebase project configuration
+    ├── .eslintrc.json            # ✅ ESLint configuration
+    ├── .prettierrc               # ✅ Prettier code formatting
+    └── bun.lock                  # ✅ Bun package manager lock
 ```
 
-## 🎮 Game Flow
+## 🚨 Critical Development Guidelines - NO MORE PLACEHOLDERS
 
-1. **Home Screen**: Introduction and game selection
-2. **Setup**: Choose historical era, themes, and create character
-3. **Gameplay**: Navigate through story segments making choices
-4. **Character Management**: View stats, inventory, and relationships
-5. **Memory System**: Review past decisions and their consequences
-6. **Lore Discovery**: Learn about the historical world and its systems
+### Empty/Placeholder Files Status
+**The following files exist but are empty or minimal placeholders:**
+- ❌ `backend/functions/hono.ts` - **EMPTY** - Main Hono server not implemented
+- ⚠️ `backend/trpc/routes/example/hi/route.ts` - Only example route, no real functionality
+- ⚠️ Several game screens have basic structure but need full implementation
+
+### 🚨 IMPORTANT RULE: **NO MORE PLACEHOLDER FILES**
+**Do not add any more placeholder files or "TODO" comments.** Either:
+- ✅ Implement functionality properly with real code
+- ❌ Leave it out entirely until ready to implement
+
+### Current Implementation Status:
+- ✅ **Fully Working**: Character creation, AI storytelling, game state, Firebase auth, web deployment
+- ⚠️ **Partially Working**: Some game screens, lore browser, time systems (functional but basic)  
+- ❌ **Not Implemented**: Backend server, advanced tRPC routes, mobile deployment
+
+## 🎮 Game Flow & Implementation Status
+
+1. **Home Screen**: ✅ Introduction and era selection (fully implemented)
+2. **Setup**: ✅ Choose historical era, themes, and create character (fully functional)  
+3. **Gameplay**: ✅ Navigate through story segments making choices (AI-powered)
+4. **Character Management**: ✅ View stats, inventory, and relationships
+5. **Memory System**: ✅ Review past decisions and their consequences
+6. **Lore Discovery**: ⚠️ Learn about historical world and systems (basic implementation)
 
 ## 🚀 Getting Started
 
