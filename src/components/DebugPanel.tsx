@@ -26,12 +26,12 @@ type DebugPanelProps = {
 };
 
 export default function DebugPanel({ title = 'Debug Panel', compact = false }: DebugPanelProps) {
-  if (!__DEV__) return null;
-
   const steps = useDebugSteps();
   const errors = useDebugErrors();
   const metrics = useDebugMetrics();
   const { currentGame, isLoading } = useGameStore((s) => ({ currentGame: s.currentGame, isLoading: s.isLoading }));
+  // Guard render after hooks have been called to satisfy React Hooks rules
+  if (!__DEV__) return null;
 
   const recentSteps = steps.slice(-5);
   const recentErrors = errors.slice(-3);
