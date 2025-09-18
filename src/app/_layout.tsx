@@ -28,7 +28,7 @@ import { colors } from "../constants/colors";
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
 import { onAuthStateChange } from "../services/firebaseUtils";
@@ -58,10 +58,12 @@ const firebaseConfig = {
 // Initialize Firebase app instance
 let app;
 try {
-  app = initializeApp(firebaseConfig);
-  console.log('Firebase initialized successfully');
+  // Check if Firebase app is already initialized
+  const existingApp = getApps()[0];
+  app = existingApp || initializeApp(firebaseConfig);
+  console.log('[Firebase] ✅ Firebase app initialized successfully');
 } catch (error) {
-  console.error('Firebase initialization failed:', error);
+  console.error('[Firebase] ❌ Firebase initialization failed:', error);
 }
 
 // Initialize Firebase Analytics only on web platform when supported
