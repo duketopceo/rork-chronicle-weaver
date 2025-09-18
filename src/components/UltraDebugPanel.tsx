@@ -28,7 +28,7 @@ import {
   DebugStep,
   DebugError,
   DebugPerformanceMetric
-} from '@/utils/debugSystem';
+} from '../utils/debugSystem';
 import { useGameStore } from '../store/gameStore';
 
 interface UltraDebugPanelProps {
