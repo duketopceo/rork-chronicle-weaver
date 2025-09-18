@@ -90,9 +90,8 @@ jobs:
     - name: Install dependencies
       run: |
         echo "Installing dependencies..."
-        npm install --legacy-peer-deps
+        npm ci --legacy-peer-deps
         npx expo install --check
-        npx expo install react-native-safe-area-context@5.5.0
         
     - name: Build web application
       env:
