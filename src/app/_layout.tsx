@@ -23,7 +23,7 @@ import React from "react";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform } from "react-native";
+import { View, Platform, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { colors } from "../constants/colors";
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
@@ -132,6 +132,47 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
  * Wraps the entire app with necessary providers and configurations.
  * Sets up the navigation structure and manages app initialization.
  */
+// Add styles for debug components
+const styles = StyleSheet.create({
+  debugContainer: {
+    position: 'fixed',
+    bottom: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  debugButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  debugButtonText: {
+    fontSize: 20,
+    color: '#fff',
+  },
+  debugTextBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  debugText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+});
+
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
   const [isInitialized, setIsInitialized] = useState(false);
@@ -255,27 +296,36 @@ export default function RootLayout() {
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen 
-              name="game/setup" 
-              options={{ 
-                title: "Weave Your Chronicle",
-                headerTitleStyle: {
-                  fontSize: Platform.select({ ios: 20, android: 18, default: 18 }),
-                  fontWeight: "700",
-                }
-              }} 
-            />
-            <Stack.Screen 
               name="game/play" 
               options={{ 
                 headerShown: false,
                 gestureEnabled: false,
               }} 
             />
+            
+            {/* Debug Menu Button (Always Visible) */}
+            <View style={styles.debugContainer}>
+              <TouchableOpacity 
+                style={styles.debugButton}
+                onPress={() => {
+                  // Toggle debug panel visibility
+                  const event = new CustomEvent('toggle-debug-panel');
+                  window.dispatchEvent(event);
+                }}
+              >
+                <Text style={styles.debugButtonText}>⚙️</Text>
+              </TouchableOpacity>
+              
+              {/* Debug Text Box */}
+              <View style={styles.debugTextBox}>
+                <Text style={styles.debugText}>v1.0.0 | Production</Text>
+              </View>
+            </View>
           </Stack>
-        </ErrorBoundary>
-        </View>
-      </QueryClientProvider>
-    </trpc.Provider>
-  </ErrorBoundary>
+          </ErrorBoundary>
+          </View>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </ErrorBoundary>
   );
 } // End of RootLayout component
