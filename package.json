@@ -23,7 +23,7 @@
     "deploy:preview": "npm run build:production && firebase hosting:channel:deploy preview",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "type-check": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest -c jest.unit.config.js --coverage --passWithNoTests",
     "prepare": "husky install || true"
   },
   "dependencies": {
