@@ -49,12 +49,23 @@ export default function HomeScreen() {
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(false);
   const [showAuthPanel, setShowAuthPanel] = useState(false);
 
+  // TEMPORARY: Enable debug mode via URL parameter
+  const [debugMode, setDebugMode] = React.useState(false);
+
   // Log home screen mounting and signal loading screen to hide
   React.useEffect(() => {
     const stepId = logStep('HOME', 'Home screen mounted and ready');
     
-    // Signal to loading screen that React has mounted
+    // Check for debug parameter in URL
     if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const debugParam = urlParams.get('debug');
+      
+      if (debugParam === 'true') {
+        console.warn('⚠️ DEBUG MODE ENABLED - REMOVE BEFORE PRODUCTION RELEASE');
+        setDebugMode(true);
+      }
+      
       // Set a flag that the loading screen can detect
       (window as any).reactAppMounted = true;
       
@@ -71,10 +82,19 @@ export default function HomeScreen() {
    * Toggle Ultra Debug Panel Visibility
    * 
    * Shows/hides the unified debug panel with both user and developer views.
-   * Only available in development builds for security.
+   * Enabled in both development and production for easier debugging.
    */
   const toggleUltraDebug = () => {
-    setShowUltraDebug(!showUltraDebug);
+    // Only allow debug panel in development or when debug mode is enabled via URL
+    if (__DEV__ || debugMode) {
+      setShowUltraDebug(!showUltraDebug);
+      
+      // Log debug panel access
+      const stepId = logStep('DEBUG', `Ultra Debug Panel ${!showUltraDebug ? 'opened' : 'closed'}`);
+      updateStep(stepId, 'success', `Debug panel toggled in ${__DEV__ ? 'development' : 'production'} mode`);
+    } else {
+      console.log('Debug mode not enabled. Add ?debug=true to the URL to enable.');
+    }
   };
 
   const toggleSubscriptionPanel = () => {

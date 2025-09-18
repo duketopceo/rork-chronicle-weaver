@@ -21,6 +21,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "type-check": "tsc --noEmit",
     "test": "jest -c jest.unit.config.js --passWithNoTests",
+    "docs:organize": "node scripts/organize_docs.js",
     "prepare": "husky install || true"
   },
   "dependencies": {
