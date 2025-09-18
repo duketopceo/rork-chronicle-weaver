@@ -530,23 +530,7 @@ What will you do to begin your chronicle?`,
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollViewContent}
           >
-            {/* Debug buttons for development */}
-            {__DEV__ && (
-              <View style={styles.debugButtonsContainer}>
-                <TouchableOpacity style={styles.debugButton} onPress={() => setNarrativeKey(prev => prev + 1)}>
-                  <Text style={styles.debugButtonText}>🔄 Refresh Narrative</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.debugButton} onPress={() => setShowChoices(true)}>
-                  <Text style={styles.debugButtonText}>🎯 Show Choices</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.debugButton} 
-                  onPress={() => setAnimationSpeed(prev => Math.max(1, prev - 1))}
-                >
-                  <Text style={styles.debugButtonText}>⏩ Speed Up</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            {/* Debug controls moved to UltraDebugPanel */}
             
             {/* Narrative Text Component - Takes full screen space */}
             <View style={styles.narrativeContainer}>
@@ -640,19 +624,25 @@ What will you do to begin your chronicle?`,
             </Text>
             <Button title="Return Home" onPress={navigateToHome} />
             
-            {/* Debug info when no content */}
+            {/* Ultra Debug Panel Toggle */}
             {__DEV__ && (
-              <View style={styles.debugContainer}>
-                <TouchableOpacity style={styles.debugButton} onPress={forceShowUIElements}>
-                  <Text style={styles.debugButtonText}>🔧 Force Show UI</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.debugToggle}
+                onPress={() => setShowUltraDebug(!showUltraDebug)}
+                activeOpacity={0.8}
+              >
+                <Bug size={20} color={colors.text} />
+              </TouchableOpacity>
             )}
+            <UltraDebugPanel 
+              visible={showUltraDebug} 
+              onClose={() => setShowUltraDebug(false)} 
+            />
           </View>
         )}
       </View>
       
-      {/* Debug toggle for development */}
+      {/* Ultra Debug Panel Toggle */}
       {__DEV__ && (
         <TouchableOpacity
           style={styles.debugToggle}
@@ -661,7 +651,7 @@ What will you do to begin your chronicle?`,
         >
           <Bug size={20} color={colors.text} />
         </TouchableOpacity>
-      )}      {/* Ultra Debug Panel */}
+      )}
       <UltraDebugPanel 
         visible={showUltraDebug} 
         onClose={() => setShowUltraDebug(false)} 
