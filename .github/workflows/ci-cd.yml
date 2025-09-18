@@ -84,9 +84,12 @@ jobs:
     - name: Install dependencies
       run: |
         echo "Installing dependencies..."
-        npm install --legacy-peer-deps
+        npm install --legacy-peer-deps --no-package-lock
         npx expo install --check
         npx expo install react-native-safe-area-context@5.5.0
+        
+    - name: Generate package-lock.json
+      run: npm shrinkwrap --dev
         
     - name: Build web application
       env:
