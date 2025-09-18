@@ -90,9 +90,14 @@ jobs:
       env:
         EXPO_DEBUG: 1
         EXPO_WEB: 1
+        NODE_OPTIONS: --max_old_space_size=4096
       run: |
+        echo "=== Node.js version ==="
+        node -v
+        echo "=== npm version ==="
+        npm -v
         echo "=== Building Web Version ==="
-        npm run build:web-only
+        npx expo export -p web --clear --dump-assetmap
         
     - name: Verify build output
       run: |
