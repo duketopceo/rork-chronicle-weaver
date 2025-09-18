@@ -3,8 +3,14 @@ import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-
 import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Validate environment variables
+// Validate environment variables with detailed debugging
 const validateEnvVars = () => {
+  console.log('[Firebase] 🔍 Starting environment variable validation...');
+  
+  // Debug: Show all environment variables that start with EXPO_PUBLIC_FIREBASE
+  const firebaseEnvVars = Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC_FIREBASE'));
+  console.log('[Firebase] 🔍 Found Firebase environment variables:', firebaseEnvVars);
+  
   const requiredVars = [
     'EXPO_PUBLIC_FIREBASE_API_KEY',
     'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
@@ -14,19 +20,29 @@ const validateEnvVars = () => {
     'EXPO_PUBLIC_FIREBASE_APP_ID'
   ];
 
+  // Debug: Check each variable individually
+  requiredVars.forEach(varName => {
+    const value = process.env[varName];
+    console.log(`[Firebase] 🔍 ${varName}: ${value ? `SET (${value.length} chars)` : 'MISSING'}`);
+  });
+
   const missing = requiredVars.filter(varName => !process.env[varName]);
   
   if (missing.length > 0) {
     const message = `[Firebase] ❌ Missing critical environment variables: ${missing.join(', ')}. Please check your .env file.`;
     console.error(message);
+    console.error('[Firebase] 🔍 Current NODE_ENV:', process.env.NODE_ENV);
+    console.error('[Firebase] 🔍 Available env vars:', Object.keys(process.env).filter(k => k.includes('FIREBASE')));
     throw new Error(message);
   }
 
   console.log('[Firebase] ✅ All required environment variables are present.');
 };
 
-// Validate environment variables before proceeding
-validateEnvVars();
+// Only validate if we're not in a test environment
+if (process.env.NODE_ENV !== 'test') {
+  validateEnvVars();
+}
 
 // Firebase configuration is now sourced exclusively from environment variables
 const firebaseConfig = {
