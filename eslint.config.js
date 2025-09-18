@@ -11,14 +11,14 @@
  * - Integrates with game state and navigation
  */
 
-import js from '@eslint/js';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import reactNative from 'eslint-plugin-react-native';
+const js = require('@eslint/js');
+const tseslint = require('@typescript-eslint/eslint-plugin');
+const tsparser = require('@typescript-eslint/parser');
+const react = require('eslint-plugin-react');
+const reactHooks = require('eslint-plugin-react-hooks');
+const reactNative = require('eslint-plugin-react-native');
 
-export default [
+module.exports = [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
