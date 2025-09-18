@@ -43,27 +43,37 @@ SplashScreen.preventAutoHideAsync();
 // This manages server state, caching, and synchronization
 const queryClient = new QueryClient();
 
-// Firebase configuration for Chronicle Weaver
+// Firebase configuration for Chronicle Weaver (hardcoded for production)
 const firebaseConfig = {
   apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
   authDomain: "chronicle-weaver-460713.firebaseapp.com",
   databaseURL: "https://chronicle-weaver-460713-default-rtdb.firebaseio.com",
   projectId: "chronicle-weaver-460713",
-  storageBucket: "chronicle-weaver-460713.firebasestorage.app",
+  storageBucket: "chronicle-weaver-460713.appspot.com",
   messagingSenderId: "927289740022",
   appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
   measurementId: "G-ENMCNZZZTJ"
 };
+
+// Log Firebase config for debugging
+console.log('[Firebase] Using production Firebase configuration');
 
 // Initialize Firebase app instance
 let app;
 try {
   // Check if Firebase app is already initialized
   const existingApp = getApps()[0];
-  app = existingApp || initializeApp(firebaseConfig);
-  console.log('[Firebase] ✅ Firebase app initialized successfully');
+  if (existingApp) {
+    app = existingApp;
+    console.log('[Firebase] ✅ Using existing Firebase app');
+  } else {
+    app = initializeApp(firebaseConfig);
+    console.log('[Firebase] ✅ Firebase app initialized successfully');
+  }
 } catch (error) {
   console.error('[Firebase] ❌ Firebase initialization failed:', error);
+  // Rethrow to prevent app from starting with broken Firebase
+  throw error;
 }
 
 // Initialize Firebase Analytics only on web platform when supported
