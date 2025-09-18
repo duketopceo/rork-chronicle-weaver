@@ -19,8 +19,11 @@ module.exports = function (api) {
         "babel-preset-expo",
         {
           unstable_transformImportMeta: true, // Enable import.meta polyfill for compatibility
+          jsxRuntime: 'automatic',
         },
       ],
+      '@babel/preset-typescript',
+      ['@babel/preset-env', { targets: { node: 'current' } }],
     ],
     plugins: [
       [

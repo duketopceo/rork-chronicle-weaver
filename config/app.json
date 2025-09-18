@@ -12,20 +12,10 @@
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },    "web": {
+    },
+    "web": {
       "favicon": "./assets/images/favicon.png",
-      "bundler": "metro",
-      "config": {
-        "firebase": {
-          "apiKey": "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-          "authDomain": "chronicle-weaver-460713.firebaseapp.com",
-          "projectId": "chronicle-weaver-460713",
-          "storageBucket": "chronicle-weaver-460713.firebasestorage.app",
-          "messagingSenderId": "927289740022",
-          "appId": "1:927289740022:web:bcb19bdbcce16cb9227ad7",
-          "measurementId": "G-ENMCNZZZTJ"
-        }
-      }
+      "bundler": "metro"
     },
     "extra": {
       "eas": {

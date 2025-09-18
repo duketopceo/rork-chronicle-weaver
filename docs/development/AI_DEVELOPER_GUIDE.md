@@ -508,16 +508,15 @@ interface GameState {
 
 ### Firebase Identity Platform Configuration
 **Project**: `chronicle-weaver-460713`  
-**API Key**: `AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0`  
-**Auth Domain**: `chronicle-weaver-460713.firebaseapp.com`
+**Configuration**: Uses environment variables for security
 
 **Web Integration Snippet**:
 ```html
 <script src="https://www.gstatic.com/firebasejs/8.0/firebase.js"></script>
 <script>
   var config = {
-    apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-    authDomain: "chronicle-weaver-460713.firebaseapp.com",
+    apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   };
   firebase.initializeApp(config);
 </script>
@@ -527,12 +526,12 @@ interface GameState {
 ```typescript
 // services/firebaseUtils.ts
 const firebaseConfig = {
-  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-  authDomain: "chronicle-weaver-460713.firebaseapp.com",
-  projectId: "chronicle-weaver-460713",
-  storageBucket: "chronicle-weaver-460713.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 };
 ```
 
