@@ -18,11 +18,8 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
-    return process.env.EXPO_PUBLIC_API_BASE_URL;
-  }
-  
-  // Fallback for development or if env var is missing
+  // Use hardcoded production API URL
+  return 'https://us-central1-chronicle-weaver-460713.cloudfunctions.net/api';
   if (typeof window !== 'undefined') {
     return window.location.origin; // Use current domain
   }

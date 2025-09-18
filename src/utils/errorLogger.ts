@@ -42,8 +42,8 @@ class ErrorLoggingService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
-    this.isProduction = process.env.NODE_ENV === 'production';
-    this.apiEndpoint = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.chronicleweaver.com';
+    this.isProduction = true; // Always use production mode
+    this.apiEndpoint = 'https://us-central1-chronicle-weaver-460713.cloudfunctions.net/api';
     
     // Set up global error handlers
     this.setupGlobalErrorHandlers();
@@ -124,7 +124,7 @@ class ErrorLoggingService {
       userId: this.userId,
       sessionId: this.sessionId,
       platform: Platform.OS,
-      version: process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0',
+      version: '1.0.0',
       url: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : undefined,
       userAgent: Platform.OS === 'web' && typeof navigator !== 'undefined' ? navigator.userAgent : undefined
     };
@@ -148,7 +148,7 @@ class ErrorLoggingService {
       userId: this.userId,
       sessionId: this.sessionId,
       platform: Platform.OS,
-      version: process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0',
+      version: '1.0.0',
       url: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : undefined,
       userAgent: Platform.OS === 'web' && typeof navigator !== 'undefined' ? navigator.userAgent : undefined
     };
@@ -171,7 +171,7 @@ class ErrorLoggingService {
       userId: this.userId,
       sessionId: this.sessionId,
       platform: Platform.OS,
-      version: process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0',
+      version: '1.0.0',
       url: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : undefined,
       userAgent: Platform.OS === 'web' && typeof navigator !== 'undefined' ? navigator.userAgent : undefined
     };
@@ -200,7 +200,7 @@ class ErrorLoggingService {
       userId: this.userId,
       sessionId: this.sessionId,
       platform: Platform.OS,
-      version: process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0',
+      version: '1.0.0',
       url: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : undefined
     };
 

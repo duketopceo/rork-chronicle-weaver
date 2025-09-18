@@ -1,74 +1,50 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check";
-import { getAuth, Auth, User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { 
+  getAuth, 
+  Auth, 
+  User, 
+  onAuthStateChanged, 
+  signInAnonymously, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Validate environment variables with detailed debugging
-const validateEnvVars = () => {
-  console.log('[Firebase] 🔍 Starting environment variable validation...');
-  
-  // Debug: Show all environment variables that start with EXPO_PUBLIC_FIREBASE
-  const firebaseEnvVars = Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC_FIREBASE'));
-  console.log('[Firebase] 🔍 Found Firebase environment variables:', firebaseEnvVars);
-  
-  const requiredVars = [
-    'EXPO_PUBLIC_FIREBASE_API_KEY',
-    'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
-    'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
-    'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    'EXPO_PUBLIC_FIREBASE_APP_ID'
-  ];
-
-  // Debug: Check each variable individually
-  requiredVars.forEach(varName => {
-    const value = process.env[varName];
-    console.log(`[Firebase] 🔍 ${varName}: ${value ? `SET (${value.length} chars)` : 'MISSING'}`);
-  });
-
-  const missing = requiredVars.filter(varName => !process.env[varName]);
-  
-  if (missing.length > 0) {
-    const message = `[Firebase] ❌ Missing critical environment variables: ${missing.join(', ')}. Please check your .env file.`;
-    console.error(message);
-    console.error('[Firebase] 🔍 Current NODE_ENV:', process.env.NODE_ENV);
-    console.error('[Firebase] 🔍 Available env vars:', Object.keys(process.env).filter(k => k.includes('FIREBASE')));
-    throw new Error(message);
-  }
-
-  console.log('[Firebase] ✅ All required environment variables are present.');
-};
-
-// Only validate if we're not in a test environment
-if (process.env.NODE_ENV !== 'test') {
-  validateEnvVars();
-}
-
-// Firebase configuration is now sourced exclusively from environment variables
+// Firebase configuration with hardcoded values
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+  authDomain: "chronicle-weaver-460713.firebaseapp.com",
+  databaseURL: "https://chronicle-weaver-460713-default-rtdb.firebaseio.com",
+  projectId: "chronicle-weaver-460713",
+  storageBucket: "chronicle-weaver-460713.appspot.com",
+  messagingSenderId: "927289740022",
+  appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
+  measurementId: "G-ENMCNZZZTJ"
 };
 
-console.log('[Firebase] 🔥 Initializing Firebase with config:', {
-  apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'MISSING',
-  authDomain: firebaseConfig.authDomain,
-  projectId: firebaseConfig.projectId,
-  appId: firebaseConfig.appId ? `${firebaseConfig.appId.substring(0, 20)}...` : 'MISSING'
-});
+console.log('[Firebase] 🔥 Initializing Firebase with hardcoded configuration');
 
-// Initialize Firebase app
+// Initialize Firebase app with error handling
 let app;
 try {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  console.log('[Firebase] ✅ Firebase app initialized successfully');
+  // Check if Firebase app is already initialized
+  const existingApp = getApps()[0];
+  if (existingApp) {
+    app = existingApp;
+    console.log('[Firebase] ✅ Using existing Firebase app');
+  } else {
+    app = initializeApp(firebaseConfig);
+    console.log('[Firebase] ✅ Firebase app initialized successfully');
+  }
 } catch (error) {
   console.error('[Firebase] ❌ Failed to initialize Firebase app:', error);
+  // Rethrow to prevent app from starting with broken Firebase
   throw error;
 }
 
@@ -134,9 +110,47 @@ export const createAccount = async (email: string, password: string): Promise<Us
 export const signOutUser = async (): Promise<void> => {
   try {
     await signOut(auth);
-    console.log('User signed out successfully');
+    console.log('[Firebase] 👋 User signed out successfully');
   } catch (error) {
-    console.error('Error signing out:', error);
+    console.error('[Firebase] ❌ Error signing out:', error);
+    throw error;
+  }
+};
+
+// Google Authentication
+export const signInWithGoogle = async (): Promise<User | null> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    // Add any additional scopes you need
+    provider.addScope('profile');
+    provider.addScope('email');
+    
+    // Sign in with redirect on mobile, popup on web
+    if (window.innerWidth < 768) {
+      await signInWithRedirect(auth, provider);
+      // Handle the redirect result in your auth state change handler
+      return null;
+    } else {
+      const result = await signInWithPopup(auth, provider);
+      return result.user;
+    }
+  } catch (error) {
+    console.error('[Firebase] ❌ Google sign in failed:', error);
+    throw error;
+  }
+};
+
+// Handle redirect result (for mobile)
+export const handleRedirectResult = async (): Promise<User | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log('[Firebase] 🔄 Redirect sign-in successful');
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error('[Firebase] ❌ Error handling redirect result:', error);
     throw error;
   }
 };

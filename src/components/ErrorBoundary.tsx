@@ -147,36 +147,28 @@ export class ErrorBoundary extends Component<Props, State> {
             </View>
 
             {/* Developer Debug Section */}
-            {process.env.NODE_ENV !== 'production' && (
-              <View style={styles.debugSection}>
-                <View style={styles.debugHeader}>
-                  <Bug size={20} color={colors.textSecondary || '#666666'} />
-                  <Text style={styles.debugTitle}>Debug Information</Text>
-                </View>
-                
-                <ScrollView style={styles.debugScrollView}>
-                  <Text style={styles.debugLabel}>Error:</Text>
-                  <Text style={styles.debugText}>
-                    {this.state.error?.name}: {this.state.error?.message}
-                  </Text>
-                  
-                  <Text style={styles.debugLabel}>Stack Trace:</Text>
-                  <Text style={styles.debugText}>
-                    {this.state.error?.stack}
-                  </Text>
-                  
-                  <Text style={styles.debugLabel}>Component Stack:</Text>
-                  <Text style={styles.debugText}>
-                    {this.state.errorInfo?.componentStack}
-                  </Text>
-                </ScrollView>
-
-                <TouchableOpacity style={styles.exportButton} onPress={this.handleExportLogs}>
-                  <Download size={16} color={colors.textSecondary || '#666666'} />
-                  <Text style={styles.exportButtonText}>Export Logs</Text>
-                </TouchableOpacity>
+            <View style={styles.debugSection}>
+              <View style={styles.debugHeader}>
+                <Bug size={20} color={colors.textSecondary || '#666666'} />
+                <Text style={styles.debugTitle}>Debug Information</Text>
               </View>
-            )}
+              <ScrollView style={styles.debugScrollView}>
+                <Text style={styles.debugLabel}>Error Stack:</Text>
+                <Text style={styles.debugText}>
+                  {this.state.error?.stack}
+                </Text>
+                
+                <Text style={styles.debugLabel}>Component Stack:</Text>
+                <Text style={styles.debugText}>
+                  {this.state.errorInfo?.componentStack}
+                </Text>
+              </ScrollView>
+
+              <TouchableOpacity style={styles.exportButton} onPress={this.handleExportLogs}>
+                <Download size={16} color={colors.textSecondary || '#666666'} />
+                <Text style={styles.exportButtonText}>Export Logs</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         </View>
       );

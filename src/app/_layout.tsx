@@ -29,11 +29,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp, getApps } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
 import { onAuthStateChange } from "../services/firebaseUtils";
 import { useGameStore } from "../store/gameStore";
 import { errorLogger } from "../utils/errorLogger";
+import { UltraDebugPanel } from "../components/UltraDebugPanel";
 
 // Prevent the splash screen from auto-hiding before we're ready
 // This ensures users see the branding while the app initializes
@@ -146,79 +148,97 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
  * Wraps the entire app with necessary providers and configurations.
  * Sets up the navigation structure and manages app initialization.
  */
-// Add styles for debug components
+// Styles for debug and auth components
 const styles = StyleSheet.create({
-  debugContainer: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    left: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#ff4757',
-    zIndex: 9999,
-    maxHeight: '80%',
-    overflow: 'hidden',
-  },
-  debugHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.2)',
-  },
-  debugTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   debugButton: {
-    backgroundColor: '#ff4757',
-    padding: 8,
-    borderRadius: 4,
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.primary,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  debugButtonText: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  debugTextBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+  authButton: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    backgroundColor: colors.secondary,
+    padding: 10,
     borderRadius: 20,
-    marginLeft: 10,
-    borderWidth: 1,
-    borderColor: '#ff4757',
+    zIndex: 9999,
+    elevation: 5,
   },
-  debugText: {
-    color: '#fff',
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: 'monospace',
-  },
-  debugSection: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 8,
-  },
-  debugSectionTitle: {
-    color: '#ff4757',
-    fontSize: 14,
+  authButtonText: {
+    color: 'white',
     fontWeight: 'bold',
-    marginBottom: 8,
   },
 });
 
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
-  const [showUltraDebug, setShowUltraDebug] = useState(true);
-  const setUser = useGameStore(state => state.setUser);
+  const [showUltraDebug, setShowUltraDebug] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const auth = getAuth();
+  const googleProvider = new GoogleAuthProvider();
+
+  // Handle Google Sign In
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      setUser({
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        isAuthenticated: true
+      });
+      logStep('AUTH', `User signed in: ${user.email}`, 'success');
+    } catch (error) {
+      logError(error as Error, 'Google Sign In', 'high');
+    }
+  };
+
+  // Handle Sign Out
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      logStep('AUTH', 'User signed out', 'success');
+    } catch (error) {
+      logError(error as Error, 'Sign Out', 'high');
+    }
+  };
+
+  // Set up auth state listener
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          isAnonymous: firebaseUser.isAnonymous,
+          isAuthenticated: true
+        });
+        logStep('AUTH', `User state updated: ${firebaseUser.email}`, 'success');
+      } else {
+        setUser(null);
+        logStep('AUTH', 'User signed out', 'info');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
   
   console.log('RootLayout component mounting...');
   const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
@@ -345,25 +365,29 @@ export default function RootLayout() {
                 />
               </Stack>
               
-              {/* Debug Panel (Always Visible) */}
-              <View style={styles.debugContainer}>
-                <View style={styles.debugHeader}>
-                  <Text style={styles.debugTitle}>Debug Panel</Text>
-                  <TouchableOpacity 
-                    style={styles.debugButton}
-                    onPress={() => setShowUltraDebug(!showUltraDebug)}
-                  >
-                    <Text style={styles.debugButtonText}>{showUltraDebug ? '▼' : '▲'}</Text>
-                  </TouchableOpacity>
-                </View>
-                {showUltraDebug && (
-                  <View style={styles.debugSection}>
-                    <Text style={styles.debugText}>App Version: 1.0.0</Text>
-                    <Text style={styles.debugText}>Environment: Development</Text>
-                    <Text style={styles.debugText}>Firebase: Connected</Text>
-                  </View>
-                )}
-              </View>
+              {/* Debug Toggle Button */}
+              <TouchableOpacity 
+                style={styles.debugButton}
+                onPress={() => setShowUltraDebug(!showUltraDebug)}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>⚙️</Text>
+              </TouchableOpacity>
+
+              {/* Auth Button */}
+              <TouchableOpacity 
+                style={styles.authButton}
+                onPress={user ? handleSignOut : handleGoogleSignIn}
+              >
+                <Text style={styles.authButtonText}>
+                  {user ? 'Sign Out' : 'Sign In'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Debug Panel */}
+              <UltraDebugPanel 
+                visible={showUltraDebug}
+                onClose={() => setShowUltraDebug(false)}
+              />
             </ErrorBoundary>
           </View>
         </QueryClientProvider>
