@@ -44,15 +44,15 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 // Firebase configuration for Chronicle Weaver
-// Uses environment variables for security and flexibility across environments
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "",
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || ""
+  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
+  authDomain: "chronicle-weaver-460713.firebaseapp.com",
+  databaseURL: "https://chronicle-weaver-460713-default-rtdb.firebaseio.com",
+  projectId: "chronicle-weaver-460713",
+  storageBucket: "chronicle-weaver-460713.firebasestorage.app",
+  messagingSenderId: "927289740022",
+  appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
+  measurementId: "G-ENMCNZZZTJ"
 };
 
 // Initialize Firebase app instance
@@ -66,11 +66,13 @@ try {
 
 // Initialize Firebase Analytics only on web platform when supported
 // This provides user engagement and performance analytics with proper cookie domain configuration
+// Initialize Firebase Analytics if in web environment
 if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
   import('firebase/analytics').then(({ getAnalytics, isSupported }) => {
     isSupported().then((supported) => {
       if (supported) {
         try {
+          const analytics = getAnalytics(app);
           // Determine the correct cookie domain based on the current hostname
           const hostname = window.location.hostname;
           let shouldInitializeAnalytics = true;
@@ -135,33 +137,37 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
 // Add styles for debug components
 const styles = StyleSheet.create({
   debugContainer: {
-    position: 'fixed',
-    bottom: 20,
+    position: 'absolute',
+    top: 20,
     right: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 9999,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 25,
-    padding: 8,
-    borderWidth: 2,
+    left: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
     borderColor: '#ff4757',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
+    zIndex: 9999,
+    maxHeight: '80%',
+    overflow: 'hidden',
+  },
+  debugHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+  },
+  debugTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   debugButton: {
     backgroundColor: '#ff4757',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 2,
-    borderColor: '#fff',
+    padding: 8,
+    borderRadius: 4,
   },
   debugButtonText: {
     fontSize: 24,
@@ -180,16 +186,26 @@ const styles = StyleSheet.create({
   debugText: {
     color: '#fff',
     fontSize: 14,
+    lineHeight: 20,
+    fontFamily: 'monospace',
+  },
+  debugSection: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+  },
+  debugSectionTitle: {
+    color: '#ff4757',
+    fontSize: 14,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    marginBottom: 8,
   },
 });
 
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [showUltraDebug, setShowUltraDebug] = useState(true);
   const setUser = useGameStore(state => state.setUser);
   
   console.log('RootLayout component mounting...');
@@ -242,7 +258,6 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         await hideSplash();
-        setIsInitialized(true);
         updateStep(initStepId, 'success', 'App initialization completed');
         initTimer(); // Complete the timer
       } catch (error) {
@@ -305,38 +320,39 @@ export default function RootLayout() {
                   contentStyle: {
                     backgroundColor: colors.background,
                   },
-              gestureEnabled: true,
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen 
-              name="game/play" 
-              options={{ 
-                headerShown: false,
-                gestureEnabled: false,
-              }} 
-            />
-            
-            {/* Debug Menu Button (Always Visible) */}
-            <View style={styles.debugContainer}>
-              <TouchableOpacity 
-                style={styles.debugButton}
-                onPress={() => {
-                  // Toggle debug panel visibility
-                  const event = new CustomEvent('toggle-debug-panel');
-                  window.dispatchEvent(event);
+                  gestureEnabled: true,
                 }}
               >
-                <Text style={styles.debugButtonText}>⚙️</Text>
-              </TouchableOpacity>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen 
+                  name="game/play" 
+                  options={{ 
+                    headerShown: false,
+                    gestureEnabled: false,
+                  }} 
+                />
+              </Stack>
               
-              {/* Debug Text Box */}
-              <View style={styles.debugTextBox}>
-                <Text style={styles.debugText}>v1.0.0 | Production</Text>
+              {/* Debug Panel (Always Visible) */}
+              <View style={styles.debugContainer}>
+                <View style={styles.debugHeader}>
+                  <Text style={styles.debugTitle}>Debug Panel</Text>
+                  <TouchableOpacity 
+                    style={styles.debugButton}
+                    onPress={() => setShowUltraDebug(!showUltraDebug)}
+                  >
+                    <Text style={styles.debugButtonText}>{showUltraDebug ? '▼' : '▲'}</Text>
+                  </TouchableOpacity>
+                </View>
+                {showUltraDebug && (
+                  <View style={styles.debugSection}>
+                    <Text style={styles.debugText}>App Version: 1.0.0</Text>
+                    <Text style={styles.debugText}>Environment: Development</Text>
+                    <Text style={styles.debugText}>Firebase: Connected</Text>
+                  </View>
+                )}
               </View>
-            </View>
-          </Stack>
-          </ErrorBoundary>
+            </ErrorBoundary>
           </View>
         </QueryClientProvider>
       </trpc.Provider>
