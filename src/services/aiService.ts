@@ -29,7 +29,8 @@
 import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "../types/game";
 import { ChronicleDebugState, ApiCompletion } from "../types/global.d";
 import { useGameStore } from "../store/gameStore";
-import { fetchFromFirebaseFunction } from "./firebaseUtils";
+import { fetchFromFirebaseFunction, auth } from "./firebaseUtils";
+import { getAuth } from "firebase/auth";
 
 /**
  * Content Part Type
@@ -839,20 +840,57 @@ async function enforceTurnLimit() {
 
 async function processAIRequest(requestPayload: any) {
   try {
+    // Check if user is authenticated
+    const authInstance = getAuth();
+    const user = authInstance.currentUser;
+    
+    if (!user) {
+      console.log("User not authenticated, redirecting to sign-in...");
+      // Store the current path to redirect back after sign-in
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('returnUrl', window.location.pathname);
+        // Show sign-in modal or redirect to sign-in page
+        const signInEvent = new CustomEvent('show-sign-in');
+        window.dispatchEvent(signInEvent);
+      }
+      throw new Error("Please sign in to continue.");
+    }
+
     await enforceTurnLimit();
 
+    // Add user ID to the request payload
+    const payloadWithUser = {
+      ...requestPayload,
+      metadata: {
+        ...requestPayload.metadata,
+        userId: user.uid,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    console.log("Processing AI request with payload:", payloadWithUser);
+    
     // Route AI request through Firebase Functions
-    const response = await fetchFromFirebaseFunction("processAIRequest", requestPayload);
-
-    console.log("Processing AI request with payload:", requestPayload);
-
+    const response = await fetchFromFirebaseFunction("processAIRequest", payloadWithUser);
+    
     return response;
   } catch (error) {
+    console.error("Error in processAIRequest:", error);
+    
+    // Handle specific error cases
     if (error instanceof Error) {
-      console.error("Error processing AI request via Firebase Functions:", error.message);
-    } else {
-      console.error("Unknown error occurred during AI request processing via Firebase Functions:", error);
+      if (error.message.includes("not authenticated")) {
+        // Trigger sign-in flow if in browser environment
+        if (typeof window !== 'undefined') {
+          const signInEvent = new CustomEvent('show-sign-in');
+          window.dispatchEvent(signInEvent);
+        }
+      }
+      
+      // Rethrow with user-friendly message
+      throw new Error(`Failed to process request: ${error.message}`);
     }
-    throw error;
+    
+    throw new Error("An unknown error occurred while processing your request.");
   }
 }

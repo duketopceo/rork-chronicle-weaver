@@ -49,7 +49,8 @@ try {
 }
 
 // Initialize Firebase services
-export const auth: Auth = getAuth(app);
+const authInstance = getAuth(app);
+export const auth = authInstance;
 export const db = getFirestore(app);
 
 // Initialize AppCheck instance with error handling
