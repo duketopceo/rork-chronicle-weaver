@@ -12,12 +12,13 @@
     "start-original": "bunx rork start -p 09d7jjhyh29mlo0qd2rjr --tunnel",
     "start-web-original": "bunx rork start -p 09d7jjhyh29mlo0qd2rjr --web --tunnel",
     "start-web-dev-original": "DEBUG=expo* bunx rork start -p 09d7jjhyh29mlo0qd2rjr --web --tunnel",
-    "clean": "rimraf dist node_modules/.cache",
+    "clean": "rimraf dist node_modules/.cache .expo",
+    "reset": "npm run clean && rimraf node_modules package-lock.json && npm install",
     "prebuild": "npm run clean && rimraf dist",
-    "build": "expo export -p web",
-    "build:web": "npm run clean && npx expo export",
+    "build": "expo export -p web --clear",
+    "build:web": "npm run clean && npx expo export --clear",
     "build:webpack": "webpack --mode production",
-    "build:production": "npm run clean && npx expo export && node scripts/post-build.js",
+    "build:production": "npm run clean && npx expo export --clear && node scripts/post-build.js",
     "postinstall": "patch-package",
     "serve": "firebase serve --only hosting",
     "deploy": "npm run build:production && firebase deploy --only hosting",
@@ -128,5 +129,11 @@
     "ai-powered",
     "interactive-fiction"
   ],
-  "private": true
+  "private": true,
+  "resolutions": {
+    "react-native-safe-area-context": "^4.8.2"
+  },
+  "overrides": {
+    "react-native-safe-area-context": "^4.8.2"
+  }
 }
