@@ -62,11 +62,18 @@
       #root {
         height: 100vh;
         width: 100vw;
+      }
+      
+      #loader-overlay {
+        position: fixed;
+        inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 999999;
+        background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
       }
-      
+
       .loading {
         display: flex;
         flex-direction: column;
@@ -190,7 +197,7 @@
     </style>
   </head>
   <body>
-    <div id="root">
+    <div id="loader-overlay">
       <div class="loading">
         <div class="spinner"></div>
         <h1 class="loading-title">Chronicle Weaver</h1>
@@ -206,6 +213,7 @@
         </div>
       </div>
     </div>
+    <div id="root"></div>
     
     <script>
       // Historical quotes from antiquity - Civilization style
@@ -317,10 +325,31 @@
         displayQuote();
       }, 4000);
       
+      function hideLoader(reason) {
+        const overlay = document.getElementById('loader-overlay');
+        if (overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.transition = 'opacity 250ms ease';
+          setTimeout(() => {
+            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          }, 260);
+          console.log('Hiding loader overlay:', reason);
+        }
+      }
+
       // Listen for the custom event from the React app
       window.addEventListener('reactAppMounted', () => {
         console.log('✅ React app detected! Loading successful.');
         clearInterval(quoteInterval); // Stop the quote rotation
+        hideLoader('reactAppMounted');
+      });
+
+      // Safety fallback: hide after 12s if React hasn’t signaled
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const overlay = document.getElementById('loader-overlay');
+          if (overlay) hideLoader('fallback-timeout');
+        }, 12000);
       });
     </script>
   </body>

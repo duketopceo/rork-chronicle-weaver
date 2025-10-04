@@ -18,14 +18,8 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
-  // Use hardcoded production API URL
-  return 'https://us-central1-chronicle-weaver-460713.cloudfunctions.net/api';
-  if (typeof window !== 'undefined') {
-    return window.location.origin; // Use current domain
-  }
-  
-  // Final fallback for development
-  return "http://localhost:3000";
+  // Always use Firebase Functions origin for API calls
+  return 'https://us-central1-chronicle-weaver-460713.cloudfunctions.net';
 };
 
 export const trpcClient = trpc.createClient({

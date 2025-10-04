@@ -29,12 +29,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User as FirebaseUser } from "firebase/auth";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
 import { onAuthStateChange } from "../services/firebaseUtils";
-import { useGameStore } from "../store/gameStore";
-import { errorLogger } from "../utils/errorLogger";
 import { UltraDebugPanel } from "../components/UltraDebugPanel";
 
 // Prevent the splash screen from auto-hiding before we're ready
@@ -185,8 +183,8 @@ const styles = StyleSheet.create({
 
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
-  const [showUltraDebug, setShowUltraDebug] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [showUltraDebug, setShowUltraDebug] = useState(Platform.OS === 'web');
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const auth = getAuth();
   const googleProvider = new GoogleAuthProvider();
 
@@ -223,14 +221,7 @@ export default function RootLayout() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-          isAnonymous: firebaseUser.isAnonymous,
-          isAuthenticated: true
-        });
+        setUser(firebaseUser);
         logStep('AUTH', `User state updated: ${firebaseUser.email}`, 'success');
       } else {
         setUser(null);
@@ -238,7 +229,7 @@ export default function RootLayout() {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
   
   console.log('RootLayout component mounting...');
   const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
@@ -249,12 +240,7 @@ export default function RootLayout() {
     // Set up authentication state monitoring
     const unsubscribe = onAuthStateChange((firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          isAnonymous: firebaseUser.isAnonymous,
-          isAuthenticated: true
-        });
+        setUser(firebaseUser);
         logStep('AUTH', `User authenticated: ${firebaseUser.isAnonymous ? 'Guest' : firebaseUser.email}`);
       } else {
         setUser(null);
@@ -292,6 +278,12 @@ export default function RootLayout() {
         await hideSplash();
         updateStep(initStepId, 'success', 'App initialization completed');
         initTimer(); // Complete the timer
+        // Signal to index.html loader that React is ready
+        if (typeof window !== 'undefined') {
+          (window as any).reactAppMounted = true;
+          const event = new CustomEvent('reactAppMounted', { detail: { timestamp: Date.now() } });
+          window.dispatchEvent(event);
+        }
       } catch (error) {
         updateStep(initStepId, 'error', 'App initialization failed');
         logError(error as Error, 'App Initialization', 'critical');      }
@@ -306,7 +298,7 @@ export default function RootLayout() {
     };
   }, [initTimer, mountStepId, setUser]);
 
-  const handleGlobalError = (error: Error, errorInfo: any) => {
+  const handleGlobalError = (error: Error, errorInfo: unknown) => {
     logError(error, 'Global Error Boundary', 'critical');
     console.error('🚨 Global Error Boundary triggered:', error, errorInfo);
   };
@@ -333,7 +325,7 @@ export default function RootLayout() {
             paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
           }}>
             <StatusBar style="light" />
-            <ErrorBoundary onError={(error, errorInfo) => logError(error, 'Navigation Error Boundary', 'high')}>
+            <ErrorBoundary onError={(error) => logError(error, 'Navigation Error Boundary', 'high')}>
               <Stack
                 screenOptions={{
                   headerStyle: {
