@@ -23,7 +23,6 @@ module.exports = function (api) {
         },
       ],
       '@babel/preset-typescript',
-      ['@babel/preset-env', { targets: { node: 'current' } }],
     ],
     plugins: [
       [
