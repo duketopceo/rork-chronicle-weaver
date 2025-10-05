@@ -28,7 +28,7 @@ import { colors } from "../constants/colors";
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { initializeApp, getApps } from "firebase/app";
+import { app, auth, firebaseConfig } from "../../config/firebase";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { logStep, updateStep, logError, startTimer } from "../utils/debugSystem";
@@ -44,39 +44,6 @@ SplashScreen.preventAutoHideAsync();
 // Create React Query client for data fetching and caching
 // This manages server state, caching, and synchronization
 const queryClient = new QueryClient();
-
-// Firebase configuration for Chronicle Weaver (hardcoded for production)
-const firebaseConfig = {
-  apiKey: "AIzaSyAPzTeKMayMR6ksUsmdW6nIX-dypgxQbe0",
-  authDomain: "chronicle-weaver-460713.firebaseapp.com",
-  databaseURL: "https://chronicle-weaver-460713-default-rtdb.firebaseio.com",
-  projectId: "chronicle-weaver-460713",
-  storageBucket: "chronicle-weaver-460713.appspot.com",
-  messagingSenderId: "927289740022",
-  appId: "1:927289740022:web:bcb19bdbcce16cb9227ad7",
-  measurementId: "G-ENMCNZZZTJ"
-};
-
-// Log Firebase config for debugging
-console.log('[Firebase] Using production Firebase configuration');
-
-// Initialize Firebase app instance
-let app;
-try {
-  // Check if Firebase app is already initialized
-  const existingApp = getApps()[0];
-  if (existingApp) {
-    app = existingApp;
-    console.log('[Firebase] ✅ Using existing Firebase app');
-  } else {
-    app = initializeApp(firebaseConfig);
-    console.log('[Firebase] ✅ Firebase app initialized successfully');
-  }
-} catch (error) {
-  console.error('[Firebase] ❌ Firebase initialization failed:', error);
-  // Rethrow to prevent app from starting with broken Firebase
-  throw error;
-}
 
 // Initialize Firebase Analytics only on web platform when supported
 // This provides user engagement and performance analytics with proper cookie domain configuration
@@ -187,7 +154,6 @@ export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
   const [showUltraDebug, setShowUltraDebug] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const auth = getAuth();
   const googleProvider = new GoogleAuthProvider();
 
   // Handle Google Sign In
@@ -219,9 +185,10 @@ export default function RootLayout() {
     }
   };
 
+
   // Set up auth state listener
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+    const unsubscribe = onAuthStateChange((firebaseUser) => {
       if (firebaseUser) {
         setUser({
           uid: firebaseUser.uid,
@@ -229,31 +196,7 @@ export default function RootLayout() {
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
           isAnonymous: firebaseUser.isAnonymous,
-          isAuthenticated: true
-        });
-        logStep('AUTH', `User state updated: ${firebaseUser.email}`, 'success');
-      } else {
-        setUser(null);
-        logStep('AUTH', 'User signed out', 'info');
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-  
-  console.log('RootLayout component mounting...');
-  const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
-  
-  useEffect(() => {
-    const initStepId = logStep('LAYOUT', 'RootLayout useEffect running');
-    
-    // Set up authentication state monitoring
-    const unsubscribe = onAuthStateChange((firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          isAnonymous: firebaseUser.isAnonymous,
-          isAuthenticated: true
+          isAuthenticated: true,
         });
         logStep('AUTH', `User authenticated: ${firebaseUser.isAnonymous ? 'Guest' : firebaseUser.email}`);
       } else {
@@ -261,23 +204,32 @@ export default function RootLayout() {
         logStep('AUTH', 'User signed out');
       }
     });
-      // Handle splash screen hiding with platform-specific timing
+    return () => unsubscribe();
+  }, []);
+
+  console.log('RootLayout component mounting...');
+  const mountStepId = logStep('LAYOUT', 'RootLayout component mounting');
+
+  useEffect(() => {
+    const initStepId = logStep('LAYOUT', 'RootLayout useEffect running');
+
+    // Handle splash screen hiding with platform-specific timing
     // iOS needs slightly more time for smooth transitions
     const hideSplash = async () => {
       const splashStepId = logStep('SPLASH', 'Attempting to hide splash screen');
-      
+
       // For web development, we don't need to hide splash screen
       if (Platform.OS === 'web') {
         updateStep(splashStepId, 'success', 'Web platform - no splash screen to hide');
         return;
       }
-      
-      await new Promise(resolve => setTimeout(resolve, Platform.select({ 
+
+      await new Promise(resolve => setTimeout(resolve, Platform.select({
         ios: 1200,     // iOS needs more time for smooth animations
         android: 1000, // Android can hide splash sooner
         default: 500   // Faster for other platforms
       })));
-      
+
       try {
         await SplashScreen.hideAsync();
         updateStep(splashStepId, 'success', 'Splash screen hidden successfully');
@@ -286,7 +238,7 @@ export default function RootLayout() {
         logError(error as Error, 'Splash Screen Hiding', 'medium');
       }
     };
-    
+
     const initializeApp = async () => {
       try {
         await hideSplash();
@@ -294,17 +246,13 @@ export default function RootLayout() {
         initTimer(); // Complete the timer
       } catch (error) {
         updateStep(initStepId, 'error', 'App initialization failed');
-        logError(error as Error, 'App Initialization', 'critical');      }
+        logError(error as Error, 'App Initialization', 'critical');
+      }
     };
-    
+
     initializeApp();
     updateStep(mountStepId, 'success', 'RootLayout component mounted');
-    
-    // Cleanup auth listener on unmount
-    return () => {
-      unsubscribe();
-    };
-  }, [initTimer, mountStepId, setUser]);
+  }, [initTimer, mountStepId]);
 
   const handleGlobalError = (error: Error, errorInfo: any) => {
     logError(error, 'Global Error Boundary', 'critical');
