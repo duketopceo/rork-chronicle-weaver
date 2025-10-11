@@ -1,159 +1,109 @@
-/**
- * HOME SCREEN - Chronicle Weaver v2.0
- * 
- * Purpose: Main landing page and navigation hub
- * Features:
- * - Welcome message and app branding
- * - Quick access to start new game
- * - Continue existing game button
- * - Settings and profile access
- * - Recent games list
- * - Achievement/progress overview
- * 
- * Navigation Routes:
- * - /game/setup (new game)
- * - /game/continue (existing game)
- * - /settings (app settings)
- * - /auth (login/signup)
- * 
- * State Dependencies:
- * - User authentication status
- * - Recent games from game store
- * - User preferences
- * 
- * Usage: Entry point for authenticated and new users
- */
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
-import { View, Text, ScrollView, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/store/authStore';
-import { useGameStore } from '@/store/gameStore';
-import { useTheme } from '@/hooks/useTheme';
-
-// Components
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { RecentGamesList } from '@/components/game/RecentGamesList';
-import { WelcomeMessage } from '@/components/layout/WelcomeMessage';
-
-/**
- * Home Screen Component
- * Main app entry point and navigation hub
- */
 export default function HomeScreen() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
-  const { recentGames, hasActiveGame } = useGameStore();
-  const { theme } = useTheme();
-
-  // Navigation handlers
-  const handleNewGame = () => {
-    router.push('/game/setup');
-  };
-
-  const handleContinueGame = () => {
-    router.push('/game/continue');
-  };
-
-  const handleSettings = () => {
-    router.push('/settings');
-  };
-
-  const handleAuth = () => {
-    router.push('/auth');
-  };
-
   return (
-    <ScrollView 
-      className="flex-1 bg-gray-900"
-      contentContainerStyle={{ padding: 20 }}
-    >
-      {/* Header Section */}
-      <View className="mb-8">
-        <WelcomeMessage user={user} />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Chronicle Weaver</Text>
+        <Text style={styles.version}>Version 2.0</Text>
+      </View>
+      
+      <View style={styles.content}>
+        <Text style={styles.status}>🚧 Under Construction 🚧</Text>
+        <Text style={styles.description}>
+          We're building something amazing! Chronicle Weaver v2.0 is being rewritten from the ground up 
+          with improved AI-powered narrative generation and a modern interface.
+        </Text>
         
-        {!isAuthenticated && (
-          <Card className="mt-4 p-4 bg-blue-900/20 border-blue-500/30">
-            <Text className="text-blue-300 text-center mb-2">
-              Sign in to save your progress and access premium features
-            </Text>
-            <Button 
-              variant="outline" 
-              onPress={handleAuth}
-              className="border-blue-500"
-            >
-              Sign In / Sign Up
-            </Button>
-          </Card>
-        )}
-      </View>
-
-      {/* Main Actions */}
-      <View className="mb-8 space-y-4">
-        <Button 
-          onPress={handleNewGame}
-          className="bg-amber-600 py-4"
-          size="large"
-        >
-          Start New Chronicle
-        </Button>
-
-        {hasActiveGame && (
-          <Button 
-            onPress={handleContinueGame}
-            variant="outline"
-            className="border-amber-600 py-4"
-            size="large"
-          >
-            Continue Current Story
-          </Button>
-        )}
-      </View>
-
-      {/* Recent Games Section */}
-      {recentGames.length > 0 && (
-        <View className="mb-8">
-          <Text className="text-white text-xl font-bold mb-4">
-            Recent Chronicles
-          </Text>
-          <RecentGamesList games={recentGames} />
-        </View>
-      )}
-
-      {/* Quick Access Section */}
-      <View className="mb-8">
-        <Text className="text-white text-xl font-bold mb-4">
-          Quick Access
-        </Text>
-        <View className="grid grid-cols-2 gap-4">
-          <Pressable 
-            onPress={() => router.push('/game/library')}
-            className="bg-gray-800 p-4 rounded-lg border border-gray-700"
-          >
-            <Text className="text-white font-semibold">Chronicle Library</Text>
-            <Text className="text-gray-400 text-sm mt-1">
-              Browse saved stories
-            </Text>
-          </Pressable>
-          
-          <Pressable 
-            onPress={handleSettings}
-            className="bg-gray-800 p-4 rounded-lg border border-gray-700"
-          >
-            <Text className="text-white font-semibold">Settings</Text>
-            <Text className="text-gray-400 text-sm mt-1">
-              Customize your experience
-            </Text>
-          </Pressable>
+        <View style={styles.features}>
+          <Text style={styles.featureTitle}>Coming Soon:</Text>
+          <Text style={styles.feature}>• AI-Powered Historical Narratives</Text>
+          <Text style={styles.feature}>• Character Creation & Progression</Text>
+          <Text style={styles.feature}>• Multiple Historical Eras</Text>
+          <Text style={styles.feature}>• Choice-Driven Storytelling</Text>
+          <Text style={styles.feature}>• Cloud Save & Sync</Text>
         </View>
       </View>
-
-      {/* Footer */}
-      <View className="mt-8 pt-8 border-t border-gray-700">
-        <Text className="text-gray-500 text-center text-sm">
-          Chronicle Weaver v2.0 - Weave your own historical tales
+      
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          Chronicle Weaver v2.0 - The Future of Historical Role-Playing
+        </Text>
+        <Text style={styles.footerText}>
+          chronicleweaver.com
         </Text>
       </View>
-    </ScrollView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    padding: 20,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 60,
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#d97706',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  version: {
+    fontSize: 18,
+    color: '#9ca3af',
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  status: {
+    fontSize: 32,
+    color: '#fbbf24',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 18,
+    color: '#e5e7eb',
+    textAlign: 'center',
+    lineHeight: 26,
+    marginBottom: 40,
+    maxWidth: 600,
+  },
+  features: {
+    alignItems: 'flex-start',
+  },
+  featureTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#d97706',
+    marginBottom: 15,
+  },
+  feature: {
+    fontSize: 16,
+    color: '#d1d5db',
+    marginBottom: 8,
+    paddingLeft: 10,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+});

@@ -10,13 +10,28 @@
     "start-web": "expo start --web",
     "build": "expo export -p web --clear",
     "build:production": "expo export -p web --clear",
-    "deploy": "npm run build:production && firebase deploy --only hosting",
+    "deploy": "firebase deploy --only hosting",
+    "deploy:construction": "firebase deploy --only hosting",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "test": "jest"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-native": "0.74.5",
+    "react-native-web": "~0.19.6",
+    "expo": "~51.0.28",
+    "expo-router": "~3.5.23",
+    "expo-status-bar": "~1.12.1",
+    "expo-font": "~12.0.9"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.45",
+    "@types/react-dom": "~18.2.18",
+    "typescript": "~5.3.3"
+  },
   "keywords": [
     "react-native",
     "expo",

@@ -11,55 +11,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#1a1a1a"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/chronicle-weaver-460713"
-    },
     "assetBundlePatterns": [
       "assets/**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.chronicleweaver.app",
-      "buildNumber": "1"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#1a1a1a"
-      },
-      "package": "com.chronicleweaver.app",
-      "versionCode": 1
-    },
     "web": {
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro",
-      "output": "static",
-      "build": {
-        "babel": {
-          "include": ["@expo/vector-icons"]
-        }
-      }
+      "output": "static"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-font",
-        {
-          "fonts": ["./assets/fonts/"]
-        }
-      ]
-    ],
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "chronicle-weaver-460713"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    }
+      "expo-router"
+    ]
   }
 }
