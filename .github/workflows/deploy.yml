@@ -1,0 +1,31 @@
+name: Deploy to Firebase (main)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web (V1)
+        run: npm run build:production
+
+      - name: Deploy to Firebase Hosting and Functions
+        uses: w9jds/firebase-action@v13.24.0
+        with:
+          args: deploy --only hosting,functions --project chronicle-weaver-460713
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
