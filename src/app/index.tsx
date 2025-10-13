@@ -98,16 +98,24 @@ export default function HomeScreen() {
     router.push('/game/setup');
   };
 
-  const handleContinueGame = (gameId?: string) => {
-    if (gameId) {
-      router.push(`/game/play?gameId=${gameId}`);
-    } else if (currentGame) {
-      router.push('/game/play');
-    } else {
-      // Load most recent game
-      if (savedGames.length > 0) {
-        router.push(`/game/play?gameId=${savedGames[0].id}`);
+  const handleContinueGame = async (gameId?: string) => {
+    try {
+      // Load game into store before navigation
+      if (gameId) {
+        const ok = await useGameStore.getState().loadGameById(gameId);
+        if (ok) router.push('/game/play');
+        return;
       }
+      if (currentGame) {
+        router.push('/game/play');
+        return;
+      }
+      if (savedGames.length > 0) {
+        const ok = await useGameStore.getState().loadGameById(savedGames[0].id);
+        if (ok) router.push('/game/play');
+      }
+    } catch (e) {
+      console.error('Failed to continue game:', e);
     }
   };
 

@@ -287,7 +287,7 @@ What will you do to begin your chronicle?`,
         customChoiceEnabled: true
       };
       
-      // Update game with new segment
+      // Update game with new segment (auto-saves via store)
       updateGameSegment(segmentWithCustom);
       
       // Reset UI state for new segment and force narrative re-render

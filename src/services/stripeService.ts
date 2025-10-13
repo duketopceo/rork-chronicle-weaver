@@ -352,3 +352,4 @@ export const stripeService = new StripeService();
 
 // Initialize on module load
 stripeService.initialize().catch(console.error);
+

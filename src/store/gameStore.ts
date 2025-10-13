@@ -25,6 +25,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "../types/game";
+import { gameDataService } from "../services/gameDataService";
 
 /**
  * Game Store Interface
@@ -69,6 +70,9 @@ interface GameStore {
   // === ACTIVE GAME ACTIONS ===
   // These actions manage ongoing gameplay
   startNewGame: () => void;                           // Initialize new game session
+  loadGameById: (gameId: string) => Promise<boolean>; // Load a saved game by id
+  continueMostRecentGame: () => Promise<boolean>;     // Load most recent saved game
+  deleteGameById: (gameId: string) => Promise<boolean>; // Delete a saved game
   makeChoice: (choiceId: string) => Promise<void>;   // Process player choice
   updateGameSegment: (segment: GameSegment) => void; // Update current narrative
   addMemory: (memory: Memory) => void;               // Add to player's memory log
@@ -209,6 +213,68 @@ export const useGameStore = create<GameStore>()(
         });
       },
 
+      loadGameById: async (gameId: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          const loaded = await gameDataService.loadGame(gameId);
+          if (!loaded) {
+            set({ isLoading: false, error: "Saved game not found" });
+            return false;
+          }
+          const game = loaded.game as GameState;
+          set({ currentGame: game, narrative: game.currentSegment || null, isLoading: false });
+          return true;
+        } catch (err) {
+          console.error("[GameStore] Failed to load game:", err);
+          set({ isLoading: false, error: "Failed to load game" });
+          return false;
+        }
+      },
+
+      continueMostRecentGame: async () => {
+        try {
+          const state = get();
+          const userId = state.user?.uid || "";
+          if (!userId) {
+            set({ error: "Please sign in to continue a saved game" });
+            return false;
+          }
+          set({ isLoading: true, error: null });
+          const games = await gameDataService.listGames(userId);
+          if (!games || games.length === 0) {
+            set({ isLoading: false, error: "No saved games found" });
+            return false;
+          }
+          const mostRecent = games[0];
+          const ok = await get().loadGameById(mostRecent.id);
+          set({ isLoading: false });
+          return ok;
+        } catch (err) {
+          console.error("[GameStore] Failed to continue game:", err);
+          set({ isLoading: false, error: "Failed to continue game" });
+          return false;
+        }
+      },
+
+      deleteGameById: async (gameId: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          const ok = await gameDataService.deleteGame(gameId);
+          if (ok) {
+            const current = get().currentGame;
+            if (current?.id === gameId) {
+              set({ currentGame: null, narrative: null });
+            }
+          }
+          set({ isLoading: false });
+          return ok;
+        } catch (err) {
+          console.error("[GameStore] Failed to delete game:", err);
+          set({ isLoading: false, error: "Failed to delete game" });
+          return false;
+        }
+      },
+
       makeChoice: async (choiceId) => {
         const currentGame = get().currentGame;
         const userType = get().userType;
@@ -261,6 +327,24 @@ export const useGameStore = create<GameStore>()(
           segmentTextLength: segment.text.length,
           choicesCount: segment.choices.length
         });
+
+        // Fire-and-forget auto-save for each turn (non-blocking)
+        try {
+          gameDataService
+            .autoSave(
+              updatedGame.id,
+              updatedGame,
+              {
+                text: segment.text,
+                choices: segment.choices,
+                selectedChoice: "system",
+                customInput: undefined,
+              }
+            )
+            .catch((err) => console.warn("[GameStore] Auto-save failed (non-blocking):", err));
+        } catch (err) {
+          console.warn("[GameStore] Auto-save scheduling failed:", err);
+        }
 
         return { currentGame: updatedGame, isLoading: false };
       }),

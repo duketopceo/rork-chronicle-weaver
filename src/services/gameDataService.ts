@@ -303,3 +303,4 @@ if (typeof window !== 'undefined') {
     }
   }, 30000); // Every 30 seconds
 }
+

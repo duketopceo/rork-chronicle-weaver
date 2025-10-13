@@ -137,3 +137,4 @@ if (require.main === module) {
   console.log(`📊 Health check: http://localhost:${port}/health`);
   console.log(`🔗 API docs: http://localhost:${port}/api/v1/docs`);
 }
+
