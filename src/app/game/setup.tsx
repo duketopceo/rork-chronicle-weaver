@@ -1,18 +1,23 @@
 /**
- * Game Setup and Character Creation Screen
+ * Chronicle Weaver - Single-Page Game Setup
  * 
- * Initial game setup including character creation and world configuration.
+ * Complete rewrite of setup screen as single-page form with all options visible.
+ * Consolidates era selection, character creation, theme choice, and difficulty
+ * into one streamlined interface for faster setup.
  * 
- * Purpose: Guides new players through character creation and game initialization.
+ * Features:
+ * - Single scrollable view, no multi-step wizard
+ * - Radio buttons for era/theme with "Custom" option
+ * - Slider for difficulty/realism level
+ * - Real-time validation (red borders for errors)
+ * - "Begin Chronicle" button disabled until valid
+ * - Responsive grid layout for desktop/mobile
  * 
- * References:
- * - File: src/app/game/setup.tsx
- * - Part of Chronicle Weaver game system
- * - Integrates with game state and navigation
+ * Last Updated: January 2025
  */
 
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { colors } from "../../constants/colors";
@@ -20,25 +25,29 @@ import Button from "../../components/Button";
 import TextInput from "../../components/TextInput";
 import CustomSlider from "../../components/CustomSlider";
 import { useGameStore } from "../../store/gameStore";
-import { User, Palette, Crown, History, Shuffle } from "lucide-react-native";
+import { SubscriptionGate } from "../../components/SubscriptionGate";
+import { User, Palette, Crown, History, Shuffle, Sparkles } from "lucide-react-native";
 
-// Simplified examples
-const ERA_EXAMPLES = [
-  "Ancient Rome",
-  "Medieval Europe",
-  "Renaissance Italy",
-  "Wild West",
-  "Victorian London",
-  "Napoleonic Wars"
+// Historical Era Options
+const HISTORICAL_ERAS = [
+  { id: "ancient_rome", name: "Ancient Rome", description: "The Roman Empire at its height" },
+  { id: "medieval_europe", name: "Medieval Europe", description: "Knights, castles, and feudalism" },
+  { id: "renaissance", name: "Renaissance Italy", description: "Art, science, and political intrigue" },
+  { id: "wild_west", name: "Wild West", description: "Frontier America, cowboys and outlaws" },
+  { id: "victorian", name: "Victorian London", description: "Industrial revolution and social change" },
+  { id: "napoleonic", name: "Napoleonic Wars", description: "European conflicts and empire building" },
+  { id: "custom", name: "Custom Era", description: "Create your own historical setting" },
 ];
 
-const THEME_EXAMPLES = [
-  "Mystery",
-  "Politics",
-  "Military",
-  "Trade",
-  "Adventure",
-  "Romance"
+// Story Theme Options
+const STORY_THEMES = [
+  { id: "political", name: "Political Intrigue", description: "Power struggles and diplomacy" },
+  { id: "military", name: "Military Campaign", description: "War, strategy, and conquest" },
+  { id: "trade", name: "Trade & Commerce", description: "Merchants, markets, and wealth" },
+  { id: "mystery", name: "Mystery & Investigation", description: "Secrets, clues, and discovery" },
+  { id: "adventure", name: "Adventure & Exploration", description: "Journeys, discovery, and danger" },
+  { id: "romance", name: "Romance & Relationships", description: "Love, loyalty, and personal bonds" },
+  { id: "custom", name: "Custom Theme", description: "Define your own story focus" },
 ];
 
 export default function GameSetupScreen() {
@@ -50,306 +59,330 @@ export default function GameSetupScreen() {
     setDifficulty,
     setCharacterName,
     setGenerateBackstory,
-    nextSetupStep,
     startNewGame
   } = useGameStore();
   
-  const [errors, setErrors] = useState({
-    era: "",
-    theme: "",
-    characterName: ""
+  const [formData, setFormData] = useState({
+    characterName: gameSetup.characterName || '',
+    era: gameSetup.era || '',
+    customEra: gameSetup.customEra || '',
+    theme: gameSetup.theme || '',
+    customTheme: gameSetup.customTheme || '',
+    difficulty: gameSetup.difficulty || 0.5,
+    generateBackstory: gameSetup.generateBackstory || false,
   });
 
-  const validateCurrentStep = () => {
-    let isValid = true;
-    const newErrors = { ...errors };
+  const [errors, setErrors] = useState({
+    characterName: '',
+    era: '',
+    theme: '',
+  });
 
-    switch (gameSetup.setupStep) {
-      case "era":
-        if (!gameSetup.era.trim()) {
-          newErrors.era = "Please describe your setting";
-          isValid = false;
-        } else {
-          newErrors.era = "";
-        }
-        break;
-      case "theme":
-        if (!gameSetup.theme.trim()) {
-          newErrors.theme = "Please describe your theme";
-          isValid = false;
-        } else {
-          newErrors.theme = "";
-        }
-        break;
-      case "character":
-        if (!gameSetup.characterName.trim()) {
-          newErrors.characterName = "Please enter a name";
-          isValid = false;
-        } else {
-          newErrors.characterName = "";
-        }
-        break;
+  const [isValid, setIsValid] = useState(false);
+
+  // Real-time validation
+  useEffect(() => {
+    validateForm();
+  }, [formData]);
+
+  const validateForm = () => {
+    const newErrors = {
+      characterName: '',
+      era: '',
+      theme: '',
+    };
+
+    let valid = true;
+
+    // Character name validation
+    if (!formData.characterName.trim()) {
+      newErrors.characterName = 'Character name is required';
+      valid = false;
+    } else if (formData.characterName.trim().length < 2) {
+      newErrors.characterName = 'Name must be at least 2 characters';
+      valid = false;
+    }
+
+    // Era validation
+    if (!formData.era) {
+      newErrors.era = 'Please select a historical era';
+      valid = false;
+    } else if (formData.era === 'custom' && !formData.customEra.trim()) {
+      newErrors.era = 'Please specify your custom era';
+      valid = false;
+    }
+
+    // Theme validation
+    if (!formData.theme) {
+      newErrors.theme = 'Please select a story theme';
+      valid = false;
+    } else if (formData.theme === 'custom' && !formData.customTheme.trim()) {
+      newErrors.theme = 'Please specify your custom theme';
+      valid = false;
     }
 
     setErrors(newErrors);
-    return isValid;
+    setIsValid(valid && Object.values(newErrors).every(error => !error));
   };
 
-  const handleContinue = () => {
-    if (!validateCurrentStep()) return;
-
-    if (gameSetup.setupStep === "character") {
-      startNewGame();
-      router.replace("/game/play");
-    } else {
-      nextSetupStep();
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Update store immediately
+    switch (field) {
+      case 'characterName':
+        setCharacterName(value);
+        break;
+      case 'era':
+        setEra(value === 'custom' ? formData.customEra : value);
+        break;
+      case 'customEra':
+        if (formData.era === 'custom') {
+          setEra(value);
+        }
+        break;
+      case 'theme':
+        setTheme(value === 'custom' ? formData.customTheme : value);
+        break;
+      case 'customTheme':
+        if (formData.theme === 'custom') {
+          setTheme(value);
+        }
+        break;
+      case 'difficulty':
+        setDifficulty(value);
+        break;
+      case 'generateBackstory':
+        setGenerateBackstory(value);
+        break;
     }
   };
 
-  const handleRandomExample = (examples: string[], setter: (value: string) => void) => {
-    const randomExample = examples[Math.floor(Math.random() * examples.length)];
-    setter(randomExample);
+  const handleBeginChronicle = async () => {
+    if (!isValid) {
+      Alert.alert('Setup Incomplete', 'Please fill in all required fields.');
+      return;
+    }
+
+    try {
+      // Start new game with current setup
+      await startNewGame();
+      
+      // Navigate to gameplay
+      router.push('/game/play');
+    } catch (error) {
+      console.error('Error starting game:', error);
+      Alert.alert('Error', 'Failed to start your chronicle. Please try again.');
+    }
   };
 
   const getDifficultyLabel = (value: number) => {
-    if (value <= 0.2) return "Hyper Realistic";
-    if (value <= 0.4) return "Historically Accurate";
-    if (value <= 0.6) return "Balanced";
-    if (value <= 0.8) return "Dramatic";
-    return "Pure Fantasy";
+    if (value <= 0.2) return 'Hyper Realistic';
+    if (value <= 0.4) return 'Historically Accurate';
+    if (value <= 0.6) return 'Balanced';
+    if (value <= 0.8) return 'Dramatic';
+    return 'Pure Fantasy';
   };
 
-  const renderStepContent = () => {
-    switch (gameSetup.setupStep) {
-      case "era":
-        return (
-          <>
-            <View style={styles.stepHeader}>
-              <History size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
-              <Text style={styles.stepTitle}>Setting</Text>
-            </View>
-            <Text style={styles.stepDescription}>
-              Choose a time period or setting
-            </Text>
-            
-            <View style={styles.inputContainer}>
-              <View style={styles.inputHeader}>
-                <Text style={styles.inputLabel}>Era</Text>
-                <TouchableOpacity 
-                  style={styles.randomButton}
-                  onPress={() => handleRandomExample(ERA_EXAMPLES, setEra)}
-                >
-                  <Shuffle size={16} color={colors.primary} />
-                  <Text style={styles.randomButtonText}>Random</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <TextInput
-                placeholder="Describe your world..."
-                value={gameSetup.era}
-                onChangeText={setEra}
-                error={errors.era}
-                multiline
-                numberOfLines={2}
-                style={styles.multilineInput}
-              />
-              
-              <View style={styles.examplesContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.examplesScroll}>
-                  {ERA_EXAMPLES.map((example, index) => (
-                    <TouchableOpacity 
-                      key={index}
-                      style={styles.exampleChip}
-                      onPress={() => setEra(example)}
-                    >
-                      <Text style={styles.exampleChipText}>{example}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-            
-            <CustomSlider
-              label={`Realism: ${getDifficultyLabel(gameSetup.difficulty)}`}
-              leftLabel="Real"
-              rightLabel="Fantasy"
-              value={gameSetup.difficulty}
-              onValueChange={setDifficulty}
-              minimumValue={0}
-              maximumValue={1}
-              step={0.25}
-            />
-          </>
-        );
-        
-      case "theme":
-        return (
-          <>
-            <View style={styles.stepHeader}>
-              <Palette size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
-              <Text style={styles.stepTitle}>Theme</Text>
-            </View>
-            <Text style={styles.stepDescription}>
-              What kind of story?
-            </Text>
-            
-            <View style={styles.inputContainer}>
-              <View style={styles.inputHeader}>
-                <Text style={styles.inputLabel}>Theme</Text>
-                <TouchableOpacity 
-                  style={styles.randomButton}
-                  onPress={() => handleRandomExample(THEME_EXAMPLES, setTheme)}
-                >
-                  <Shuffle size={16} color={colors.primary} />
-                  <Text style={styles.randomButtonText}>Random</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <TextInput
-                placeholder="Describe your theme..."
-                value={gameSetup.theme}
-                onChangeText={setTheme}
-                error={errors.theme}
-                multiline
-                numberOfLines={2}
-                style={styles.multilineInput}
-              />
-              
-              <View style={styles.examplesContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.examplesScroll}>
-                  {THEME_EXAMPLES.map((example, index) => (
-                    <TouchableOpacity 
-                      key={index}
-                      style={styles.exampleChip}
-                      onPress={() => setTheme(example)}
-                    >
-                      <Text style={styles.exampleChipText}>{example}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </>
-        );
-        
-      case "character":
-        return (
-          <>
-            <View style={styles.stepHeader}>
-              <User size={Platform.select({ ios: 32, android: 28, default: 28 })} color={colors.primary} />
-              <Text style={styles.stepTitle}>Character</Text>
-            </View>
-            <Text style={styles.stepDescription}>
-              Name your character
-            </Text>
-            
-            <TextInput
-              label="Name"
-              placeholder="Enter name..."
-              value={gameSetup.characterName}
-              onChangeText={setCharacterName}
-              error={errors.characterName}
-              autoCapitalize="words"
-            />
-            
-            <TouchableOpacity 
-              style={styles.backstoryOption}
-              onPress={() => setGenerateBackstory(!gameSetup.generateBackstory)}
-            >
-              <View style={styles.backstoryCheckbox}>
-                {gameSetup.generateBackstory && (
-                  <View style={styles.backstoryCheckboxFill} />
-                )}
-              </View>
-              <View style={styles.backstoryContent}>
-                <Text style={styles.backstoryTitle}>Generate backstory</Text>
-                <Text style={styles.backstoryDescription}>
-                  Let Kronos create a detailed background
-                </Text>
-              </View>
-            </TouchableOpacity>
-            
-            <View style={styles.summaryContainer}>
-              <View style={styles.summaryHeader}>
-                <Crown size={20} color={colors.primary} />
-                <Text style={styles.summaryTitle}>Summary</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Setting:</Text>
-                <Text style={styles.summaryValue}>{gameSetup.era}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Theme:</Text>
-                <Text style={styles.summaryValue}>{gameSetup.theme}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Realism:</Text>
-                <Text style={styles.summaryValue}>{getDifficultyLabel(gameSetup.difficulty)}</Text>
-              </View>
-            </View>
-          </>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-  const getButtonTitle = () => {
-    return gameSetup.setupStep === "character" ? "Begin Chronicle" : "Continue";
-  };
-
-  const getStepNumber = () => {
-    switch (gameSetup.setupStep) {
-      case "era": return "1";
-      case "theme": return "2";
-      case "character": return "3";
-      default: return "1";
-    }
+  const getDifficultyDescription = (value: number) => {
+    if (value <= 0.2) return 'Strictly follows historical facts and realistic constraints';
+    if (value <= 0.4) return 'Historically accurate with some narrative flexibility';
+    if (value <= 0.6) return 'Balanced mix of realism and engaging storytelling';
+    if (value <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
+    return 'Fantasy elements and creative liberties take precedence';
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
-      >
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <Crown size={Platform.select({ ios: 28, android: 24, default: 24 })} color={colors.primary} />
-          </View>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Chronicle Weaver</Text>
-            <Text style={styles.headerSubtitle}>Step {getStepNumber()} of 3</Text>
-          </View>
+          <Text style={styles.title}>Create Your Chronicle</Text>
+          <Text style={styles.subtitle}>
+            Choose your character, era, and story focus to begin your historical adventure
+          </Text>
         </View>
-        
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View 
-              style={[
-                styles.progressFill, 
-                { width: `${(parseInt(getStepNumber()) / 3) * 100}%` }
-              ]} 
-            />
-          </View>
-        </View>
-        
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.content}>
-            {renderStepContent()}
-          </View>
-        </ScrollView>
-        
-        <View style={styles.footer}>
-          <Button
-            title={getButtonTitle()}
-            onPress={handleContinue}
-            size="large"
-            style={styles.button}
+
+        {/* Character Name */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Character Name</Text>
+          <TextInput
+            value={formData.characterName}
+            onChangeText={(value) => handleInputChange('characterName', value)}
+            placeholder="Enter your character's name"
+            error={errors.characterName}
+            icon={User}
           />
         </View>
-      </KeyboardAvoidingView>
+
+        {/* Historical Era */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Historical Era</Text>
+          <Text style={styles.sectionDescription}>
+            Choose the time period for your chronicle
+          </Text>
+          <View style={styles.optionsGrid}>
+            {HISTORICAL_ERAS.map((era) => (
+              <TouchableOpacity
+                key={era.id}
+                style={[
+                  styles.optionCard,
+                  formData.era === era.id && styles.optionCardSelected,
+                  errors.era && formData.era !== era.id && styles.optionCardError,
+                ]}
+                onPress={() => handleInputChange('era', era.id)}
+              >
+                <View style={styles.optionHeader}>
+                  <History size={20} color={formData.era === era.id ? colors.primary : colors.textSecondary} />
+                  <Text style={[
+                    styles.optionTitle,
+                    formData.era === era.id && styles.optionTitleSelected,
+                  ]}>
+                    {era.name}
+                  </Text>
+                </View>
+                <Text style={styles.optionDescription}>{era.description}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {formData.era === 'custom' && (
+            <View style={styles.customInput}>
+              <TextInput
+                value={formData.customEra}
+                onChangeText={(value) => handleInputChange('customEra', value)}
+                placeholder="Describe your custom historical era"
+                error={errors.era}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Story Theme */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Story Theme</Text>
+          <Text style={styles.sectionDescription}>
+            What type of story do you want to experience?
+          </Text>
+          <View style={styles.optionsGrid}>
+            {STORY_THEMES.map((theme) => (
+              <TouchableOpacity
+                key={theme.id}
+                style={[
+                  styles.optionCard,
+                  formData.theme === theme.id && styles.optionCardSelected,
+                  errors.theme && formData.theme !== theme.id && styles.optionCardError,
+                ]}
+                onPress={() => handleInputChange('theme', theme.id)}
+              >
+                <View style={styles.optionHeader}>
+                  <Palette size={20} color={formData.theme === theme.id ? colors.primary : colors.textSecondary} />
+                  <Text style={[
+                    styles.optionTitle,
+                    formData.theme === theme.id && styles.optionTitleSelected,
+                  ]}>
+                    {theme.name}
+                  </Text>
+                </View>
+                <Text style={styles.optionDescription}>{theme.description}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {formData.theme === 'custom' && (
+            <View style={styles.customInput}>
+              <TextInput
+                value={formData.customTheme}
+                onChangeText={(value) => handleInputChange('customTheme', value)}
+                placeholder="Describe your custom story theme"
+                error={errors.theme}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Difficulty/Realism Level */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Realism Level</Text>
+          <Text style={styles.sectionDescription}>
+            {getDifficultyDescription(formData.difficulty)}
+          </Text>
+          <View style={styles.sliderContainer}>
+            <CustomSlider
+              value={formData.difficulty}
+              onValueChange={(value) => handleInputChange('difficulty', value)}
+              minimumValue={0}
+              maximumValue={1}
+              step={0.1}
+              thumbStyle={{ backgroundColor: colors.primary }}
+              trackStyle={{ backgroundColor: colors.border }}
+              minimumTrackTintColor={colors.primary}
+            />
+            <View style={styles.sliderLabels}>
+              <Text style={styles.sliderLabel}>Hyper Real</Text>
+              <Text style={styles.sliderLabel}>Pure Fantasy</Text>
+            </View>
+            <Text style={styles.difficultyLabel}>
+              {getDifficultyLabel(formData.difficulty)}
+            </Text>
+          </View>
+        </View>
+
+        {/* AI Backstory Generation (Premium Feature) */}
+        <View style={styles.section}>
+          <SubscriptionGate
+            requiredTier="premium"
+            feature="AI Backstory Generation"
+            featureDescription="Let AI create a rich, detailed backstory for your character based on your choices"
+            benefits={[
+              "AI-generated character background",
+              "Historical context integration",
+              "Personality traits and motivations",
+              "Starting relationships and reputation"
+            ]}
+          >
+            <View style={styles.premiumFeature}>
+              <View style={styles.premiumHeader}>
+                <Sparkles size={20} color={colors.gold} />
+                <Text style={styles.premiumTitle}>AI Backstory Generation</Text>
+                <Crown size={16} color={colors.gold} />
+              </View>
+              <Text style={styles.premiumDescription}>
+                Let AI create a rich, detailed backstory for your character
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.checkbox,
+                  formData.generateBackstory && styles.checkboxSelected,
+                ]}
+                onPress={() => handleInputChange('generateBackstory', !formData.generateBackstory)}
+              >
+                {formData.generateBackstory && (
+                  <Text style={styles.checkmark}>✓</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </SubscriptionGate>
+        </View>
+
+        {/* Begin Chronicle Button */}
+        <View style={styles.footer}>
+          <Button
+            title="Begin Your Chronicle"
+            onPress={handleBeginChronicle}
+            disabled={!isValid}
+            style={[
+              styles.beginButton,
+              !isValid && styles.beginButtonDisabled,
+            ]}
+            textStyle={styles.beginButtonText}
+          />
+          {!isValid && (
+            <Text style={styles.validationText}>
+              Please complete all required fields to begin
+            </Text>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -358,221 +391,170 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    maxWidth: 800,
-    marginHorizontal: 'auto',
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  headerIcon: {
-    marginRight: Platform.select({ ios: 16, android: 12, default: 12 }),
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: Platform.select({ ios: 24, android: 20, default: 20 }),
-    fontWeight: "700",
-    color: colors.text,
-    fontFamily: "serif",
-  },
-  headerSubtitle: {
-    fontSize: Platform.select({ ios: 16, android: 14, default: 14 }),
-    color: colors.textSecondary,
-    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
-  },
-  progressContainer: {
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    backgroundColor: colors.surface,
-  },
-  progressBar: {
-    height: Platform.select({ ios: 8, android: 6, default: 6 }),
-    backgroundColor: colors.surfaceLight,
-    borderRadius: Platform.select({ ios: 4, android: 3, default: 3 }),
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: colors.primary,
-    borderRadius: Platform.select({ ios: 4, android: 3, default: 3 }),
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
   },
   content: {
     flex: 1,
+    paddingHorizontal: 20,
   },
-  stepHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Platform.select({ ios: 20, android: 16, default: 16 }),
-    gap: Platform.select({ ios: 16, android: 12, default: 12 }),
+  header: {
+    paddingVertical: 24,
+    alignItems: 'center',
   },
-  stepTitle: {
-    fontSize: Platform.select({ ios: 28, android: 24, default: 24 }),
-    fontWeight: "700",
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
     color: colors.text,
-    flex: 1,
-    fontFamily: "serif",
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  stepDescription: {
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
+  subtitle: {
+    fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
-    lineHeight: Platform.select({ ios: 26, android: 24, default: 24 }),
+    textAlign: 'center',
+    lineHeight: 22,
   },
-  inputContainer: {
-    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+  section: {
+    marginBottom: 32,
   },
-  inputHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: Platform.select({ ios: 12, android: 8, default: 8 }),
-  },
-  inputLabel: {
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-    fontWeight: "600",
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
     color: colors.text,
+    marginBottom: 8,
   },
-  randomButton: {
-    flexDirection: "row",
-    alignItems: "center",
+  sectionDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  optionsGrid: {
+    gap: 12,
+  },
+  optionCard: {
     backgroundColor: colors.surface,
-    paddingHorizontal: Platform.select({ ios: 14, android: 12, default: 12 }),
-    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
-    borderRadius: Platform.select({ ios: 14, android: 12, default: 12 }),
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
+    borderColor: colors.border,
+  },
+  optionCardSelected: {
     borderColor: colors.primary,
-    gap: Platform.select({ ios: 6, android: 4, default: 4 }),
-  },
-  randomButtonText: {
-    color: colors.primary,
-    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
-    fontWeight: "600",
-  },
-  multilineInput: {
-    height: Platform.select({ ios: 100, android: 80, default: 80 }),
-    textAlignVertical: "top",
-  },
-  examplesContainer: {
-    marginTop: Platform.select({ ios: 12, android: 8, default: 8 }),
-  },
-  examplesScroll: {
-    flexDirection: "row",
-  },
-  exampleChip: {
-    backgroundColor: colors.surface,
-    borderRadius: Platform.select({ ios: 14, android: 12, default: 12 }),
-    paddingHorizontal: Platform.select({ ios: 16, android: 12, default: 12 }),
-    paddingVertical: Platform.select({ ios: 8, android: 6, default: 6 }),
-    marginRight: Platform.select({ ios: 12, android: 8, default: 8 }),
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  exampleChipText: {
-    color: colors.textSecondary,
-    fontSize: Platform.select({ ios: 14, android: 12, default: 12 }),
-  },
-  backstoryOption: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: colors.surface,
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    padding: Platform.select({ ios: 18, android: 14, default: 14 }),
-    marginBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: Platform.select({ ios: 14, android: 10, default: 10 }),
-  },
-  backstoryCheckbox: {
-    width: Platform.select({ ios: 22, android: 18, default: 18 }),
-    height: Platform.select({ ios: 22, android: 18, default: 18 }),
-    borderRadius: Platform.select({ ios: 6, android: 4, default: 4 }),
     borderWidth: 2,
-    borderColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: Platform.select({ ios: 4, android: 2, default: 2 }),
+    backgroundColor: colors.primary + '10',
   },
-  backstoryCheckboxFill: {
-    width: Platform.select({ ios: 12, android: 10, default: 10 }),
-    height: Platform.select({ ios: 12, android: 10, default: 10 }),
-    borderRadius: Platform.select({ ios: 3, android: 2, default: 2 }),
-    backgroundColor: colors.primary,
+  optionCardError: {
+    borderColor: colors.error,
   },
-  backstoryContent: {
-    flex: 1,
+  optionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
   },
-  backstoryTitle: {
-    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
-    fontWeight: "600",
+  optionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
-    marginBottom: Platform.select({ ios: 4, android: 2, default: 2 }),
   },
-  backstoryDescription: {
-    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
+  optionTitleSelected: {
+    color: colors.primary,
+  },
+  optionDescription: {
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: Platform.select({ ios: 22, android: 20, default: 20 }),
+    lineHeight: 20,
   },
-  summaryContainer: {
+  customInput: {
+    marginTop: 16,
+  },
+  sliderContainer: {
+    marginTop: 16,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  sliderLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  difficultyLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+    textAlign: 'center',
+    marginTop: 12,
+  },
+  premiumFeature: {
     backgroundColor: colors.surface,
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
-    padding: Platform.select({ ios: 20, android: 16, default: 16 }),
-    marginTop: Platform.select({ ios: 16, android: 12, default: 12 }),
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.gold,
   },
-  summaryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Platform.select({ ios: 16, android: 12, default: 12 }),
-    gap: Platform.select({ ios: 8, android: 6, default: 6 }),
+  premiumHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
-  summaryTitle: {
-    fontSize: Platform.select({ ios: 18, android: 16, default: 16 }),
-    fontWeight: "700",
+  premiumTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
-    fontFamily: "serif",
+    flex: 1,
   },
-  summaryItem: {
-    marginBottom: Platform.select({ ios: 12, android: 10, default: 10 }),
-  },
-  summaryLabel: {
-    fontSize: Platform.select({ ios: 15, android: 13, default: 13 }),
+  premiumDescription: {
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: Platform.select({ ios: 4, android: 2, default: 2 }),
-    fontWeight: "500",
+    marginBottom: 12,
+    lineHeight: 20,
   },
-  summaryValue: {
-    fontSize: Platform.select({ ios: 17, android: 15, default: 15 }),
-    color: colors.text,
-    lineHeight: Platform.select({ ios: 24, android: 22, default: 22 }),
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  checkmark: {
+    fontSize: 14,
+    color: colors.background,
+    fontWeight: 'bold',
   },
   footer: {
-    padding: Platform.select({ ios: 24, android: 20, default: 20 }),
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
+    paddingVertical: 24,
+    alignItems: 'center',
   },
-  button: {
-    width: "100%",
+  beginButton: {
     backgroundColor: colors.primary,
-    borderRadius: Platform.select({ ios: 16, android: 12, default: 12 }),
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    minWidth: 200,
+  },
+  beginButtonDisabled: {
+    backgroundColor: colors.textSecondary,
+  },
+  beginButtonText: {
+    color: colors.background,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  validationText: {
+    fontSize: 14,
+    color: colors.error,
+    marginTop: 12,
+    textAlign: 'center',
   },
 });

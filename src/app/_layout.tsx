@@ -23,8 +23,10 @@ import React from "react";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { colors } from "../constants/colors";
+import { View, Platform, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { colors, spacing, layout } from "../constants/colors";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 import * as SplashScreen from "expo-splash-screen";
 import { trpc, trpcClient } from "../lib/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -148,6 +150,17 @@ if (app && typeof window !== 'undefined' && typeof navigator !== 'undefined') {
  */
 // Styles for debug and auth components
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    maxWidth: layout.maxWidth,
+    alignSelf: 'center',
+    width: '100%',
+    // Responsive width handling
+    ...(screenWidth > layout.maxWidth && {
+      width: layout.maxWidth,
+      marginHorizontal: 'auto',
+    }),
+  },
   debugButton: {
     position: 'absolute',
     bottom: 20,
@@ -319,11 +332,11 @@ export default function RootLayout() {
     <ErrorBoundary onError={handleGlobalError}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <View style={{ 
+          <View style={[styles.container, { 
             flex: 1, 
             backgroundColor: colors.background,
             paddingTop: Platform.select({ ios: 0, android: 0, default: 0 })
-          }}>
+          }]}>
             <StatusBar style="light" />
             <ErrorBoundary onError={(error) => logError(error, 'Navigation Error Boundary', 'high')}>
               <Stack

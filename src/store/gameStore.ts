@@ -64,7 +64,6 @@ interface GameStore {
   setGenerateBackstory: (generate: boolean) => void; // Toggle AI backstory generation
   setCustomEra: (era: string) => void;        // Set custom historical period
   setCustomTheme: (theme: string) => void;    // Set custom narrative theme
-  nextSetupStep: () => void;                  // Progress through setup wizard
   resetSetup: () => void;                     // Reset setup to initial state
 
   // === ACTIVE GAME ACTIONS ===
@@ -106,7 +105,8 @@ export const useGameStore = create<GameStore>()(
         difficulty: 0.5,
         characterName: "",
         generateBackstory: true,
-        setupStep: "era",
+        customEra: "",
+        customTheme: "",
       },
       isLoading: false,
       error: null,
@@ -124,18 +124,6 @@ export const useGameStore = create<GameStore>()(
       setGenerateBackstory: (generateBackstory) => set((state) => ({ gameSetup: { ...state.gameSetup, generateBackstory } })),
       setCustomEra: (customEra) => set((state) => ({ gameSetup: { ...state.gameSetup, customEra } })),
       setCustomTheme: (customTheme) => set((state) => ({ gameSetup: { ...state.gameSetup, customTheme } })),
-      nextSetupStep: () => set((state) => {
-        const currentStep = state.gameSetup.setupStep;
-        let nextStep: GameSetupState["setupStep"] = "era";
-
-        if (currentStep === "era") nextStep = "theme";
-        else if (currentStep === "theme") nextStep = "character";
-        else if (currentStep === "character") nextStep = "complete";
-
-        return {
-          gameSetup: { ...state.gameSetup, setupStep: nextStep }
-        };
-      }),
       resetSetup: () => set({
         gameSetup: {
           era: "",
@@ -143,7 +131,8 @@ export const useGameStore = create<GameStore>()(
           difficulty: 0.5,
           characterName: "",
           generateBackstory: true,
-          setupStep: "era",
+          customEra: "",
+          customTheme: "",
         },
         error: null,
       }),

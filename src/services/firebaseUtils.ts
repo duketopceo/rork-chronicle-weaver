@@ -12,7 +12,13 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  sendPasswordResetEmail,
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -215,5 +221,162 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: a
   } catch (error) {
     console.error("Error calling Firebase Function:", error);
     throw error;
+  }
+}
+
+// === COMPLETE AUTHENTICATION FUNCTIONS ===
+
+/**
+ * Sign in with email and password
+ */
+export async function signInWithEmail(email: string, password: string): Promise<User | null> {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log('[Auth] ✅ Signed in with email:', userCredential.user.email);
+    return userCredential.user;
+  } catch (error: any) {
+    console.error('[Auth] ❌ Sign in error:', error);
+    throw new Error(getAuthErrorMessage(error.code));
+  }
+}
+
+/**
+ * Create new account with email and password
+ */
+export async function createAccount(email: string, password: string): Promise<User | null> {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    console.log('[Auth] ✅ Account created:', userCredential.user.email);
+    return userCredential.user;
+  } catch (error: any) {
+    console.error('[Auth] ❌ Account creation error:', error);
+    throw new Error(getAuthErrorMessage(error.code));
+  }
+}
+
+/**
+ * Sign in as guest/anonymous user
+ */
+export async function signInAsGuest(): Promise<User | null> {
+  try {
+    const userCredential = await signInAnonymously(auth);
+    console.log('[Auth] ✅ Signed in as guest');
+    return userCredential.user;
+  } catch (error: any) {
+    console.error('[Auth] ❌ Guest sign in error:', error);
+    throw new Error('Failed to sign in as guest. Please try again.');
+  }
+}
+
+/**
+ * Sign out current user
+ */
+export async function signOutUser(): Promise<void> {
+  try {
+    await signOut(auth);
+    console.log('[Auth] ✅ User signed out');
+  } catch (error: any) {
+    console.error('[Auth] ❌ Sign out error:', error);
+    throw new Error('Failed to sign out. Please try again.');
+  }
+}
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log('[Auth] ✅ Password reset email sent to:', email);
+  } catch (error: any) {
+    console.error('[Auth] ❌ Password reset error:', error);
+    throw new Error(getAuthErrorMessage(error.code));
+  }
+}
+
+/**
+ * Update user profile
+ */
+export async function updateUserProfile(profileData: { displayName?: string; photoURL?: string }): Promise<void> {
+  try {
+    if (!auth.currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+    
+    await updateProfile(auth.currentUser, profileData);
+    console.log('[Auth] ✅ User profile updated');
+  } catch (error: any) {
+    console.error('[Auth] ❌ Profile update error:', error);
+    throw new Error('Failed to update profile. Please try again.');
+  }
+}
+
+/**
+ * Update user email
+ */
+export async function updateUserEmail(newEmail: string, password: string): Promise<void> {
+  try {
+    if (!auth.currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    // Re-authenticate user before updating email
+    const credential = EmailAuthProvider.credential(auth.currentUser.email!, password);
+    await reauthenticateWithCredential(auth.currentUser, credential);
+    
+    await updateEmail(auth.currentUser, newEmail);
+    console.log('[Auth] ✅ User email updated to:', newEmail);
+  } catch (error: any) {
+    console.error('[Auth] ❌ Email update error:', error);
+    throw new Error(getAuthErrorMessage(error.code));
+  }
+}
+
+/**
+ * Update user password
+ */
+export async function updateUserPassword(currentPassword: string, newPassword: string): Promise<void> {
+  try {
+    if (!auth.currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    // Re-authenticate user before updating password
+    const credential = EmailAuthProvider.credential(auth.currentUser.email!, currentPassword);
+    await reauthenticateWithCredential(auth.currentUser, credential);
+    
+    await updatePassword(auth.currentUser, newPassword);
+    console.log('[Auth] ✅ User password updated');
+  } catch (error: any) {
+    console.error('[Auth] ❌ Password update error:', error);
+    throw new Error(getAuthErrorMessage(error.code));
+  }
+}
+
+/**
+ * Get user-friendly error messages
+ */
+function getAuthErrorMessage(errorCode: string): string {
+  switch (errorCode) {
+    case 'auth/user-not-found':
+      return 'No account found with this email address';
+    case 'auth/wrong-password':
+      return 'Incorrect password';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please choose a stronger password';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address';
+    case 'auth/user-disabled':
+      return 'This account has been disabled';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection';
+    case 'auth/requires-recent-login':
+      return 'Please sign in again to complete this action';
+    default:
+      return 'Authentication failed. Please try again';
   }
 }

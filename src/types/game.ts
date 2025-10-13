@@ -265,9 +265,8 @@ export type GameSetupState = {
   difficulty: number; // Difficulty level (0 = hyper realism, 1 = fantasy)
   characterName: string; // Name of the player character
   generateBackstory: boolean; // Whether to auto-generate a backstory
-  setupStep: "era" | "theme" | "character" | "complete"; // Current setup step
-  customEra?: string;  // Custom era string, if any
-  customTheme?: string; // Custom theme string, if any
+  customEra: string;  // Custom era string, if any
+  customTheme: string; // Custom theme string, if any
 };
 
 /**

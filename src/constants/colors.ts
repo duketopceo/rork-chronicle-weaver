@@ -153,4 +153,125 @@ export const colors = {
   webFocus: "#E8B86D" + "60", // Web focus outline
 };
 
+// === DESIGN SYSTEM ===
+// Comprehensive design system with spacing, typography, and responsive breakpoints
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+  xxxl: 64,
+};
+
+export const typography = {
+  h1: { 
+    fontSize: 32, 
+    lineHeight: 40, 
+    fontWeight: 'bold' as const,
+    color: colors.text,
+  },
+  h2: { 
+    fontSize: 24, 
+    lineHeight: 32, 
+    fontWeight: '600' as const,
+    color: colors.text,
+  },
+  h3: { 
+    fontSize: 20, 
+    lineHeight: 28, 
+    fontWeight: '600' as const,
+    color: colors.text,
+  },
+  h4: { 
+    fontSize: 18, 
+    lineHeight: 24, 
+    fontWeight: '500' as const,
+    color: colors.text,
+  },
+  body: { 
+    fontSize: 16, 
+    lineHeight: 24, 
+    fontWeight: 'normal' as const,
+    color: colors.text,
+  },
+  bodySmall: { 
+    fontSize: 14, 
+    lineHeight: 20, 
+    fontWeight: 'normal' as const,
+    color: colors.textSecondary,
+  },
+  caption: { 
+    fontSize: 12, 
+    lineHeight: 16, 
+    fontWeight: 'normal' as const,
+    color: colors.textMuted,
+  },
+  button: { 
+    fontSize: 16, 
+    lineHeight: 20, 
+    fontWeight: '600' as const,
+    color: colors.background,
+  },
+  buttonSmall: { 
+    fontSize: 14, 
+    lineHeight: 18, 
+    fontWeight: '500' as const,
+    color: colors.background,
+  },
+};
+
+export const breakpoints = {
+  mobile: 0,
+  tablet: 768,
+  desktop: 1024,
+  wide: 1200,
+};
+
+export const shadows = {
+  small: {
+    shadowColor: colors.iosShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  medium: {
+    shadowColor: colors.iosShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  large: {
+    shadowColor: colors.iosShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+};
+
+export const borderRadius = {
+  small: 4,
+  medium: 8,
+  large: 12,
+  xl: 16,
+  xxl: 24,
+  round: 9999,
+};
+
+export const layout = {
+  maxWidth: 1200,
+  containerPadding: spacing.md,
+  sectionGap: spacing.xl,
+  cardPadding: spacing.md,
+  buttonHeight: 48,
+  inputHeight: 48,
+  headerHeight: 64,
+  footerHeight: 80,
+};
+
 export default colors;
