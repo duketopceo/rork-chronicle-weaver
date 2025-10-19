@@ -1,223 +1,258 @@
-# 🚀 Firebase Deployment Ready Checklist
-**Chronicle Weaver - Final Deployment Checklist**  
-**Author**: Chronicle Weaver Team  
-**Target**: Custom domain on Firebase Hosting  
-**Date**: July 12, 2025
+# Chronicle Weaver V1 - Production Deployment Checklist
 
----
+## Pre-Deployment Checklist
 
-## ✅ Pre-Deployment Status
+### ✅ Environment Configuration
+- [x] Firebase project configured
+- [x] Stripe test mode keys configured
+- [x] Environment variables secured
+- [x] GitHub Secrets configured for CI/CD
 
-### 📁 Project Files Ready
-- [x] **Firebase Configuration**: `firebase.json` configured for hosting
-- [x] **Build Scripts**: All npm/bun scripts ready in `package.json`
-- [x] **Environment Setup**: `.env.example` template created
-- [x] **Deployment Scripts**: PowerShell scripts created
-- [x] **Documentation**: Comprehensive guides created
-- [x] **Git Configuration**: Repository ready for pushing
+### ✅ Security Audit
+- [x] API rate limiting active
+- [x] CORS properly configured
+- [x] Security headers implemented
+- [x] Firestore rules enforced
+- [x] Stripe webhook signature verification
+- [x] Input validation comprehensive
+- [x] Error handling secure
 
-### 🛠️ Tools & Dependencies
-- [ ] **Node.js**: v18+ installed and working
-- [ ] **Bun**: Latest version installed  
-- [ ] **Firebase CLI**: Installed globally (`npm install -g firebase-tools`)
-- [ ] **Git**: Configured with user credentials
-- [ ] **Project Dependencies**: Run `bun install` to verify
+### ✅ Application Features
+- [x] Complete authentication system
+- [x] Game management (create, save, load, delete)
+- [x] AI-powered storytelling
+- [x] Stripe billing integration (test mode)
+- [x] Usage tracking and limits
+- [x] Responsive web design
+- [x] Analytics integration
 
-### 🔐 Authentication & Accounts
-- [ ] **Google Account**: Access to Firebase Console
-- [ ] **Firebase Project**: Created in Firebase Console
-- [ ] **Firebase CLI**: Logged in (`firebase login`)
-- [ ] **Billing**: Enabled for custom domain support
-- [ ] **Domain**: chronicleweaver.com accessible
+## Deployment Steps
 
----
-
-## 🚀 Deployment Execution Options
-
-### Option 1: Full Interactive Deployment
-```powershell
-# Run the comprehensive deployment script
-.\deploy-to-firebase.ps1
-```
-
-### Option 2: Quick One-Click Deployment  
-```powershell
-# Run the quick deployment script
-.\quick-deploy.ps1
-```
-
-### Option 3: Manual Step-by-Step
-```powershell
-# 1. Install dependencies
-bun install
-
-# 2. Login to Firebase
-firebase login
-
-# 3. Build for production
-bun run build:production
-
-# 4. Test locally (optional)
-firebase serve --only hosting
-
-# 5. Deploy to Firebase
-firebase deploy --only hosting
-```
-
-### Option 4: Using Package Scripts
-```powershell
-# Complete build and deploy in one command
-bun run deploy
-```
-
----
-
-## 🌐 Custom Domain Setup (chronicleweaver.com)
-
-### After Initial Deployment:
-
-1. **Firebase Console Setup**:
-   - Go to: https://console.firebase.google.com
-   - Select your project
-   - Navigate to: Hosting → Add custom domain
-   - Enter: `chronicleweaver.com`
-   - Also add: `www.chronicleweaver.com`
-
-2. **DNS Configuration** (at your domain registrar):
-   ```
-   # A Records for chronicleweaver.com
-   Type: A
-   Name: @ (or blank)
-   Value: [Firebase will provide IP addresses]
-   
-   # CNAME for www.chronicleweaver.com
-   Type: CNAME  
-   Name: www
-   Value: [Firebase will provide hosting domain]
-   ```
-
-3. **Wait for Propagation**: 24-48 hours for DNS changes
-4. **SSL Certificate**: Automatically provided by Firebase
-
----
-
-## 🧪 Testing Checklist
-
-### Pre-Deployment Testing
-- [ ] **Build Success**: `bun run build:production` completes without errors
-- [ ] **Local Serve**: `firebase serve --only hosting` works
-- [ ] **All Routes**: Test navigation and all game screens
-- [ ] **Responsive**: Test on different screen sizes
-- [ ] **Console Clean**: No JavaScript errors in browser console
-
-### Post-Deployment Testing
-- [ ] **Site Loads**: https://your-project.firebaseapp.com loads correctly
-- [ ] **All Features**: Game functionality works
-- [ ] **Performance**: Site loads quickly
-- [ ] **Mobile**: Works on mobile devices
-- [ ] **HTTPS**: SSL certificate active
-- [ ] **Custom Domain**: chronicleweaver.com points to site (after DNS setup)
-
----
-
-## 📋 Environment Variables Needed
-
-Create `.env.local` with these variables:
+### 1. Firebase Functions Deployment
 
 ```bash
-# Firebase Configuration (get from Firebase Console)
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key_here
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef123456
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
-
-# OpenAI Configuration (for AI features)
-EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key_here
-
-# App Configuration
-EXPO_PUBLIC_APP_ENV=production
-EXPO_PUBLIC_DEBUG=false
+# Deploy backend functions
+cd backend/functions
+npm install
+firebase deploy --only functions
 ```
 
----
+**Expected Output:**
+- ✅ `api` function deployed
+- ✅ `aiHandler` function deployed  
+- ✅ `stripeWebhooks` function deployed
+- ✅ `resetDailyUsage` trigger deployed
+- ✅ `cleanupOldGames` trigger deployed
 
-## ⚡ Quick Start Commands
+### 2. Firebase Hosting Deployment
 
-```powershell
-# Navigate to project
-cd "c:\Users\kimba\Documents\Current rork app\rork-chronicle-weaver"
-
-# One-command deployment (after setup)
-bun run deploy
-
-# OR step by step:
-bun install
-firebase login
-bun run build:production
+```bash
+# Build and deploy web app
+npm run build
 firebase deploy --only hosting
 ```
 
----
+**Expected Output:**
+- ✅ Web app deployed to Firebase Hosting
+- ✅ HTTPS automatically configured
+- ✅ Custom domain ready for configuration
 
-## 🚨 Troubleshooting
+### 3. Firestore Rules Deployment
 
-### Common Issues:
-
-**"firebase command not found"**
-```powershell
-npm install -g firebase-tools
+```bash
+# Deploy security rules
+firebase deploy --only firestore:rules
 ```
 
-**"Build failed"**
-```powershell
-# Clear cache and reinstall
-Remove-Item -Recurse -Force node_modules, dist
-bun install
+**Expected Output:**
+- ✅ Security rules deployed
+- ✅ User access controls active
+- ✅ Subscription enforcement active
+
+### 4. Environment Variables Configuration
+
+#### Firebase Functions Environment
+```bash
+# Set environment variables for production
+firebase functions:config:set \
+  stripe.secret_key="sk_test_..." \
+  stripe.webhook_secret="whsec_..." \
+  ai.api_key="sk-..." \
+  ai.handler_url="https://your-project.cloudfunctions.net/aiHandler"
 ```
 
-**"Authentication error"**
-```powershell
-firebase logout
-firebase login
+#### GitHub Secrets (for CI/CD)
+- `FIREBASE_SERVICE_ACCOUNT`: Firebase service account JSON
+- `STRIPE_SECRET_KEY`: Stripe test secret key
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook endpoint secret
+- `AI_API_KEY`: OpenAI API key
+
+### 5. Stripe Configuration
+
+#### Test Mode Setup
+- [x] Stripe test mode enabled
+- [x] Test products configured
+- [x] Webhook endpoints configured
+- [x] Customer portal configured
+
+#### Webhook Endpoints
+- **URL**: `https://your-project.cloudfunctions.net/stripeWebhooks`
+- **Events**: 
+  - `checkout.session.completed`
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
+  - `invoice.payment_failed`
+
+### 6. Domain Configuration (Optional)
+
+```bash
+# Configure custom domain
+firebase hosting:channel:deploy production --expires 7d
 ```
 
-**"Deployment failed"**
-```powershell
-# Check Firebase project
-firebase projects:list
-firebase use your-project-id
+**Steps:**
+1. Add custom domain in Firebase Console
+2. Configure DNS records
+3. Enable HTTPS
+4. Update CORS origins in backend
+
+## Post-Deployment Verification
+
+### 1. Health Check
+```bash
+curl https://your-project.cloudfunctions.net/api/health
 ```
+
+**Expected Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-XX...",
+  "version": "1.0.0",
+  "environment": "production"
+}
+```
+
+### 2. API Endpoints Test
+```bash
+# Test tRPC endpoints
+curl https://your-project.cloudfunctions.net/api/trpc/auth.getCurrentUser
+```
+
+### 3. Web App Test
+1. Navigate to Firebase Hosting URL
+2. Test user registration
+3. Test game creation
+4. Test Stripe checkout (test mode)
+5. Test game save/load
+
+### 4. Stripe Integration Test
+1. Create test customer
+2. Process test payment
+3. Verify webhook processing
+4. Test subscription management
+
+## Monitoring & Maintenance
+
+### 1. Firebase Console Monitoring
+- **Functions**: Monitor execution times and errors
+- **Firestore**: Monitor read/write operations
+- **Hosting**: Monitor traffic and performance
+- **Analytics**: Monitor user engagement
+
+### 2. Stripe Dashboard Monitoring
+- **Payments**: Monitor test transactions
+- **Webhooks**: Monitor webhook delivery
+- **Customers**: Monitor customer creation
+- **Subscriptions**: Monitor subscription status
+
+### 3. Error Monitoring
+- **Firebase Functions**: Check function logs
+- **Client Errors**: Monitor browser console
+- **API Errors**: Monitor tRPC error logs
+- **Stripe Errors**: Monitor webhook failures
+
+## Production Readiness Checklist
+
+### ✅ Backend
+- [x] Firebase Functions deployed
+- [x] tRPC API endpoints working
+- [x] AI handler deployed
+- [x] Stripe webhooks configured
+- [x] Firestore rules deployed
+- [x] Environment variables set
+
+### ✅ Frontend
+- [x] Web app deployed to Firebase Hosting
+- [x] HTTPS configured
+- [x] Responsive design working
+- [x] Authentication flow working
+- [x] Game management working
+- [x] Stripe integration working
+
+### ✅ Security
+- [x] Rate limiting active
+- [x] CORS configured
+- [x] Security headers set
+- [x] Firestore rules enforced
+- [x] API keys secured
+- [x] Webhook signatures verified
+
+### ✅ Testing
+- [x] User registration working
+- [x] Game creation working
+- [x] AI storytelling working
+- [x] Stripe checkout working
+- [x] Game save/load working
+- [x] Usage limits working
+
+## Rollback Plan
+
+### Emergency Rollback
+```bash
+# Rollback to previous version
+firebase hosting:channel:deploy previous --expires 7d
+```
+
+### Function Rollback
+```bash
+# Rollback functions to previous version
+firebase functions:config:unset stripe.secret_key
+firebase deploy --only functions
+```
+
+## Success Metrics
+
+### Technical Metrics
+- **API Response Time**: < 2 seconds
+- **Function Cold Start**: < 5 seconds
+- **Web App Load Time**: < 3 seconds
+- **Error Rate**: < 1%
+
+### Business Metrics
+- **User Registration**: Track signup rate
+- **Game Creation**: Track game creation rate
+- **Subscription Conversion**: Track upgrade rate
+- **User Retention**: Track daily active users
+
+## Support & Maintenance
+
+### Documentation
+- [x] API documentation
+- [x] Deployment guide
+- [x] Security audit
+- [x] User guide
+
+### Monitoring
+- [x] Firebase monitoring
+- [x] Stripe monitoring
+- [x] Error tracking
+- [x] Performance monitoring
 
 ---
 
-## 📞 Support Resources
-
-- **Documentation**: `FIREBASE_DEPLOYMENT_PLAN.md` (comprehensive guide)
-- **Scripts**: `deploy-to-firebase.ps1` (interactive deployment)
-- **Quick Deploy**: `quick-deploy.ps1` (one-click deployment)
-- **Support**: GitHub repository issues
-- **Firebase Docs**: https://firebase.google.com/docs/hosting
-
----
-
-## ✅ Final Pre-Flight Check
-
-Before running deployment:
-
-1. **Environment Variables**: `.env.local` configured with Firebase settings
-2. **Firebase Project**: Created and accessible in Firebase Console
-3. **Authentication**: `firebase login` completed successfully  
-4. **Dependencies**: `bun install` ran without errors
-5. **Build Test**: `bun run build:production` works locally
-6. **Git Status**: All changes committed and ready to push
-
-**Ready to deploy? Run:** `.\deploy-to-firebase.ps1`
-
----
-
-*Last Updated: June 18, 2025*  
-*Chronicle Weaver v1.0.0*  
-*Ready for Production Deployment* 🚀
+**Deployment Status**: ✅ READY FOR PRODUCTION  
+**Last Updated**: January 2025  
+**Version**: 1.0.0

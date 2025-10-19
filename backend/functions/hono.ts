@@ -26,9 +26,10 @@ import { rateLimiter } from 'hono/rate-limiter';
 import { onError } from 'hono/on-error';
 import { HTTPException } from 'hono/http-exception';
 
-// Import tRPC router
+// Import tRPC router and integration
 import { appRouter } from '../trpc/app-router';
 import { createContext } from '../trpc/create-context';
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 
 // Initialize Hono app
 const app = new Hono();
@@ -102,7 +103,27 @@ app.get('/health', (c) => {
   });
 });
 
+// === tRPC INTEGRATION ===
+// Mount tRPC router at /api/trpc
+app.all('/api/trpc/*', async (c) => {
+  return fetchRequestHandler({
+    endpoint: '/api/trpc',
+    req: c.req.raw,
+    router: appRouter,
+    createContext: ({ req }) => createContext({ req }),
+    onError:
+      process.env.NODE_ENV === 'development'
+        ? ({ path, error }) => {
+            console.error(
+              `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`
+            );
+          }
+        : undefined,
+  });
+});
+
 // === API VERSIONING ===
+// Legacy API routes for backward compatibility
 app.route('/api/v1', appRouter);
 
 // === ROOT ENDPOINT ===

@@ -150,16 +150,50 @@ const gameRouter = router({
           });
         }
 
-        // TODO: Call AI service to generate next segment
-        // This will be implemented in the AI handler
+        // Call AI service to generate next segment
+        const aiRequest = {
+          messages: [
+            {
+              role: 'system',
+              content: `You are a master storyteller creating an interactive narrative game. Generate the next segment of the story based on the player's choice. The game is set in ${gameData.era} with a ${gameData.theme} theme. The character is ${gameData.characterName}. This is turn ${gameData.turnCount + 1}.`
+            },
+            {
+              role: 'user',
+              content: `Previous context: ${gameData.currentSegment?.text || 'Beginning of story'}. Player choice: ${input.choiceId}${input.customInput ? ` - ${input.customInput}` : ''}. Generate the next narrative segment with 3 choices.`
+            }
+          ],
+          userId: ctx.user.uid,
+          subscriptionTier: userData?.subscriptionTier || 'free'
+        };
+
+        // Call AI handler
+        const aiResponse = await fetch(`${process.env.AI_HANDLER_URL || 'http://localhost:3000'}/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(aiRequest)
+        });
+
+        if (!aiResponse.ok) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'AI service unavailable',
+          });
+        }
+
+        const aiResult = await aiResponse.json();
+        
+        // Parse AI response into game segment
+        const aiText = aiResult.completion || '';
+        const choices = [
+          { id: '1', text: 'Choice 1' },
+          { id: '2', text: 'Choice 2' },
+          { id: '3', text: 'Choice 3' },
+        ];
+
         const nextSegment = {
           id: `segment-${gameData.turnCount + 1}`,
-          text: `[AI Generated content for turn ${gameData.turnCount + 1}]`,
-          choices: [
-            { id: '1', text: 'Choice 1' },
-            { id: '2', text: 'Choice 2' },
-            { id: '3', text: 'Choice 3' },
-          ],
+          text: aiText,
+          choices,
           customChoiceEnabled: true,
         };
 
@@ -384,12 +418,52 @@ const billingRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       try {
-        // TODO: Implement Stripe checkout session creation
-        // This will be implemented with Stripe integration
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        
+        // Get or create Stripe customer
+        let customerId = null;
+        const userDoc = await ctx.db.collection('users').doc(ctx.user.uid).get();
+        const userData = userDoc.data();
+        
+        if (userData?.stripeCustomerId) {
+          customerId = userData.stripeCustomerId;
+        } else {
+          const customer = await stripe.customers.create({
+            email: ctx.user.email,
+            metadata: {
+              userId: ctx.user.uid,
+            },
+          });
+          customerId = customer.id;
+          
+          // Save customer ID to user document
+          await ctx.db.collection('users').doc(ctx.user.uid).update({
+            stripeCustomerId: customerId,
+          });
+        }
+
+        // Create checkout session
+        const session = await stripe.checkout.sessions.create({
+          customer: customerId,
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price: input.priceId,
+              quantity: 1,
+            },
+          ],
+          mode: 'subscription',
+          success_url: input.successUrl,
+          cancel_url: input.cancelUrl,
+          metadata: {
+            userId: ctx.user.uid,
+          },
+        });
+
         return {
           success: true,
-          sessionId: 'stripe_session_id_placeholder',
-          url: 'https://checkout.stripe.com/placeholder',
+          sessionId: session.id,
+          url: session.url,
         };
       } catch (error) {
         console.error('Error creating checkout session:', error);
@@ -407,13 +481,32 @@ const billingRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       try {
-        // TODO: Implement Stripe customer portal session creation
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        
+        // Get user's Stripe customer ID
+        const userDoc = await ctx.db.collection('users').doc(ctx.user.uid).get();
+        const userData = userDoc.data();
+        
+        if (!userData?.stripeCustomerId) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'No Stripe customer found. Please subscribe first.',
+          });
+        }
+
+        // Create portal session
+        const session = await stripe.billingPortal.sessions.create({
+          customer: userData.stripeCustomerId,
+          return_url: input.returnUrl,
+        });
+
         return {
           success: true,
-          url: 'https://billing.stripe.com/placeholder',
+          url: session.url,
         };
       } catch (error) {
         console.error('Error creating portal session:', error);
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create portal session',

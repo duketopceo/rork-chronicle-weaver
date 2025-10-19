@@ -26,6 +26,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "../types/game";
 import { gameDataService } from "../services/gameDataService";
+import { analyticsService } from "../services/analyticsService";
 
 /**
  * Game Store Interface
@@ -206,6 +207,9 @@ export const useGameStore = create<GameStore>()(
 
         console.log("[GameStore] ✅ Created new game:", newGame);
 
+        // Track game creation in analytics
+        analyticsService.trackGameCreated(era, theme, characterName);
+
         set({ 
           currentGame: newGame,
           isLoading: false,
@@ -327,6 +331,9 @@ export const useGameStore = create<GameStore>()(
           segmentTextLength: segment.text.length,
           choicesCount: segment.choices.length
         });
+
+        // Track turn completion in analytics
+        analyticsService.trackTurnCompleted(updatedGame.id, updatedGame.turnCount, 'predefined');
 
         // Fire-and-forget auto-save for each turn (non-blocking)
         try {
