@@ -1,19 +1,19 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { initializeAppCheck, getToken, ReCaptchaV3Provider } from "firebase/app-check";
-import { 
-  getAuth, 
-  Auth, 
-  User, 
-  onAuthStateChanged, 
-  signInAnonymously, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  getAuth,
+  Auth,
+  User,
+  onAuthStateChanged,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  sendPasswordResetEmail,
+  sendPasswordResetEmail as sendFirebasePasswordResetEmail,
   updateProfile,
   updateEmail,
   updatePassword,
@@ -131,7 +131,7 @@ export const signInWithGoogle = async (): Promise<User | null> => {
     // Add any additional scopes you need
     provider.addScope('profile');
     provider.addScope('email');
-    
+
     // Sign in with redirect on mobile, popup on web
     if (window.innerWidth < 768) {
       await signInWithRedirect(auth, provider);
@@ -185,7 +185,7 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: a
     if (appCheckInstance) {
       appCheckToken = await getToken(appCheckInstance);
     }
-    
+
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -224,69 +224,14 @@ export async function fetchFromFirebaseFunction(functionName: string, payload: a
   }
 }
 
-// === COMPLETE AUTHENTICATION FUNCTIONS ===
 
-/**
- * Sign in with email and password
- */
-export async function signInWithEmail(email: string, password: string): Promise<User | null> {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('[Auth] ✅ Signed in with email:', userCredential.user.email);
-    return userCredential.user;
-  } catch (error: any) {
-    console.error('[Auth] ❌ Sign in error:', error);
-    throw new Error(getAuthErrorMessage(error.code));
-  }
-}
-
-/**
- * Create new account with email and password
- */
-export async function createAccount(email: string, password: string): Promise<User | null> {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log('[Auth] ✅ Account created:', userCredential.user.email);
-    return userCredential.user;
-  } catch (error: any) {
-    console.error('[Auth] ❌ Account creation error:', error);
-    throw new Error(getAuthErrorMessage(error.code));
-  }
-}
-
-/**
- * Sign in as guest/anonymous user
- */
-export async function signInAsGuest(): Promise<User | null> {
-  try {
-    const userCredential = await signInAnonymously(auth);
-    console.log('[Auth] ✅ Signed in as guest');
-    return userCredential.user;
-  } catch (error: any) {
-    console.error('[Auth] ❌ Guest sign in error:', error);
-    throw new Error('Failed to sign in as guest. Please try again.');
-  }
-}
-
-/**
- * Sign out current user
- */
-export async function signOutUser(): Promise<void> {
-  try {
-    await signOut(auth);
-    console.log('[Auth] ✅ User signed out');
-  } catch (error: any) {
-    console.error('[Auth] ❌ Sign out error:', error);
-    throw new Error('Failed to sign out. Please try again.');
-  }
-}
 
 /**
  * Send password reset email
  */
 export async function sendPasswordResetEmail(email: string): Promise<void> {
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendFirebasePasswordResetEmail(auth, email);
     console.log('[Auth] ✅ Password reset email sent to:', email);
   } catch (error: any) {
     console.error('[Auth] ❌ Password reset error:', error);
@@ -302,7 +247,7 @@ export async function updateUserProfile(profileData: { displayName?: string; pho
     if (!auth.currentUser) {
       throw new Error('No user is currently signed in');
     }
-    
+
     await updateProfile(auth.currentUser, profileData);
     console.log('[Auth] ✅ User profile updated');
   } catch (error: any) {
@@ -323,7 +268,7 @@ export async function updateUserEmail(newEmail: string, password: string): Promi
     // Re-authenticate user before updating email
     const credential = EmailAuthProvider.credential(auth.currentUser.email!, password);
     await reauthenticateWithCredential(auth.currentUser, credential);
-    
+
     await updateEmail(auth.currentUser, newEmail);
     console.log('[Auth] ✅ User email updated to:', newEmail);
   } catch (error: any) {
@@ -344,7 +289,7 @@ export async function updateUserPassword(currentPassword: string, newPassword: s
     // Re-authenticate user before updating password
     const credential = EmailAuthProvider.credential(auth.currentUser.email!, currentPassword);
     await reauthenticateWithCredential(auth.currentUser, credential);
-    
+
     await updatePassword(auth.currentUser, newPassword);
     console.log('[Auth] ✅ User password updated');
   } catch (error: any) {

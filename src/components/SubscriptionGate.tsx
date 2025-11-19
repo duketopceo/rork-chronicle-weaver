@@ -42,6 +42,11 @@ export default function SubscriptionGate({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const checkAccess = (current: string, required: string): boolean => {
+    const tierLevels = { free: 0, premium: 1, master: 2 };
+    return tierLevels[current as keyof typeof tierLevels] >= tierLevels[required as keyof typeof tierLevels];
+  };
+
   const currentTier = subscription?.plan || 'free';
   const hasAccess = checkAccess(currentTier, requiredTier);
 
@@ -52,10 +57,7 @@ export default function SubscriptionGate({
     }
   }, [hasAccess, feature, currentTier]);
 
-  const checkAccess = (current: string, required: string): boolean => {
-    const tierLevels = { free: 0, premium: 1, master: 2 };
-    return tierLevels[current as keyof typeof tierLevels] >= tierLevels[required as keyof typeof tierLevels];
-  };
+
 
   const trackFeatureAccess = async (featureName: string, tier: string) => {
     try {
@@ -74,7 +76,7 @@ export default function SubscriptionGate({
       setLoading(true);
       const successUrl = window.location.origin + '/billing?success=true';
       const cancelUrl = window.location.origin + '/billing?canceled=true';
-      
+
       await stripeService.redirectToCheckout(
         `price_${requiredTier}_monthly`,
         successUrl,
@@ -107,7 +109,7 @@ export default function SubscriptionGate({
         return {
           name: 'Chronicle Master',
           icon: Crown,
-          color: colors.gold,
+          color: '#FFD700', // Gold color
           price: '$9.99/month',
           features: [
             'All Premium features',
@@ -200,7 +202,10 @@ export default function SubscriptionGate({
           <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
             <View style={styles.tierCard}>
               <View style={styles.tierHeader}>
-                <tierInfo?.icon size={32} color={tierInfo?.color} />
+                {tierInfo?.icon && (() => {
+                  const Icon = tierInfo.icon;
+                  return <Icon size={32} color={tierInfo.color} />;
+                })()}
                 <View style={styles.tierInfo}>
                   <Text style={[styles.tierName, { color: tierInfo?.color }]}>
                     {tierInfo?.name}
@@ -249,7 +254,7 @@ export default function SubscriptionGate({
                 </>
               )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowUpgradeModal(false)}
