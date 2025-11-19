@@ -61,7 +61,7 @@ interface GameStore {
   // These actions manage the initial game creation flow
   setEra: (era: string) => void;              // Set historical time period
   setTheme: (theme: string) => void;          // Set narrative theme
-  setDifficulty: (difficulty: number) => void; // Set challenge level
+  setDifficulty: (difficulty: "easy" | "normal" | "hard") => void; // Set challenge level
   setCharacterName: (name: string) => void;   // Set character name
   setGenerateBackstory: (generate: boolean) => void; // Toggle AI backstory generation
   setCustomEra: (era: string) => void;        // Set custom historical period
@@ -107,7 +107,7 @@ export const useGameStore = create<GameStore>()(
       gameSetup: {
         era: "",
         theme: "",
-        difficulty: 0.5,
+        difficulty: "normal",
         characterName: "",
         generateBackstory: true,
         customEra: "",
@@ -133,7 +133,7 @@ export const useGameStore = create<GameStore>()(
         gameSetup: {
           era: "",
           theme: "",
-          difficulty: 0.5,
+          difficulty: "normal",
           characterName: "",
           generateBackstory: true,
           customEra: "",
@@ -157,8 +157,10 @@ export const useGameStore = create<GameStore>()(
         }
 
         const defaultStats: CharacterStats = {
-          influence: 5,
-          knowledge: 5,
+          health: 100,
+          strength: 5,
+          intelligence: 5,
+          charisma: 5,
           resources: 5,
           reputation: 5,
         };
@@ -169,12 +171,17 @@ export const useGameStore = create<GameStore>()(
             currency: "Gold",
             marketPrices: {},
             tradeRoutes: [],
+            playerWealth: 100,
+            economicEvents: [],
           },
           war: {
             activeConflicts: [],
             armySize: 0,
             morale: 0,
+            playerRole: "Civilian",
+            battleExperience: 0,
           },
+          activeEvents: [],
         };
 
         const newGame: GameState = {
@@ -182,9 +189,8 @@ export const useGameStore = create<GameStore>()(
           userId: "",
           era,
           theme,
-          difficulty,
           character: {
-            id: "",
+            id: Date.now().toString(),
             name: characterName,
             archetype: "Custom",
             backstory: "",
@@ -199,72 +205,23 @@ export const useGameStore = create<GameStore>()(
           currentSegment: null,
           pastSegments: [],
           turnCount: 0,
-          era,
-          theme,
           isGameOver: false,
           lastSaved: Date.now(),
           memories: [],
           lore: [],
         };
-        influence: 5,
-          knowledge: 5,
-            resources: 5,
-              reputation: 5
-      };
 
-      const defaultWorldSystems: WorldSystems = {
-        politics: [],
-        economics: {
-          currency: "Gold",
-          playerWealth: 100,
-          marketPrices: {},
-          tradeRoutes: [],
-          economicEvents: [],
-        },
-        war: {
-          activeConflicts: [],
-          playerRole: "Civilian",
-          battleExperience: 0,
-        },
-        activeEvents: [],
-      };
+        console.log("[GameStore] ✅ Created new game:", newGame);
 
-      const newGame: GameState = {
-        id: Date.now().toString(),
-        era,
-        theme,
-        difficulty,
-        character: {
-          name: characterName,
-          archetype: "Custom",
-          backstory: "",
-          stats: defaultStats,
-          inventory: [],
-          skills: [],
-          relationships: [],
-          reputation: {},
-        },
-        worldSystems: defaultWorldSystems,
-        currentSegment: null,
-        pastSegments: [],
-        memories: [],
-        lore: [],
-        turnCount: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
+        // Track game creation in analytics
+        analyticsService.trackGameCreated(era, theme, characterName);
 
-      console.log("[GameStore] ✅ Created new game:", newGame);
-
-      // Track game creation in analytics
-      analyticsService.trackGameCreated(era, theme, characterName);
-
-      set({
-        currentGame: newGame,
-        isLoading: false,
-        error: null
+        set({
+          currentGame: newGame,
+          isLoading: false,
+          error: null
         });
-    },
+      },
 
       loadGameById: async (gameId: string) => {
         try {
@@ -284,299 +241,290 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
-    continueMostRecentGame: async () => {
-      try {
-        const state = get();
-        const userId = state.user?.uid || "";
-        if (!userId) {
-          set({ error: "Please sign in to continue a saved game" });
-          return false;
-        }
-        set({ isLoading: true, error: null });
-        const games = await gameDataService.listGames(userId);
-        if (!games || games.length === 0) {
-          set({ isLoading: false, error: "No saved games found" });
-          return false;
-        }
-        const mostRecent = games[0];
-        const ok = await get().loadGameById(mostRecent.id);
-        set({ isLoading: false });
-        return ok;
-      } catch (err) {
-        console.error("[GameStore] Failed to continue game:", err);
-        set({ isLoading: false, error: "Failed to continue game" });
-        return false;
-      }
-    },
-
-    deleteGameById: async (gameId: string) => {
-      try {
-        set({ isLoading: true, error: null });
-        const ok = await gameDataService.deleteGame(gameId);
-        if (ok) {
-          const current = get().currentGame;
-          if (current?.id === gameId) {
-            set({ currentGame: null, narrative: null });
+      continueMostRecentGame: async () => {
+        try {
+          const state = get();
+          const userId = state.user?.uid || "";
+          if (!userId) {
+            set({ error: "Please sign in to continue a saved game" });
+            return false;
           }
+          set({ isLoading: true, error: null });
+          const games = await gameDataService.listGames(userId);
+          if (!games || games.length === 0) {
+            set({ isLoading: false, error: "No saved games found" });
+            return false;
+          }
+          const mostRecent = games[0];
+          const ok = await get().loadGameById(mostRecent.id);
+          set({ isLoading: false });
+          return ok;
+        } catch (err) {
+          console.error("[GameStore] Failed to continue game:", err);
+          set({ isLoading: false, error: "Failed to continue game" });
+          return false;
         }
-        set({ isLoading: false });
-        return ok;
-      } catch (err) {
-        console.error("[GameStore] Failed to delete game:", err);
-        set({ isLoading: false, error: "Failed to delete game" });
-        return false;
-      }
-    },
+      },
 
-    makeChoice: async (choiceId) => {
-      const currentGame = get().currentGame;
-      const userType = get().userType;
+      deleteGameById: async (gameId: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          const ok = await gameDataService.deleteGame(gameId);
+          if (ok) {
+            const current = get().currentGame;
+            if (current?.id === gameId) {
+              set({ currentGame: null, narrative: null });
+            }
+          }
+          set({ isLoading: false });
+          return ok;
+        } catch (err) {
+          console.error("[GameStore] Failed to delete game:", err);
+          set({ isLoading: false, error: "Failed to delete game" });
+          return false;
+        }
+      },
 
-      if (!currentGame) {
-        console.error("[GameStore] ❌ No current game to make a choice");
-        return;
-      }
+      makeChoice: async (choiceId) => {
+        const currentGame = get().currentGame;
+        const userType = get().userType;
 
-      const turnLimit = userType === "free" ? 50 : 10000;
+        if (!currentGame) {
+          console.error("[GameStore] ❌ No current game to make a choice");
+          return;
+        }
 
-      if (currentGame.turnCount >= turnLimit) {
-        console.error(`[GameStore] ❌ Turn limit reached for ${userType} user`);
-        set({ error: "Turn limit reached" });
-        return;
-      }
+        const turnLimit = userType === "free" ? 50 : 10000;
 
-      // Proceed with choice logic
-      console.log(`[GameStore] ✅ Making choice: ${choiceId}`);
+        if (currentGame.turnCount >= turnLimit) {
+          console.error(`[GameStore] ❌ Turn limit reached for ${userType} user`);
+          set({ error: "Turn limit reached" });
+          return;
+        }
 
-      const updatedGame = {
-        ...currentGame,
-        turnCount: currentGame.turnCount + 1,
-        updatedAt: Date.now(),
-      };
+        // Proceed with choice logic
+        console.log(`[GameStore] ✅ Making choice: ${choiceId}`);
 
-      set({ currentGame: updatedGame });
-    },
+        const updatedGame = {
+          ...currentGame,
+          turnCount: currentGame.turnCount + 1,
+        };
 
-    updateGameSegment: (segment) => set((state) => {
-      console.log("[GameStore] 📖 Updating game segment:", segment);
+        set({ currentGame: updatedGame });
+      },
 
-      if (!state.currentGame) {
-        console.error("[GameStore] ❌ No current game to update");
-        return state;
-      }
+      updateGameSegment: (segment) => set((state) => {
+        console.log("[GameStore] 📖 Updating game segment:", segment);
 
-      const updatedGame = {
-        ...state.currentGame,
-        currentSegment: segment,
-        pastSegments: state.currentGame.currentSegment
-          ? [...state.currentGame.pastSegments, state.currentGame.currentSegment]
-          : state.currentGame.pastSegments,
-        turnCount: state.currentGame.turnCount + 1,
-        updatedAt: Date.now()
-      };
+        if (!state.currentGame) {
+          console.error("[GameStore] ❌ No current game to update");
+          return state;
+        }
 
-      console.log("[GameStore] ✅ Updated game:", {
-        turnCount: updatedGame.turnCount,
-        segmentTextLength: segment.text.length,
-        choicesCount: segment.choices.length
-      });
+        const updatedGame = {
+          ...state.currentGame,
+          currentSegment: segment,
+          pastSegments: state.currentGame.currentSegment
+            ? [...state.currentGame.pastSegments, state.currentGame.currentSegment]
+            : state.currentGame.pastSegments,
+          turnCount: state.currentGame.turnCount + 1,
+        };
 
-      // Track turn completion in analytics
-      analyticsService.trackTurnCompleted(updatedGame.id, updatedGame.turnCount, 'predefined');
+        console.log("[GameStore] ✅ Updated game:", {
+          turnCount: updatedGame.turnCount,
+          segmentTextLength: segment.text.length,
+          choicesCount: segment.choices.length
+        });
 
-      // Fire-and-forget auto-save for each turn (non-blocking)
-      try {
-        gameDataService
-          .autoSave(
-            updatedGame.id,
-            updatedGame,
+        // Track turn completion in analytics
+        analyticsService.trackTurnCompleted(updatedGame.id, updatedGame.turnCount, 'predefined');
+
+        // Fire-and-forget auto-save for each turn (non-blocking)
+        try {
+          gameDataService
+            .autoSave(
+              updatedGame.id,
+              updatedGame,
+              {
+                text: segment.text,
+                choices: segment.choices,
+                selectedChoice: "system",
+                customInput: undefined,
+              }
+            )
+            .catch((err) => console.warn("[GameStore] Auto-save failed (non-blocking):", err));
+        } catch (err) {
+          console.warn("[GameStore] Auto-save scheduling failed:", err);
+        }
+
+        return { currentGame: updatedGame, isLoading: false };
+      }),
+
+      addMemory: (memory) => set((state) => {
+        if (!state.currentGame) return state;
+
+        // Keep only the last 20 memories to prevent storage bloat, using an immutable approach
+        const updatedMemories = [memory, ...state.currentGame.memories].slice(0, 20);
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            memories: updatedMemories,
+          }
+        };
+      }),
+
+      addLoreEntry: (lore) => set((state) => {
+        if (!state.currentGame) return state;
+
+        console.log("[GameStore] 📚 Adding lore entry:", lore.title);
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            lore: [lore, ...state.currentGame.lore],
+          }
+        };
+      }),
+
+      updateCharacterStats: (stats) => set((state) => {
+        if (!state.currentGame) return state;
+
+        console.log("[GameStore] 📊 Updating character stats:", stats);
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            character: {
+              ...state.currentGame.character,
+              stats: {
+                ...state.currentGame.character.stats,
+                ...stats
+              }
+            },
+          }
+        };
+      }),
+
+      updateCharacterBackstory: (backstory) => set((state) => {
+        if (!state.currentGame) return state;
+
+        console.log("[GameStore] 📜 Updating character backstory, length:", backstory.length);
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            character: {
+              ...state.currentGame.character,
+              backstory: backstory
+            },
+          }
+        };
+      }),
+
+      addInventoryItem: (item) => set((state) => {
+        if (!state.currentGame) return state;
+
+        const existingItem = state.currentGame.character.inventory.find(i => i.id === item.id);
+        let updatedInventory;
+
+        if (existingItem) {
+          updatedInventory = state.currentGame.character.inventory.map(i =>
+            i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+          );
+        } else {
+          updatedInventory = [...state.currentGame.character.inventory, item];
+        }
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            character: {
+              ...state.currentGame.character,
+              inventory: updatedInventory
+            },
+          }
+        };
+      }),
+
+      removeInventoryItem: (itemId) => set((state) => {
+        if (!state.currentGame) return state;
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            character: {
+              ...state.currentGame.character,
+              inventory: state.currentGame.character.inventory.filter(item => item.id !== itemId)
+            },
+          }
+        };
+      }),
+
+      updateWorldSystems: (worldSystems) => set((state) => {
+        if (!state.currentGame) return state;
+
+        return {
+          currentGame: {
+            ...state.currentGame,
+            worldSystems: {
+              ...state.currentGame.worldSystems,
+              ...worldSystems
+            },
+          }
+        };
+      }),
+
+      endGame: () => set({ currentGame: null, narrative: null, chronosMessages: [] }),
+
+      setLoading: (loading) => set({ isLoading: loading }),
+
+      setError: (error) => set({ error }),
+
+      setUserType: (type) => set({ userType: type }),
+
+      setUser: (user) => set({ user }),
+
+      setSubscription: (subscription) => set({ subscription }),
+
+      // === CHRONOS COMMUNICATION ===
+      addChronosMessage: (message) =>
+        set((state) => ({
+          chronosMessages: [
             {
-              text: segment.text,
-              choices: segment.choices,
-              selectedChoice: "system",
-              customInput: undefined,
-            }
-          )
-          .catch((err) => console.warn("[GameStore] Auto-save failed (non-blocking):", err));
-      } catch (err) {
-        console.warn("[GameStore] Auto-save scheduling failed:", err);
-      }
+              id: Date.now().toString(),
+              message,
+              timestamp: Date.now(),
+              status: "pending",
+            },
+            ...state.chronosMessages.slice(0, 19),
+          ],
+        })),
 
-      return { currentGame: updatedGame, isLoading: false };
+      updateChronosResponse: (messageId, response) => set((state) => ({
+        chronosMessages: state.chronosMessages.map(msg =>
+          msg.id === messageId ? { ...msg, response, status: "answered" } : msg
+        )
+      })),
+
+      markChronosMessageResolved: (messageId) => set((state) => ({
+        chronosMessages: state.chronosMessages.map(msg =>
+          msg.id === messageId ? { ...msg, status: "answered" } : msg
+        )
+      })),
+
+      updateNarrative: (newNarrative) => {
+        // Log the new narrative/choices payload
+        console.log("Updating narrative with payload:", newNarrative);
+
+        set((state) => ({
+          narrative: newNarrative,
+        }));
+      },
     }),
-
-    addMemory: (memory) => set((state) => {
-      if (!state.currentGame) return state;
-
-      // Keep only the last 20 memories to prevent storage bloat, using an immutable approach
-      const updatedMemories = [memory, ...state.currentGame.memories].slice(0, 20);
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          memories: updatedMemories,
-          updatedAt: Date.now()
-        }
-      };
-    }),
-    addLoreEntry: (lore) => set((state) => {
-      if (!state.currentGame) return state;
-
-      console.log("[GameStore] 📚 Adding lore entry:", lore.title);
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          lore: [lore, ...state.currentGame.lore],
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    updateCharacterStats: (stats) => set((state) => {
-      if (!state.currentGame) return state;
-
-      console.log("[GameStore] 📊 Updating character stats:", stats);
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          character: {
-            ...state.currentGame.character,
-            stats: {
-              ...state.currentGame.character.stats,
-              ...stats
-            }
-          },
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    updateCharacterBackstory: (backstory) => set((state) => {
-      if (!state.currentGame) return state;
-
-      console.log("[GameStore] 📜 Updating character backstory, length:", backstory.length);
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          character: {
-            ...state.currentGame.character,
-            backstory: backstory
-          },
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    addInventoryItem: (item) => set((state) => {
-      if (!state.currentGame) return state;
-
-      const existingItem = state.currentGame.character.inventory.find(i => i.id === item.id);
-      let updatedInventory;
-
-      if (existingItem) {
-        updatedInventory = state.currentGame.character.inventory.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-        );
-      } else {
-        updatedInventory = [...state.currentGame.character.inventory, item];
-      }
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          character: {
-            ...state.currentGame.character,
-            inventory: updatedInventory
-          },
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    removeInventoryItem: (itemId) => set((state) => {
-      if (!state.currentGame) return state;
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          character: {
-            ...state.currentGame.character,
-            inventory: state.currentGame.character.inventory.filter(item => item.id !== itemId)
-          },
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    updateWorldSystems: (worldSystems) => set((state) => {
-      if (!state.currentGame) return state;
-
-      return {
-        currentGame: {
-          ...state.currentGame,
-          worldSystems: {
-            ...state.currentGame.worldSystems,
-            ...worldSystems
-          },
-          updatedAt: Date.now()
-        }
-      };
-    }),
-
-    endGame: () => set({ currentGame: null, narrative: null, chronosMessages: [] }),
-
-    setLoading: (loading) => set({ isLoading: loading }),
-
-    setError: (error) => set({ error }),
-
-    setUserType: (type) => set({ userType: type }),
-
-    setUser: (user) => set({ user }),
-
-    setSubscription: (subscription) => set({ subscription }),
-
-    // === CHRONOS COMMUNICATION ===
-    addChronosMessage: (message) =>
-    set((state) => ({
-      chronosMessages: [
-        {
-          id: Date.now().toString(),
-          message,
-          timestamp: Date.now(),
-          status: "pending",
-        },
-        ...state.chronosMessages.slice(0, 19),
-      ],
-    })),
-
-    updateChronosResponse: (messageId, response) => set((state) => ({
-      chronosMessages: state.chronosMessages.map(msg =>
-        msg.id === messageId ? { ...msg, response, status: "answered" } : msg
-      )
-    })),
-
-    markChronosMessageResolved: (messageId) => set((state) => ({
-      chronosMessages: state.chronosMessages.map(msg =>
-        msg.id === messageId ? { ...msg, status: "answered" } : msg
-      )
-    })),
-
-    updateNarrative: (newNarrative) => {
-      // Log the new narrative/choices payload
-      console.log("Updating narrative with payload:", newNarrative);
-
-      set((state) => ({
-        narrative: newNarrative,
-        // ...existing state updates...
-      }));
-    },
-    }),
-{
-  name: "chronicle-weaver-storage",
-    storage: createJSONStorage(() => AsyncStorage),
+    {
+      name: "chronicle-weaver-storage",
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         currentGame: state.currentGame,
         chronosMessages: state.chronosMessages,
