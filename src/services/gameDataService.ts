@@ -48,7 +48,7 @@ export interface SaveGameData {
 export interface LoadGameData {
   game: GameState;
   recentTurns: any[];
-  lastSavedAt: Date;
+  lastSaved: number | Date;
 }
 
 class GameDataService {
@@ -74,7 +74,7 @@ class GameDataService {
       // Update local cache
       this.cache.set(gameId, {
         ...gameState,
-        lastSavedAt: new Date(),
+        lastSaved: Date.now(),
       });
 
       // Save to Firestore in batch
@@ -163,7 +163,7 @@ class GameDataService {
           memories: memories,
         },
         recentTurns,
-        lastSavedAt: gameData.lastSaved || new Date(),
+        lastSaved: gameData.lastSaved || Date.now(),
       };
 
       // Update cache
