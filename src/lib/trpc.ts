@@ -41,10 +41,10 @@ export const trpcClient = trpc.createClient({
 
 // Create vanilla tRPC client for use outside React components
 export const trpcVanillaClient = createTRPCProxyClient<AppRouter>({
-  transformer: superjson,
   links: [
     httpLink({
       url: `${getBaseUrl()}/api/trpc`,
+      transformer: superjson,
       fetch: (url, options) => {
         console.log('tRPC vanilla calling:', url);
         return fetch(url, options).catch(error => {

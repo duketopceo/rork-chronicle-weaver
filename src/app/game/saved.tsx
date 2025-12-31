@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   },
   gameCard: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.large,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
