@@ -47,7 +47,7 @@ export default function ErrorState({
           icon: Wifi,
           defaultTitle: 'Connection Error',
           defaultMessage: 'Please check your internet connection and try again.',
-          iconColor: colors.accent.warning,
+          iconColor: colors.warning,
         };
       case 'server':
         return {
@@ -61,7 +61,7 @@ export default function ErrorState({
           icon: AlertCircle,
           defaultTitle: 'Invalid Input',
           defaultMessage: 'Please check your input and try again.',
-          iconColor: colors.accent.warning,
+          iconColor: colors.warning,
         };
       case 'auth':
         return {

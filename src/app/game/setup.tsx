@@ -176,19 +176,21 @@ export default function GameSetupScreen() {
     }
   };
 
-  const getDifficultyLabel = (value: number) => {
-    if (value <= 0.2) return 'Hyper Realistic';
-    if (value <= 0.4) return 'Historically Accurate';
-    if (value <= 0.6) return 'Balanced';
-    if (value <= 0.8) return 'Dramatic';
+  const getDifficultyLabel = (value: number | string) => {
+    const numValue = typeof value === 'number' ? value : 0.5;
+    if (numValue <= 0.2) return 'Hyper Realistic';
+    if (numValue <= 0.4) return 'Historically Accurate';
+    if (numValue <= 0.6) return 'Balanced';
+    if (numValue <= 0.8) return 'Dramatic';
     return 'Pure Fantasy';
   };
 
-  const getDifficultyDescription = (value: number) => {
-    if (value <= 0.2) return 'Strictly follows historical facts and realistic constraints';
-    if (value <= 0.4) return 'Historically accurate with some narrative flexibility';
-    if (value <= 0.6) return 'Balanced mix of realism and engaging storytelling';
-    if (value <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
+  const getDifficultyDescription = (value: number | string) => {
+    const numValue = typeof value === 'number' ? value : 0.5;
+    if (numValue <= 0.2) return 'Strictly follows historical facts and realistic constraints';
+    if (numValue <= 0.4) return 'Historically accurate with some narrative flexibility';
+    if (numValue <= 0.6) return 'Balanced mix of realism and engaging storytelling';
+    if (numValue <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
     return 'Fantasy elements and creative liberties take precedence';
   };
 
@@ -369,10 +371,11 @@ export default function GameSetupScreen() {
             title="Begin Your Chronicle"
             onPress={handleBeginChronicle}
             disabled={!isValid}
-            style={[
-              styles.beginButton,
-              !isValid && styles.beginButtonDisabled,
-            ].filter(Boolean)}
+            style={
+              !isValid 
+                ? [styles.beginButton, styles.beginButtonDisabled] 
+                : styles.beginButton
+            }
             textStyle={styles.beginButtonText}
           />
           {!isValid && (
