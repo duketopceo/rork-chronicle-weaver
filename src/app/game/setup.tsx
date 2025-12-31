@@ -25,7 +25,7 @@ import Button from "../../components/Button";
 import TextInput from "../../components/TextInput";
 import CustomSlider from "../../components/CustomSlider";
 import { useGameStore } from "../../store/gameStore";
-import { SubscriptionGate } from "../../components/SubscriptionGate";
+import SubscriptionGate from "../../components/SubscriptionGate";
 import { User, Palette, Crown, History, Shuffle, Sparkles } from "lucide-react-native";
 
 // Historical Era Options
@@ -210,7 +210,6 @@ export default function GameSetupScreen() {
             onChangeText={(value) => handleInputChange('characterName', value)}
             placeholder="Enter your character's name"
             error={errors.characterName}
-            icon={User}
           />
         </View>
 
@@ -373,7 +372,7 @@ export default function GameSetupScreen() {
             style={[
               styles.beginButton,
               !isValid && styles.beginButtonDisabled,
-            ]}
+            ].filter(Boolean)}
             textStyle={styles.beginButtonText}
           />
           {!isValid && (

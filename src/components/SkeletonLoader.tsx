@@ -196,7 +196,7 @@ export default function SkeletonLoader({
 
 const styles = StyleSheet.create({
   skeletonBase: {
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.surface,
     borderRadius: borderRadius.sm,
   },
   textContainer: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   cardSkeleton: {
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border.primary,
+    borderColor: colors.border,
   },
   cardHeader: {
     marginBottom: spacing.sm,

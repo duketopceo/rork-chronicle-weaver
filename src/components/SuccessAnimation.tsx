@@ -94,7 +94,7 @@ export default function SuccessAnimation({
       case 'achievement':
         return <Star size={64} color={colors.accent.warning} />;
       case 'levelup':
-        return <Crown size={64} color={colors.accent.primary} />;
+        return <Crown size={64} color={colors.primary} />;
       default:
         return <CheckCircle size={64} color={colors.accent.success} />;
     }
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   content: {
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background,
     borderRadius: 16,
     padding: spacing.xl,
     alignItems: 'center',
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 8,
     height: 8,
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
     borderRadius: 4,
   },
 });
