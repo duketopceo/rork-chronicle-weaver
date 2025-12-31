@@ -149,7 +149,9 @@ export type LoreEntry = {
 export type Memory = {
   id: string; // Unique memory identifier
   segmentId: string; // ID of the associated game segment
+  title?: string; // Brief title of the memory
   summary: string; // Brief summary of the event
+  description?: string; // Detailed description
   choiceMade: string; // The choice the player made
   consequence: string; // The outcome of that choice
   timestamp: number; // When the event occurred
@@ -172,6 +174,9 @@ export type GameSetupState = {
   difficulty: "easy" | "normal" | "hard"; // Selected difficulty
   characterName: string; // Player's chosen name
   characterArchetype?: string; // Player's chosen class/role
+  generateBackstory?: boolean; // Whether to generate a backstory
+  customEra?: string; // Custom era if not using preset
+  customTheme?: string; // Custom theme if not using preset
 };
 
 /** Performance metrics for debug panel */

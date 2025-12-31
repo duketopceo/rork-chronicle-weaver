@@ -11,7 +11,7 @@
  */
 
 import { createTRPCReact } from "@trpc/react-query";
-import { httpLink } from "@trpc/client";
+import { createTRPCProxyClient, httpLink } from "@trpc/client";
 import type { AppRouter } from "../../backend/trpc/app-router";
 import superjson from "superjson";
 
@@ -32,6 +32,23 @@ export const trpcClient = trpc.createClient({
         console.log('tRPC calling:', url);
         return fetch(url, options).catch(error => {
           console.error('tRPC fetch error:', error);
+          throw error;
+        });
+      },
+    }),
+  ],
+});
+
+// Create vanilla tRPC client for use outside React components
+export const trpcVanillaClient = createTRPCProxyClient<AppRouter>({
+  transformer: superjson,
+  links: [
+    httpLink({
+      url: `${getBaseUrl()}/api/trpc`,
+      fetch: (url, options) => {
+        console.log('tRPC vanilla calling:', url);
+        return fetch(url, options).catch(error => {
+          console.error('tRPC vanilla fetch error:', error);
           throw error;
         });
       },
