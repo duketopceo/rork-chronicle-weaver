@@ -99,7 +99,7 @@ export default function ErrorState({
               title={retryText}
               onPress={onRetry}
               style={styles.retryButton}
-              icon={<RefreshCw size={16} color={colors.text.inverse} />}
+              icon={<RefreshCw size={16} color={colors.background} />}
             />
             {onDismiss && (
               <Button
@@ -131,13 +131,13 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h2,
-    color: colors.text.primary,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
   message: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: spacing.xl,
@@ -147,13 +147,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   retryButton: {
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
     flex: 1,
   },
   dismissButton: {
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border.primary,
+    borderColor: colors.border,
     flex: 1,
   },
 });

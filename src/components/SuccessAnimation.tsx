@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: spacing.xl,
     alignItems: 'center',
-    shadowColor: colors.text.primary,
+    shadowColor: colors.text,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   message: {
     ...typography.h3,
-    color: colors.text.primary,
+    color: colors.text,
     textAlign: 'center',
   },
   confettiContainer: {

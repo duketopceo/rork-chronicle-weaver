@@ -274,17 +274,17 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h1,
-    color: colors.text.primary,
+    color: colors.text,
   },
   newGameButton: {
     backgroundColor: colors.accent.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.md,
   },
   newGameButtonText: {
     ...typography.button,
-    color: colors.text.inverse,
+    color: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.body,
-    color: colors.text.error,
+    color: colors.error,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -316,12 +316,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     ...typography.h2,
-    color: colors.text.primary,
+    color: colors.text,
     marginBottom: spacing.sm,
   },
   emptyDescription: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   },
   gameCard: {
     backgroundColor: colors.background.secondary,
-    borderRadius: layout.borderRadius.lg,
+    borderRadius: borderRadius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   },
   gameTitle: {
     ...typography.h3,
-    color: colors.text.primary,
+    color: colors.text,
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -363,13 +363,13 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     ...typography.caption,
-    color: colors.text.inverse,
+    color: colors.background,
     fontSize: 16,
     fontWeight: 'bold',
   },
   gameTheme: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
   gameStats: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   gameStat: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
   },
   progressContainer: {
     marginBottom: spacing.md,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     textAlign: 'right',
   },
   gameActions: {
@@ -406,11 +406,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.md,
   },
   continueButtonText: {
     ...typography.button,
-    color: colors.text.inverse,
+    color: colors.background,
   },
   quickActions: {
     paddingHorizontal: spacing.lg,

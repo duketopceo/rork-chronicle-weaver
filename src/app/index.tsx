@@ -141,7 +141,7 @@ export default function HomeScreen() {
       case 'premium':
         return { icon: Star, color: colors.primary, text: 'Premium' };
       case 'master':
-        return { icon: Crown, color: colors.gold, text: 'Master' };
+        return { icon: Crown, color: colors.economicsAccent, text: 'Master' };
       default:
         return null;
     }
@@ -317,7 +317,7 @@ export default function HomeScreen() {
               <Text style={styles.statLabel}>Games Completed</Text>
             </View>
             <View style={styles.statCard}>
-              <Star size={24} color={colors.gold} />
+              <Star size={24} color={colors.economicsAccent} />
               <Text style={styles.statValue}>{userStats.achievements}</Text>
               <Text style={styles.statLabel}>Achievements</Text>
             </View>
@@ -338,7 +338,7 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.featureItem}>
-              <Sparkles size={20} color={colors.gold} />
+              <Sparkles size={20} color={colors.economicsAccent} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>AI-Powered Narrative</Text>
                 <Text style={styles.featureDescription}>

@@ -75,7 +75,7 @@ export default function PricingDisplay({
       case 'premium':
         return colors.primary;
       case 'master':
-        return colors.gold;
+        return colors.economicsAccent;
       default:
         return colors.textSecondary;
     }

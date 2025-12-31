@@ -197,7 +197,7 @@ export default function SkeletonLoader({
 const styles = StyleSheet.create({
   skeletonBase: {
     backgroundColor: colors.background.secondary,
-    borderRadius: layout.borderRadius.sm,
+    borderRadius: borderRadius.sm,
   },
   textContainer: {
     width: '100%',
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   buttonSkeleton: {
     height: 48,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.md,
   },
   listContainer: {
     width: '100%',

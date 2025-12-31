@@ -35,6 +35,8 @@ export type CharacterStats = {
   charisma: number; // Social influence and leadership
   resources?: number; // Wealth or resource points
   reputation?: number; // Reputation score
+  influence?: number; // Political and social influence
+  knowledge?: number; // Learned knowledge and wisdom
   effects?: Record<string, number>; // Stat modifiers
 };
 

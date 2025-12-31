@@ -342,9 +342,9 @@ export default function GameSetupScreen() {
           >
             <View style={styles.premiumFeature}>
               <View style={styles.premiumHeader}>
-                <Sparkles size={20} color={colors.gold} />
+                <Sparkles size={20} color={colors.economicsAccent} />
                 <Text style={styles.premiumTitle}>AI Backstory Generation</Text>
-                <Crown size={16} color={colors.gold} />
+                <Crown size={16} color={colors.economicsAccent} />
               </View>
               <Text style={styles.premiumDescription}>
                 Let AI create a rich, detailed backstory for your character
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderLeftWidth: 4,
-    borderLeftColor: colors.gold,
+    borderLeftColor: colors.economicsAccent,
   },
   premiumHeader: {
     flexDirection: 'row',
