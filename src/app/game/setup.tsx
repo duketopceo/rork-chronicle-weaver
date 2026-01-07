@@ -28,26 +28,26 @@ import { useGameStore } from "../../store/gameStore";
 import { SubscriptionGate } from "../../components/SubscriptionGate";
 import { User, Palette, Crown, History, Shuffle, Sparkles } from "lucide-react-native";
 
-// Historical Era Options
-const HISTORICAL_ERAS = [
-  { id: "ancient_rome", name: "Ancient Rome", description: "The Roman Empire at its height" },
-  { id: "medieval_europe", name: "Medieval Europe", description: "Knights, castles, and feudalism" },
-  { id: "renaissance", name: "Renaissance Italy", description: "Art, science, and political intrigue" },
-  { id: "wild_west", name: "Wild West", description: "Frontier America, cowboys and outlaws" },
-  { id: "victorian", name: "Victorian London", description: "Industrial revolution and social change" },
-  { id: "napoleonic", name: "Napoleonic Wars", description: "European conflicts and empire building" },
-  { id: "custom", name: "Custom Era", description: "Create your own historical setting" },
+// Professional Role Options (Learning Scenarios)
+const PROFESSIONAL_ROLES = [
+  { id: "store_owner", name: "Store Owner", description: "Manage retail operations, inventory, and customer service" },
+  { id: "bank_manager", name: "Bank Manager", description: "Make loan decisions, assess risk, and serve clients" },
+  { id: "fund_manager", name: "Fund Manager", description: "Manage investments, analyze markets, and build portfolios" },
+  { id: "restaurant_manager", name: "Restaurant Manager", description: "Oversee operations, staff, and quality control" },
+  { id: "real_estate_investor", name: "Real Estate Investor", description: "Evaluate properties, secure financing, and manage tenants" },
+  { id: "startup_founder", name: "Startup Founder", description: "Build products, raise capital, and grow your team" },
+  { id: "custom", name: "Custom Role", description: "Create your own professional scenario" },
 ];
 
-// Story Theme Options
-const STORY_THEMES = [
-  { id: "political", name: "Political Intrigue", description: "Power struggles and diplomacy" },
-  { id: "military", name: "Military Campaign", description: "War, strategy, and conquest" },
-  { id: "trade", name: "Trade & Commerce", description: "Merchants, markets, and wealth" },
-  { id: "mystery", name: "Mystery & Investigation", description: "Secrets, clues, and discovery" },
-  { id: "adventure", name: "Adventure & Exploration", description: "Journeys, discovery, and danger" },
-  { id: "romance", name: "Romance & Relationships", description: "Love, loyalty, and personal bonds" },
-  { id: "custom", name: "Custom Theme", description: "Define your own story focus" },
+// Learning Focus Options
+const LEARNING_FOCUSES = [
+  { id: "financial_management", name: "Financial Management", description: "Budgeting, cash flow, and financial planning" },
+  { id: "strategic_planning", name: "Strategic Planning", description: "Long-term goals, competitive analysis, and growth" },
+  { id: "operations", name: "Operations Management", description: "Efficiency, processes, and quality control" },
+  { id: "customer_relations", name: "Customer Relations", description: "Service, satisfaction, and relationship building" },
+  { id: "leadership", name: "Leadership & Team Building", description: "Managing people, culture, and communication" },
+  { id: "risk_management", name: "Risk Management", description: "Identify, assess, and mitigate business risks" },
+  { id: "custom", name: "Custom Focus", description: "Define your own learning objectives" },
 ];
 
 export default function GameSetupScreen() {
@@ -103,21 +103,21 @@ export default function GameSetupScreen() {
       valid = false;
     }
 
-    // Era validation
+    // Role validation
     if (!formData.era) {
-      newErrors.era = 'Please select a historical era';
+      newErrors.era = 'Please select a professional role';
       valid = false;
     } else if (formData.era === 'custom' && !formData.customEra.trim()) {
-      newErrors.era = 'Please specify your custom era';
+      newErrors.era = 'Please specify your custom role';
       valid = false;
     }
 
-    // Theme validation
+    // Learning focus validation
     if (!formData.theme) {
-      newErrors.theme = 'Please select a story theme';
+      newErrors.theme = 'Please select a learning focus';
       valid = false;
     } else if (formData.theme === 'custom' && !formData.customTheme.trim()) {
-      newErrors.theme = 'Please specify your custom theme';
+      newErrors.theme = 'Please specify your custom focus';
       valid = false;
     }
 
@@ -177,57 +177,57 @@ export default function GameSetupScreen() {
   };
 
   const getDifficultyLabel = (value: number) => {
-    if (value <= 0.2) return 'Hyper Realistic';
-    if (value <= 0.4) return 'Historically Accurate';
+    if (value <= 0.2) return 'Highly Realistic';
+    if (value <= 0.4) return 'Realistic';
     if (value <= 0.6) return 'Balanced';
-    if (value <= 0.8) return 'Dramatic';
-    return 'Pure Fantasy';
+    if (value <= 0.8) return 'Simplified';
+    return 'Beginner Friendly';
   };
 
   const getDifficultyDescription = (value: number) => {
-    if (value <= 0.2) return 'Strictly follows historical facts and realistic constraints';
-    if (value <= 0.4) return 'Historically accurate with some narrative flexibility';
-    if (value <= 0.6) return 'Balanced mix of realism and engaging storytelling';
-    if (value <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
-    return 'Fantasy elements and creative liberties take precedence';
+    if (value <= 0.2) return 'Complex real-world challenges with detailed business mechanics';
+    if (value <= 0.4) return 'Realistic scenarios with some guidance and support';
+    if (value <= 0.6) return 'Balanced difficulty with clear learning objectives';
+    if (value <= 0.8) return 'Simplified scenarios focusing on core concepts';
+    return 'Beginner-friendly with step-by-step guidance';
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Create Your Chronicle</Text>
+          <Text style={styles.title}>Begin Your Learning Journey</Text>
           <Text style={styles.subtitle}>
-            Choose your character, era, and story focus to begin your historical adventure
+            Choose your professional role, learning focus, and difficulty to start
           </Text>
         </View>
 
         {/* Character Name */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Character Name</Text>
+          <Text style={styles.sectionTitle}>Your Name</Text>
           <TextInput
             value={formData.characterName}
             onChangeText={(value) => handleInputChange('characterName', value)}
-            placeholder="Enter your character's name"
+            placeholder="Enter your name"
             error={errors.characterName}
             icon={User}
           />
         </View>
 
-        {/* Historical Era */}
+        {/* Professional Role */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Historical Era</Text>
+          <Text style={styles.sectionTitle}>Professional Role</Text>
           <Text style={styles.sectionDescription}>
-            Choose the time period for your chronicle
+            Choose the business scenario you want to learn about
           </Text>
           <View style={styles.optionsGrid}>
-            {HISTORICAL_ERAS.map((era) => (
+            {PROFESSIONAL_ROLES.map((role) => (
               <TouchableOpacity
-                key={era.id}
+                key={role.id}
                 style={[
                   styles.optionCard,
-                  formData.era === era.id && styles.optionCardSelected,
-                  errors.era && formData.era !== era.id && styles.optionCardError,
+                  formData.era === role.id && styles.optionCardSelected,
+                  errors.era && formData.era !== role.id && styles.optionCardError,
                 ]}
                 onPress={() => handleInputChange('era', era.id)}
               >
@@ -300,9 +300,9 @@ export default function GameSetupScreen() {
           )}
         </View>
 
-        {/* Difficulty/Realism Level */}
+        {/* Complexity Level */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Realism Level</Text>
+          <Text style={styles.sectionTitle}>Complexity Level</Text>
           <Text style={styles.sectionDescription}>
             {getDifficultyDescription(formData.difficulty)}
           </Text>
@@ -318,8 +318,8 @@ export default function GameSetupScreen() {
               minimumTrackTintColor={colors.primary}
             />
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderLabel}>Hyper Real</Text>
-              <Text style={styles.sliderLabel}>Pure Fantasy</Text>
+              <Text style={styles.sliderLabel}>Highly Realistic</Text>
+              <Text style={styles.sliderLabel}>Beginner Friendly</Text>
             </View>
             <Text style={styles.difficultyLabel}>
               {getDifficultyLabel(formData.difficulty)}
@@ -327,27 +327,27 @@ export default function GameSetupScreen() {
           </View>
         </View>
 
-        {/* AI Backstory Generation (Premium Feature) */}
+        {/* AI Background Generation (Premium Feature) */}
         <View style={styles.section}>
           <SubscriptionGate
             requiredTier="premium"
-            feature="AI Backstory Generation"
-            featureDescription="Let AI create a rich, detailed backstory for your character based on your choices"
+            feature="AI Background Generation"
+            featureDescription="Let AI create a rich, detailed background for your professional profile"
             benefits={[
-              "AI-generated character background",
-              "Historical context integration",
-              "Personality traits and motivations",
+              "AI-generated professional background",
+              "Industry context integration",
+              "Skills and experience traits",
               "Starting relationships and reputation"
             ]}
           >
             <View style={styles.premiumFeature}>
               <View style={styles.premiumHeader}>
                 <Sparkles size={20} color={colors.gold} />
-                <Text style={styles.premiumTitle}>AI Backstory Generation</Text>
+                <Text style={styles.premiumTitle}>AI Background Generation</Text>
                 <Crown size={16} color={colors.gold} />
               </View>
               <Text style={styles.premiumDescription}>
-                Let AI create a rich, detailed backstory for your character
+                Let AI create a rich, detailed background for your professional profile
               </Text>
               <TouchableOpacity
                 style={[
@@ -364,10 +364,10 @@ export default function GameSetupScreen() {
           </SubscriptionGate>
         </View>
 
-        {/* Begin Chronicle Button */}
+        {/* Begin Learning Journey Button */}
         <View style={styles.footer}>
           <Button
-            title="Begin Your Chronicle"
+            title="Start Learning Journey"
             onPress={handleBeginChronicle}
             disabled={!isValid}
             style={[
