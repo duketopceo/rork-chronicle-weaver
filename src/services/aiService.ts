@@ -31,6 +31,7 @@ import { ChronicleDebugState, ApiCompletion } from "../types/global.d";
 import { useGameStore } from "../store/gameStore";
 import { fetchFromFirebaseFunction, auth } from "./firebaseUtils";
 import { getAuth } from "firebase/auth";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
  * Content Part Type
@@ -475,7 +476,6 @@ The choices should be meaningful and distinct.`;
 
     if (apiKey) {
       logDebug("Using Gemini API for initial story generation");
-      const { GoogleGenerativeAI } = require("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -562,7 +562,6 @@ Structure:
 
     if (apiKey) {
       logDebug("Using Gemini API for next segment generation");
-      const { GoogleGenerativeAI } = require("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 

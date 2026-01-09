@@ -15,7 +15,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
-import { colors, spacing, layout } from '../constants/colors';
+import { colors, spacing, layout, borderRadius } from '../constants/colors';
 
 interface SkeletonLoaderProps {
   type?: 'text' | 'card' | 'button' | 'list' | 'custom';
@@ -196,8 +196,8 @@ export default function SkeletonLoader({
 
 const styles = StyleSheet.create({
   skeletonBase: {
-    backgroundColor: colors.background.secondary,
-    borderRadius: layout.borderRadius.sm,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.small,
   },
   textContainer: {
     width: '100%',
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   cardSkeleton: {
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border.primary,
+    borderColor: colors.border,
   },
   cardHeader: {
     marginBottom: spacing.sm,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   buttonSkeleton: {
     height: 48,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.medium,
   },
   listContainer: {
     width: '100%',

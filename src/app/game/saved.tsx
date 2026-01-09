@@ -20,7 +20,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { useRouter } from 'expo-router';
 import { useGameStore } from '../../store/gameStore';
 import { gameDataService } from '../../services/gameDataService';
-import { colors, spacing, typography, layout } from '../../constants/colors';
+import { colors, spacing, typography, layout, borderRadius } from '../../constants/colors';
 import Button from '../../components/Button';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { GameListSkeleton } from '../../components/SkeletonLoader';
@@ -260,7 +260,7 @@ export default function SavedGamesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -270,21 +270,21 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.primary,
+    borderBottomColor: colors.border,
   },
   title: {
     ...typography.h1,
-    color: colors.text.primary,
+    color: colors.text,
   },
   newGameButton: {
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.medium,
   },
   newGameButtonText: {
     ...typography.button,
-    color: colors.text.inverse,
+    color: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.body,
-    color: colors.text.error,
+    color: colors.error,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -316,17 +316,17 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     ...typography.h2,
-    color: colors.text.primary,
+    color: colors.text,
     marginBottom: spacing.sm,
   },
   emptyDescription: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
   startGameButton: {
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
   },
   gamesList: {
     flex: 1,
@@ -334,12 +334,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   gameCard: {
-    backgroundColor: colors.background.secondary,
-    borderRadius: layout.borderRadius.lg,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.large,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border.primary,
+    borderColor: colors.border,
   },
   gameHeader: {
     flexDirection: 'row',
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   },
   gameTitle: {
     ...typography.h3,
-    color: colors.text.primary,
+    color: colors.text,
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -357,19 +357,19 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.background.error,
+    backgroundColor: colors.error,
     justifyContent: 'center',
     alignItems: 'center',
   },
   deleteButtonText: {
     ...typography.caption,
-    color: colors.text.inverse,
+    color: colors.background,
     fontSize: 16,
     fontWeight: 'bold',
   },
   gameTheme: {
     ...typography.body,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
   gameStats: {
@@ -377,25 +377,25 @@ const styles = StyleSheet.create({
   },
   gameStat: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
   },
   progressContainer: {
     marginBottom: spacing.md,
   },
   progressBar: {
     height: 6,
-    backgroundColor: colors.background.tertiary,
+    backgroundColor: colors.surfaceLight,
     borderRadius: 3,
     marginBottom: spacing.xs,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   progressText: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: colors.textSecondary,
     textAlign: 'right',
   },
   gameActions: {
@@ -403,24 +403,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   continueButton: {
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: layout.borderRadius.md,
+    borderRadius: borderRadius.medium,
   },
   continueButtonText: {
     ...typography.button,
-    color: colors.text.inverse,
+    color: colors.background,
   },
   quickActions: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border.primary,
+    borderTopColor: colors.border,
   },
   quickActionButton: {
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border.primary,
+    borderColor: colors.border,
   },
 });

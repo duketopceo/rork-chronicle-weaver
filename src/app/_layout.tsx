@@ -211,7 +211,6 @@ export default function RootLayout() {
         displayName: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
-        isAuthenticated: true
       });
       logStep('AUTH', `User signed in: ${user.email}`, 'success');
     } catch (error) {

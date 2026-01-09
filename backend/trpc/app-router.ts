@@ -16,9 +16,11 @@ import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { createContext } from './create-context';
+import superjson from 'superjson';
 
 // Initialize tRPC
 const t = initTRPC.context<typeof createContext>().create({
+  transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
       ...shape,

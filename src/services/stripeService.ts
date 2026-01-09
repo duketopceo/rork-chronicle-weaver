@@ -15,7 +15,8 @@
  */
 
 import { loadStripe, Stripe } from '@stripe/stripe-js';
-import { trpc } from '../lib/trpc';
+import { trpcVanillaClient } from '../lib/trpc';
+import { useGameStore } from '../store/gameStore';
 
 // Stripe configuration
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -84,7 +85,7 @@ class StripeService {
       }
 
       // Call backend to create checkout session
-      const result = await trpc.billing.createCheckoutSession.mutate({
+      const result = await trpcVanillaClient.billing.createCheckoutSession.mutate({
         priceId,
         successUrl,
         cancelUrl,
@@ -130,7 +131,7 @@ class StripeService {
    */
   async createPortalSession(returnUrl: string): Promise<string> {
     try {
-      const result = await trpc.billing.createPortalSession.mutate({
+      const result = await trpcVanillaClient.billing.createPortalSession.mutate({
         returnUrl,
       });
 
@@ -165,7 +166,7 @@ class StripeService {
    */
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
-      const result = await trpc.billing.getSubscriptionStatus.query();
+      const result = await trpcVanillaClient.billing.getSubscriptionStatus.query();
       
       return {
         tier: result.tier as 'free' | 'premium' | 'master',
@@ -202,7 +203,7 @@ class StripeService {
    */
   async updateUsage(action: 'ai_call' | 'game_save' | 'feature_access', metadata?: any): Promise<void> {
     try {
-      await trpc.billing.updateUsage.mutate({
+      await trpcVanillaClient.billing.updateUsage.mutate({
         action,
         metadata,
       });

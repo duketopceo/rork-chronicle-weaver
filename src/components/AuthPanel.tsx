@@ -304,7 +304,6 @@ export default function AuthPanel({ onClose, showCloseButton = false }: AuthPane
               keyboardType="email-address"
               autoCapitalize="none"
               error={errors.email}
-              icon={Mail}
             />
             
             <Button
@@ -332,7 +331,6 @@ export default function AuthPanel({ onClose, showCloseButton = false }: AuthPane
                 placeholder="Display Name"
                 autoCapitalize="words"
                 error={errors.displayName}
-                icon={User}
               />
             )}
 
@@ -343,7 +341,6 @@ export default function AuthPanel({ onClose, showCloseButton = false }: AuthPane
               keyboardType="email-address"
               autoCapitalize="none"
               error={errors.email}
-              icon={Mail}
             />
 
             <View style={styles.passwordContainer}>
@@ -353,7 +350,6 @@ export default function AuthPanel({ onClose, showCloseButton = false }: AuthPane
                 placeholder="Password"
                 secureTextEntry={!showPassword}
                 error={errors.password}
-                icon={Lock}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -375,7 +371,6 @@ export default function AuthPanel({ onClose, showCloseButton = false }: AuthPane
                   placeholder="Confirm Password"
                   secureTextEntry={!showConfirmPassword}
                   error={errors.confirmPassword}
-                  icon={Lock}
                 />
                 <TouchableOpacity
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
