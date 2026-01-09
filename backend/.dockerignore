@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+lib
+dist
+build
+*.tsbuildinfo
+
+# Development files
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+coverage
+.nyc_output
+*.test.ts
+*.spec.ts
+jest.config.js
+
+# Documentation
+README.md
+*.md
+docs
+
+# Firebase
+.firebase
+firebase.json
+firestore.rules
+firestore.indexes.json
+
+# Other
+*.pem
+*.key
+*.crt

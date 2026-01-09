@@ -1,0 +1,91 @@
+version: '3.8'
+
+# Docker Swarm Stack Configuration
+# Use: docker stack deploy -c docker-stack.yml chronicle-weaver
+
+services:
+  backend:
+    # Image must be pre-built and tagged or available in registry
+    # Build with: docker build -t chronicle-weaver-backend:latest ./backend
+    # Or push to registry: docker tag chronicle-weaver-backend:latest your-registry/chronicle-weaver-backend:latest
+    # Image must be pre-built and tagged or available in registry
+    # Build with: docker build -t chronicle-weaver-backend:latest ./backend
+    # Or push to registry: docker tag chronicle-weaver-backend:latest your-registry/chronicle-weaver-backend:latest
+    image: chronicle-weaver-backend:latest
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - AI_PROVIDER=${AI_PROVIDER:-openai}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_MODEL=${AI_MODEL:-gpt-4}
+      - AI_HANDLER_URL=http://backend:8080/ai
+    # Use Docker secrets for sensitive data (recommended)
+    # secrets:
+    #   - firebase_private_key
+    #   - stripe_secret_key
+    #   - ai_api_key
+    networks:
+      - backend-network
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        monitor: 60s
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          # Distribute across different nodes if you have multiple Mac minis
+          # - node.role == worker
+        preferences:
+          # Spread replicas across nodes
+          - spread: node.id
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+      labels:
+        - "com.chronicle-weaver.service=backend"
+        - "com.chronicle-weaver.version=1.0.0"
+      healthcheck:
+        test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 40s
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
+
+networks:
+  backend-network:
+    driver: overlay
+    attachable: true
+    name: chronicle-weaver-network
+
+# Uncomment and configure if using Docker secrets
+# secrets:
+#   firebase_private_key:
+#     external: true
+#   stripe_secret_key:
+#     external: true
+#   ai_api_key:
+#     external: true
