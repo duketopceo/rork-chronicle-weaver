@@ -16,7 +16,6 @@ services:
       args:
         - BUILDKIT_INLINE_CACHE=1
     image: chronicle-weaver-backend:latest
-    container_name: chronicle-weaver-backend
     hostname: chronicle-weaver-backend
     ports:
       - "8080:8080"
@@ -61,9 +60,10 @@ services:
         max_attempts: 3
         window: 120s
       placement:
-        constraints:
-          # Uncomment to distribute across nodes
-          # - node.role == worker
+        # Constraints: Uncomment to distribute across nodes
+        # constraints:
+        #   - "node.role == worker"
+        constraints: []
         preferences:
           # Spread replicas across available nodes
           - spread: node.id
@@ -100,7 +100,7 @@ services:
         max-size: "10m"
         max-file: "3"
         labels: "service,environment"
-    volumes:
+    # volumes:
       # Optional: Mount logs directory if needed
       # - ./logs:/app/logs:rw
       # Optional: Mount config if needed
