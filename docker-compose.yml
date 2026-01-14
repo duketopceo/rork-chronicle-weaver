@@ -110,7 +110,7 @@ networks:
   backend-network:
     driver: overlay
     attachable: true
-    name: chronicle-weaver-network
+    # Let Swarm auto-generate network name to avoid conflicts
     labels:
       - "com.portainer.stack.name=chronicle-weaver"
       - "com.chronicle-weaver.network=backend"
