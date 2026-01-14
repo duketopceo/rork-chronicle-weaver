@@ -104,7 +104,7 @@ docker service logs chronicle-weaver_backend
 
 ### Test Health
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:8082/health
 ```
 
 ### Scale Services
