@@ -20,7 +20,7 @@ import { z } from 'zod';
 
 // AI Service Configuration
 const AI_CONFIG = {
-  provider: process.env.AI_PROVIDER || 'openai', // 'openai' or 'anthropic'
+  provider: process.env.AI_PROVIDER || 'openai', // 'openai', 'anthropic', or 'gemini'
   apiKey: process.env.AI_API_KEY,
   model: process.env.AI_MODEL || 'gpt-4',
   maxTokens: 4000,
@@ -145,6 +145,54 @@ async function callAnthropic(messages: any[]): Promise<any> {
 }
 
 /**
+ * Call Google Gemini API
+ */
+async function callGemini(messages: any[]): Promise<any> {
+  // Convert messages format for Gemini
+  const geminiMessages = messages.map(msg => ({
+    role: msg.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: msg.content }]
+  }));
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_CONFIG.model}:generateContent?key=${AI_CONFIG.apiKey}`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: geminiMessages,
+      generationConfig: {
+        maxOutputTokens: AI_CONFIG.maxTokens,
+        temperature: AI_CONFIG.temperature,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  
+  // Transform Gemini response to match expected format
+  return {
+    choices: [{
+      message: {
+        content: data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+      }
+    }],
+    usage: {
+      prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
+      completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
+      total_tokens: data.usageMetadata?.totalTokenCount || 0,
+    }
+  };
+}
+
+/**
  * Retry logic with exponential backoff
  */
 async function retryWithBackoff<T>(
@@ -236,8 +284,10 @@ app.post('/process', async (c) => {
         return await callOpenAI(messages);
       } else if (AI_CONFIG.provider === 'anthropic') {
         return await callAnthropic(messages);
+      } else if (AI_CONFIG.provider === 'gemini') {
+        return await callGemini(messages);
       } else {
-        throw new Error('Unsupported AI provider');
+        throw new Error(`Unsupported AI provider: ${AI_CONFIG.provider}`);
       }
     });
 
@@ -247,6 +297,8 @@ app.post('/process', async (c) => {
       completion = aiResponse.choices[0]?.message?.content || '';
     } else if (AI_CONFIG.provider === 'anthropic') {
       completion = aiResponse.content[0]?.text || '';
+    } else if (AI_CONFIG.provider === 'gemini') {
+      completion = aiResponse.choices[0]?.message?.content || '';
     } else {
       throw new Error('Invalid AI response format');
     }
