@@ -22,11 +22,16 @@ import { useGameStore } from '../store/gameStore';
 const SubscriptionPanel = () => {
   const { subscription } = useGameStore(state => ({ subscription: state.subscription }));
 
+  const handleClose = () => {
+    // Close handler - could navigate back or close modal
+    console.log('Billing panel closed');
+  };
+
   return (
     <View style={styles.container}>
       {subscription && subscription.status === 'active' ? (
         <>
-          <BillingPanel />
+          <BillingPanel onClose={handleClose} />
           <UsageIndicator />
         </>
       ) : (

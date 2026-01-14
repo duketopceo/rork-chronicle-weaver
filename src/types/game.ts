@@ -35,6 +35,8 @@ export type CharacterStats = {
   charisma: number; // Social influence and leadership
   resources?: number; // Wealth or resource points
   reputation?: number; // Reputation score
+  influence?: number; // Political and social influence
+  knowledge?: number; // Learned knowledge and wisdom
   effects?: Record<string, number>; // Stat modifiers
 };
 
@@ -75,6 +77,7 @@ export type PoliticalFaction = {
   id: string; // Unique faction identifier
   name: string; // Faction name
   influence: number; // Faction's power level
+  power?: number; // Alternative power metric
   stance: string; // Faction's political stance or ideology
   relations: number; // Player's standing with the faction
 };
@@ -141,7 +144,7 @@ export type LoreEntry = {
   id: string; // Unique lore identifier
   title: string; // Title of the entry
   content: string; // Detailed lore content
-  category: "person" | "location" | "event" | "item" | "concept"; // Lore category
+  category: "person" | "character" | "location" | "event" | "item" | "concept"; // Lore category
   unlocked: boolean; // Whether the player has discovered this lore
 };
 
@@ -149,7 +152,10 @@ export type LoreEntry = {
 export type Memory = {
   id: string; // Unique memory identifier
   segmentId: string; // ID of the associated game segment
+  title?: string; // Brief title of the memory
   summary: string; // Brief summary of the event
+  description?: string; // Detailed description
+  category?: string; // Category of the memory (e.g., "character", "location", "event")
   choiceMade: string; // The choice the player made
   consequence: string; // The outcome of that choice
   timestamp: number; // When the event occurred
@@ -169,9 +175,12 @@ export type ChronosMessage = {
 export type GameSetupState = {
   era: string; // Selected historical era
   theme: string; // Selected narrative theme
-  difficulty: "easy" | "normal" | "hard"; // Selected difficulty
+  difficulty: number | "easy" | "normal" | "hard"; // Selected difficulty (0-1 slider value or named difficulty)
   characterName: string; // Player's chosen name
   characterArchetype?: string; // Player's chosen class/role
+  generateBackstory?: boolean; // Whether to generate a backstory
+  customEra?: string; // Custom era if not using preset
+  customTheme?: string; // Custom theme if not using preset
 };
 
 /** Performance metrics for debug panel */

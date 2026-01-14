@@ -106,7 +106,7 @@ export default function UsageIndicator({
     
     if (percentage >= 1) return colors.error;
     if (percentage >= 0.8) return colors.warning;
-    if (percentage >= 0.6) return colors.gold;
+    if (percentage >= 0.6) return colors.economicsAccent;
     return colors.success;
   };
 
@@ -140,7 +140,7 @@ export default function UsageIndicator({
 
   const getStatusColor = (tier: string, usage: number, limit: number) => {
     if (tier === 'premium' || tier === 'master') {
-      return colors.gold;
+      return colors.economicsAccent;
     }
     
     if (usage >= limit) {
@@ -240,7 +240,7 @@ export default function UsageIndicator({
 
       {isPremium && (
         <View style={styles.unlimitedContainer}>
-          <Crown size={24} color={colors.gold} />
+          <Crown size={24} color={colors.economicsAccent} />
           <Text style={styles.unlimitedText}>
             Unlimited story generation
           </Text>
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   },
   unlimitedText: {
     fontSize: 16,
-    color: colors.gold,
+    color: colors.economicsAccent,
     fontWeight: '600',
   },
   upgradePrompt: {

@@ -18,8 +18,8 @@
 import { getAnalytics, logEvent, setUserProperties, setUserId } from 'firebase/analytics';
 import { app } from './firebaseUtils';
 
-// Initialize Analytics
-const analytics = getAnalytics(app);
+// Initialize Analytics only in browser environment
+const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 
 export interface AnalyticsEvent {
   name: string;
@@ -44,6 +44,10 @@ class AnalyticsService {
    */
   async initializeUser(userId: string, properties?: UserProperties) {
     try {
+      if (!analytics) {
+        console.warn('[Analytics] Analytics not available (SSR)');
+        return;
+      }
       this.userId = userId;
       setUserId(analytics, userId);
       
@@ -63,6 +67,10 @@ class AnalyticsService {
    */
   async setUserProperties(properties: UserProperties) {
     try {
+      if (!analytics) {
+        console.warn('[Analytics] Analytics not available (SSR)');
+        return;
+      }
       setUserProperties(analytics, properties);
       console.log('[Analytics] User properties set:', properties);
     } catch (error) {
@@ -75,6 +83,10 @@ class AnalyticsService {
    */
   async trackEvent(eventName: string, parameters?: Record<string, any>) {
     try {
+      if (!analytics) {
+        console.warn('[Analytics] Analytics not available (SSR)');
+        return;
+      }
       if (!this.isInitialized) {
         console.warn('[Analytics] Analytics not initialized');
         return;

@@ -37,15 +37,15 @@ const firebaseConfig = {
 console.log('[Firebase] 🔥 Initializing Firebase with hardcoded configuration');
 
 // Initialize Firebase app with error handling
-let app;
+let appInstance;
 try {
   // Check if Firebase app is already initialized
   const existingApp = getApps()[0];
   if (existingApp) {
-    app = existingApp;
+    appInstance = existingApp;
     console.log('[Firebase] ✅ Using existing Firebase app');
   } else {
-    app = initializeApp(firebaseConfig);
+    appInstance = initializeApp(firebaseConfig);
     console.log('[Firebase] ✅ Firebase app initialized successfully');
   }
 } catch (error) {
@@ -53,6 +53,9 @@ try {
   // Rethrow to prevent app from starting with broken Firebase
   throw error;
 }
+
+// Export app instance
+export const app = appInstance;
 
 // Initialize Firebase services
 const authInstance = getAuth(app);

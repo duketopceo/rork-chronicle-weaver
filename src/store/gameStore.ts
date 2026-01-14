@@ -61,7 +61,7 @@ interface GameStore {
   // These actions manage the initial game creation flow
   setEra: (era: string) => void;              // Set historical time period
   setTheme: (theme: string) => void;          // Set narrative theme
-  setDifficulty: (difficulty: "easy" | "normal" | "hard") => void; // Set challenge level
+  setDifficulty: (difficulty: number | "easy" | "normal" | "hard") => void; // Set challenge level
   setCharacterName: (name: string) => void;   // Set character name
   setGenerateBackstory: (generate: boolean) => void; // Toggle AI backstory generation
   setCustomEra: (era: string) => void;        // Set custom historical period
@@ -107,7 +107,7 @@ export const useGameStore = create<GameStore>()(
       gameSetup: {
         era: "",
         theme: "",
-        difficulty: "normal",
+        difficulty: 0.5,
         characterName: "",
         generateBackstory: true,
         customEra: "",

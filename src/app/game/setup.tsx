@@ -25,7 +25,7 @@ import Button from "../../components/Button";
 import TextInput from "../../components/TextInput";
 import CustomSlider from "../../components/CustomSlider";
 import { useGameStore } from "../../store/gameStore";
-import { SubscriptionGate } from "../../components/SubscriptionGate";
+import SubscriptionGate from "../../components/SubscriptionGate";
 import { User, Palette, Crown, History, Shuffle, Sparkles } from "lucide-react-native";
 
 // Historical Era Options
@@ -176,19 +176,21 @@ export default function GameSetupScreen() {
     }
   };
 
-  const getDifficultyLabel = (value: number) => {
-    if (value <= 0.2) return 'Hyper Realistic';
-    if (value <= 0.4) return 'Historically Accurate';
-    if (value <= 0.6) return 'Balanced';
-    if (value <= 0.8) return 'Dramatic';
+  const getDifficultyLabel = (value: number | string) => {
+    const numValue = typeof value === 'number' ? value : 0.5;
+    if (numValue <= 0.2) return 'Hyper Realistic';
+    if (numValue <= 0.4) return 'Historically Accurate';
+    if (numValue <= 0.6) return 'Balanced';
+    if (numValue <= 0.8) return 'Dramatic';
     return 'Pure Fantasy';
   };
 
-  const getDifficultyDescription = (value: number) => {
-    if (value <= 0.2) return 'Strictly follows historical facts and realistic constraints';
-    if (value <= 0.4) return 'Historically accurate with some narrative flexibility';
-    if (value <= 0.6) return 'Balanced mix of realism and engaging storytelling';
-    if (value <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
+  const getDifficultyDescription = (value: number | string) => {
+    const numValue = typeof value === 'number' ? value : 0.5;
+    if (numValue <= 0.2) return 'Strictly follows historical facts and realistic constraints';
+    if (numValue <= 0.4) return 'Historically accurate with some narrative flexibility';
+    if (numValue <= 0.6) return 'Balanced mix of realism and engaging storytelling';
+    if (numValue <= 0.8) return 'Prioritizes dramatic narrative over strict realism';
     return 'Fantasy elements and creative liberties take precedence';
   };
 
@@ -210,7 +212,6 @@ export default function GameSetupScreen() {
             onChangeText={(value) => handleInputChange('characterName', value)}
             placeholder="Enter your character's name"
             error={errors.characterName}
-            icon={User}
           />
         </View>
 
@@ -342,9 +343,9 @@ export default function GameSetupScreen() {
           >
             <View style={styles.premiumFeature}>
               <View style={styles.premiumHeader}>
-                <Sparkles size={20} color={colors.gold} />
+                <Sparkles size={20} color={colors.economicsAccent} />
                 <Text style={styles.premiumTitle}>AI Backstory Generation</Text>
-                <Crown size={16} color={colors.gold} />
+                <Crown size={16} color={colors.economicsAccent} />
               </View>
               <Text style={styles.premiumDescription}>
                 Let AI create a rich, detailed backstory for your character
@@ -370,10 +371,11 @@ export default function GameSetupScreen() {
             title="Begin Your Chronicle"
             onPress={handleBeginChronicle}
             disabled={!isValid}
-            style={[
-              styles.beginButton,
-              !isValid && styles.beginButtonDisabled,
-            ]}
+            style={
+              !isValid 
+                ? [styles.beginButton, styles.beginButtonDisabled] 
+                : styles.beginButton
+            }
             textStyle={styles.beginButtonText}
           />
           {!isValid && (
@@ -494,7 +496,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderLeftWidth: 4,
-    borderLeftColor: colors.gold,
+    borderLeftColor: colors.economicsAccent,
   },
   premiumHeader: {
     flexDirection: 'row',

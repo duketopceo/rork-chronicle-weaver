@@ -150,7 +150,7 @@ export default function GamePlayScreen() {
           id: `lore-backstory-${Date.now()}`,
           title: `${currentGame.character.name}'s Origins`,
           content: backstory,
-          discovered: true,
+          unlocked: true,
           category: "character"
         });
         
@@ -165,10 +165,15 @@ export default function GamePlayScreen() {
         // Add first memory
         addMemory({
           id: `memory-${Date.now()}`,
+          segmentId: segmentWithCustom.id,
           title: "Chronicle Begins",
+          summary: `Your adventure begins in ${currentGame.era} as ${currentGame.character.name}.`,
           description: `Your adventure begins in ${currentGame.era} as ${currentGame.character.name}.`,
+          choiceMade: "Start adventure",
+          consequence: "Your journey has begun",
           timestamp: Date.now(),
-          category: "event"
+          category: "event",
+          importance: "high" as const
         });
         
         setError(null);
@@ -275,10 +280,15 @@ What will you do to begin your chronicle?`,
       // Add memory of the choice
       addMemory({
         id: `memory-${Date.now()}`,
+        segmentId: currentGame.currentSegment?.id || "",
         title: `Turn ${currentGame.turnCount + 1}: ${selectedChoice.text.substring(0, 30)}...`,
+        summary: `You chose: ${selectedChoice.text}`,
         description: `You chose: ${selectedChoice.text}`,
+        choiceMade: selectedChoice.text,
+        consequence: "Awaiting outcome",
         timestamp: Date.now(),
-        category: "choice"
+        category: "choice",
+        importance: "medium" as const
       });
       
       // Enable custom choice for next segment
@@ -340,10 +350,15 @@ What will you do to begin your chronicle?`,
       // Add memory of the custom action
       addMemory({
         id: `memory-${Date.now()}`,
+        segmentId: currentGame.currentSegment?.id || "",
         title: `Turn ${currentGame.turnCount + 1}: Custom Action`,
+        summary: `You chose: ${customAction}`,
         description: `You chose: ${customAction}`,
+        choiceMade: customAction,
+        consequence: "Awaiting outcome",
         timestamp: Date.now(),
-        category: "choice"
+        category: "choice",
+        importance: "medium" as const
       });
       
       // Enable custom choice for next segment

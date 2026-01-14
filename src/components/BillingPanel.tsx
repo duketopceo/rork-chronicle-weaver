@@ -106,7 +106,7 @@ export default function BillingPanel({ onClose }: BillingPanelProps) {
       case 'premium':
         return { icon: Star, color: colors.primary, text: 'Premium' };
       case 'master':
-        return { icon: Crown, color: colors.gold, text: 'Master' };
+        return { icon: Crown, color: colors.economicsAccent, text: 'Master' };
       default:
         return { icon: CheckCircle, color: colors.textSecondary, text: 'Free' };
     }
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   upgradeButton: {
-    backgroundColor: colors.gold,
+    backgroundColor: colors.economicsAccent,
   },
   upgradeButtonText: {
     color: colors.background,

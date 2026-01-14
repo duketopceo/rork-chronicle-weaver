@@ -15,6 +15,20 @@
  */
 
 import { db } from './firebaseUtils';
+import { 
+  collection, 
+  doc, 
+  writeBatch, 
+  updateDoc, 
+  setDoc, 
+  getDoc, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  deleteDoc 
+} from 'firebase/firestore';
 import { GameState, GameSegment, Memory, LoreEntry } from '../types/game';
 import { useGameStore } from '../store/gameStore';
 
@@ -34,7 +48,7 @@ export interface SaveGameData {
 export interface LoadGameData {
   game: GameState;
   recentTurns: any[];
-  lastSavedAt: Date;
+  lastSaved: number | Date;
 }
 
 class GameDataService {
@@ -60,23 +74,22 @@ class GameDataService {
       // Update local cache
       this.cache.set(gameId, {
         ...gameState,
-        lastSavedAt: new Date(),
+        lastSaved: Date.now(),
       });
 
       // Save to Firestore in batch
-      const batch = db.batch();
+      const batch = writeBatch(db);
       
       // Update main game document
-      const gameRef = db.collection('games').doc(gameId);
+      const gameRef = doc(collection(db, 'games'), gameId);
       batch.update(gameRef, {
         ...gameState,
-        lastSavedAt: new Date(),
+        lastSaved: new Date(),
         lastPlayedAt: new Date(),
       });
 
       // Save turn data
-      const turnRef = db.collection('games').doc(gameId)
-        .collection('turns').doc(`turn-${turnData.turnNumber}`);
+      const turnRef = doc(collection(doc(collection(db, 'games'), gameId), 'turns'), `turn-${turnData.turnNumber}`);
       batch.set(turnRef, {
         ...turnData,
         timestamp: new Date(),
@@ -84,8 +97,7 @@ class GameDataService {
 
       // Save memories if any
       if (gameState.memories && gameState.memories.length > 0) {
-        const memoryRef = db.collection('games').doc(gameId)
-          .collection('memories').doc(`memory-${Date.now()}`);
+        const memoryRef = doc(collection(doc(collection(db, 'games'), gameId), 'memories'), `memory-${Date.now()}`);
         batch.set(memoryRef, {
           memories: gameState.memories,
           timestamp: new Date(),
@@ -116,14 +128,15 @@ class GameDataService {
     try {
       // Check cache first
       const cached = this.cache.get(gameId);
-      if (cached && (Date.now() - cached.lastSavedAt.getTime()) < 5 * 60 * 1000) {
+      if (cached && (Date.now() - cached.lastSaved.getTime()) < 5 * 60 * 1000) {
         console.log(`Loading game ${gameId} from cache`);
         return cached;
       }
 
       // Load from Firestore
-      const gameDoc = await db.collection('games').doc(gameId).get();
-      if (!gameDoc.exists) {
+      const gameDocRef = doc(collection(db, 'games'), gameId);
+      const gameDoc = await getDoc(gameDocRef);
+      if (!gameDoc.exists()) {
         console.error(`Game ${gameId} not found`);
         return null;
       }
@@ -131,14 +144,16 @@ class GameDataService {
       const gameData = gameDoc.data() as GameState;
 
       // Load recent turns
-      const turnsSnapshot = await db.collection('games').doc(gameId)
-        .collection('turns').orderBy('turnNumber', 'desc').limit(10).get();
+      const turnsCollectionRef = collection(doc(collection(db, 'games'), gameId), 'turns');
+      const turnsQuery = query(turnsCollectionRef, orderBy('turnNumber', 'desc'), limit(10));
+      const turnsSnapshot = await getDocs(turnsQuery);
       
       const recentTurns = turnsSnapshot.docs.map(doc => doc.data());
 
       // Load memories
-      const memoriesSnapshot = await db.collection('games').doc(gameId)
-        .collection('memories').orderBy('timestamp', 'desc').limit(5).get();
+      const memoriesCollectionRef = collection(doc(collection(db, 'games'), gameId), 'memories');
+      const memoriesQuery = query(memoriesCollectionRef, orderBy('timestamp', 'desc'), limit(5));
+      const memoriesSnapshot = await getDocs(memoriesQuery);
       
       const memories = memoriesSnapshot.docs.flatMap(doc => doc.data().memories || []);
 
@@ -148,7 +163,7 @@ class GameDataService {
           memories: memories,
         },
         recentTurns,
-        lastSavedAt: gameData.lastSavedAt || new Date(),
+        lastSaved: gameData.lastSaved || Date.now(),
       };
 
       // Update cache
@@ -167,10 +182,13 @@ class GameDataService {
    */
   async listGames(userId: string): Promise<any[]> {
     try {
-      const gamesSnapshot = await db.collection('games')
-        .where('userId', '==', userId)
-        .orderBy('lastPlayedAt', 'desc')
-        .get();
+      const gamesCollectionRef = collection(db, 'games');
+      const gamesQuery = query(
+        gamesCollectionRef,
+        where('userId', '==', userId),
+        orderBy('lastPlayedAt', 'desc')
+      );
+      const gamesSnapshot = await getDocs(gamesQuery);
 
       return gamesSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -188,20 +206,21 @@ class GameDataService {
    */
   async deleteGame(gameId: string): Promise<boolean> {
     try {
-      const batch = db.batch();
+      const batch = writeBatch(db);
       
       // Delete main game document
-      batch.delete(db.collection('games').doc(gameId));
+      const gameDocRef = doc(collection(db, 'games'), gameId);
+      batch.delete(gameDocRef);
       
       // Delete turns subcollection
-      const turnsSnapshot = await db.collection('games').doc(gameId)
-        .collection('turns').get();
-      turnsSnapshot.docs.forEach(doc => batch.delete(doc.ref));
+      const turnsCollectionRef = collection(doc(collection(db, 'games'), gameId), 'turns');
+      const turnsSnapshot = await getDocs(turnsCollectionRef);
+      turnsSnapshot.docs.forEach(document => batch.delete(document.ref));
       
       // Delete memories subcollection
-      const memoriesSnapshot = await db.collection('games').doc(gameId)
-        .collection('memories').get();
-      memoriesSnapshot.docs.forEach(doc => batch.delete(doc.ref));
+      const memoriesCollectionRef = collection(doc(collection(db, 'games'), gameId), 'memories');
+      const memoriesSnapshot = await getDocs(memoriesCollectionRef);
+      memoriesSnapshot.docs.forEach(document => batch.delete(document.ref));
       
       await batch.commit();
 
