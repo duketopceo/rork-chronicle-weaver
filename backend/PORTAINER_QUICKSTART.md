@@ -56,7 +56,7 @@ Click **"Deploy the stack"**
 **Service won't start?**
 - Check logs in Portainer
 - Verify environment variables are set
-- Check port 8080 is available
+- Check port 8082 is available (changed from 8080 to avoid conflict)
 
 **Health check failing?**
 - View container logs
