@@ -1,0 +1,113 @@
+{
+  "version": "2",
+  "templates": [
+    {
+      "type": "stack",
+      "title": "Chronicle Weaver Backend",
+      "description": "Historical RPG backend API with AI-powered narrative generation. Optimized for Mac mini cluster deployment.",
+      "note": "Deploy the Chronicle Weaver backend service with Docker Compose. Requires environment variables to be configured.",
+      "categories": [
+        "backend",
+        "api",
+        "nodejs",
+        "game"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/duketopceo/rork-chronicle-weaver/main/assets/images/icon.png",
+      "repository": {
+        "url": "https://github.com/duketopceo/rork-chronicle-weaver",
+        "stackfile": "docker-compose.yml"
+      },
+      "env": [
+        {
+          "name": "NODE_ENV",
+          "label": "Node Environment",
+          "description": "Environment mode (production/development)",
+          "default": "production",
+          "select": [
+            {
+              "text": "Production",
+              "value": "production",
+              "default": true
+            },
+            {
+              "text": "Development",
+              "value": "development"
+            }
+          ]
+        },
+        {
+          "name": "FIREBASE_PROJECT_ID",
+          "label": "Firebase Project ID",
+          "description": "Your Firebase project ID",
+          "required": true
+        },
+        {
+          "name": "FIREBASE_CLIENT_EMAIL",
+          "label": "Firebase Client Email",
+          "description": "Firebase service account email",
+          "required": true
+        },
+        {
+          "name": "FIREBASE_PRIVATE_KEY",
+          "label": "Firebase Private Key",
+          "description": "Firebase service account private key (with \\n for newlines)",
+          "required": true,
+          "type": "password"
+        },
+        {
+          "name": "STRIPE_SECRET_KEY",
+          "label": "Stripe Secret Key",
+          "description": "Stripe API secret key",
+          "required": true,
+          "type": "password"
+        },
+        {
+          "name": "STRIPE_WEBHOOK_SECRET",
+          "label": "Stripe Webhook Secret",
+          "description": "Stripe webhook signing secret",
+          "required": true,
+          "type": "password"
+        },
+        {
+          "name": "AI_PROVIDER",
+          "label": "AI Provider",
+          "description": "AI service provider",
+          "default": "openai",
+          "select": [
+            {
+              "text": "OpenAI",
+              "value": "openai",
+              "default": true
+            },
+            {
+              "text": "Anthropic",
+              "value": "anthropic"
+            }
+          ]
+        },
+        {
+          "name": "AI_API_KEY",
+          "label": "AI API Key",
+          "description": "API key for your chosen AI provider",
+          "required": true,
+          "type": "password"
+        },
+        {
+          "name": "AI_MODEL",
+          "label": "AI Model",
+          "description": "AI model to use (e.g., gpt-4, claude-3-opus)",
+          "default": "gpt-4"
+        },
+        {
+          "name": "AI_HANDLER_URL",
+          "label": "AI Handler URL",
+          "description": "Internal AI handler service URL",
+          "default": "http://backend:8080/ai"
+        }
+      ],
+      "administrators_only": false,
+      "name": "chronicle-weaver-backend"
+    }
+  ]
+}

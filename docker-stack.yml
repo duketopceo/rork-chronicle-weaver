@@ -61,8 +61,21 @@ services:
           cpus: '1.0'
           memory: 1G
       labels:
+        # Portainer labels for better UI organization
+        - "com.portainer.stack.name=chronicle-weaver"
+        - "com.portainer.stack.description=Chronicle Weaver Backend API Service"
+        - "com.portainer.stack.category=backend"
+        - "com.portainer.stack.technology=docker-swarm"
+        
+        # Application metadata
         - "com.chronicle-weaver.service=backend"
         - "com.chronicle-weaver.version=1.0.0"
+        - "com.chronicle-weaver.component=api"
+        - "com.chronicle-weaver.managed-by=portainer"
+        
+        # Documentation links
+        - "com.chronicle-weaver.docs=https://github.com/duketopceo/rork-chronicle-weaver"
+        - "com.chronicle-weaver.support=backend/PORTAINER_SETUP.md"
       healthcheck:
         test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
         interval: 30s
@@ -74,12 +87,21 @@ services:
         published: 8080
         protocol: tcp
         mode: ingress
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service,environment"
 
 networks:
   backend-network:
     driver: overlay
     attachable: true
     name: chronicle-weaver-network
+    labels:
+      - "com.portainer.stack.name=chronicle-weaver"
+      - "com.chronicle-weaver.network=backend"
 
 # Uncomment and configure if using Docker secrets
 # secrets:
