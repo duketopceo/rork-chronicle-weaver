@@ -35,7 +35,7 @@ Click **"Deploy the stack"**
 ### Step 5: Verify
 1. Wait for deployment (30-60 seconds)
 2. Check stack status (should show "Running")
-3. Test health: `curl http://localhost:8080/health`
+3. Test health: `curl http://localhost:8082/health`
 
 ## Common Tasks
 
