@@ -29,9 +29,17 @@ export default function DebugPanel({ title = 'Debug Panel', compact = false }: D
   const steps = useDebugSteps();
   const errors = useDebugErrors();
   const metrics = useDebugMetrics();
-  const { currentGame, isLoading } = useGameStore((s) => ({ currentGame: s.currentGame, isLoading: s.isLoading }));
-  // Guard render after hooks have been called to satisfy React Hooks rules
-  if (!__DEV__) return null;
+  const { currentGame, isLoading, user } = useGameStore((s) => ({ 
+    currentGame: s.currentGame, 
+    isLoading: s.isLoading,
+    user: s.user 
+  }));
+  
+  // Check if user is admin
+  const isAdmin = user?.email === 'duketopceo@gmail.com';
+  
+  // Guard render - only show in dev mode AND to admin users
+  if (!__DEV__ && !isAdmin) return null;
 
   const recentSteps = steps.slice(-5);
   const recentErrors = errors.slice(-3);

@@ -316,78 +316,78 @@ export async function generateInitialStory(gameState: GameState, gameSetup: Game
     const { era, theme, difficulty, character } = gameState;
 
     // Adjust the prompt based on the difficulty setting
-    const realismLevel = difficulty <= 0.2 ? "hyper-realistic" : 
-                         difficulty <= 0.4 ? "historically accurate" :
+    const complexityLevel = difficulty <= 0.2 ? "highly realistic" : 
+                         difficulty <= 0.4 ? "realistic" :
                          difficulty <= 0.6 ? "balanced" : 
-                         difficulty <= 0.8 ? "dramatic" : "pure fantasy";
+                         difficulty <= 0.8 ? "simplified" : "beginner-friendly";
 
-    const systemPrompt = `You are Kronos, the Weaver of Chronicles - an expert AI storyteller specializing in immersive interactive fiction with deep world-building systems for Chronicle Weaver.
+    const systemPrompt = `You are Kronos, an expert AI educator specializing in business and professional development scenarios for Chronicle Weaver.
 
 Your writing style should be:
-- Vivid and atmospheric with rich sensory details
-- Engaging and accessible to modern readers
-- Character-driven with meaningful choices
-- Integrated with living world systems (politics, economics, war, relationships)
-- Written in a literary style befitting historical chronicles
+- Clear and engaging with practical business scenarios
+- Accessible to learners of all levels
+- Decision-focused with meaningful professional choices
+- Integrated with realistic business systems (finance, operations, strategy, relationships)
+- Written in a professional but approachable tone
 
-Realism Level: ${realismLevel}
-${difficulty <= 0.3 ? "- Strictly adhere to realistic elements and documented facts" : 
-  difficulty <= 0.7 ? "- Balance realism with engaging narrative elements" : 
-  "- Prioritize narrative excitement, allowing creative liberties and fantastical elements"}
+Complexity Level: ${complexityLevel}
+${difficulty <= 0.3 ? "- Include complex real-world business challenges with detailed mechanics" : 
+  difficulty <= 0.7 ? "- Balance realism with clear learning guidance" : 
+  "- Simplify concepts for beginners, focus on core principles"}
 
 CRITICAL REQUIREMENTS:
 1. ALWAYS respond with ONLY valid JSON - no markdown, no extra text, no code blocks
-2. The opening segment MUST be substantial (6-8 full paragraphs minimum)
-3. Include exactly 3 meaningful choices that advance the story
-4. Create an engaging hook that immediately draws the reader in
+2. The opening scenario MUST be substantial (6-8 full paragraphs minimum)
+3. Include exactly 3 meaningful business decisions that advance the learning experience
+4. Create an engaging scenario that immediately draws the learner in
 5. The narrative must be complete and ready to display
-6. Ensure the backstory is rich and detailed (4-5 paragraphs minimum)
+6. Ensure the background is rich and detailed (4-5 paragraphs minimum)
 
-World Systems Integration:
-- Introduce political factions, economic systems, and social structures naturally
-- Create opportunities for inventory acquisition and character development
-- Establish relationships and reputation systems
-- Set up potential conflicts and alliances`;
+Business Systems Integration:
+- Introduce realistic business challenges, financial systems, and organizational structures
+- Create opportunities for skill development and decision-making
+- Establish professional relationships and reputation systems
+- Set up potential challenges, opportunities, and learning moments`;
 
-    const userPrompt = `Create a compelling backstory and opening segment for an interactive chronicle in Chronicle Weaver:
+    const userPrompt = `Create a compelling background and opening scenario for an interactive business learning experience in Chronicle Weaver:
 
-**Setting:** ${era}
-**Theme:** ${theme}
-**Character:** ${character.name}
-**Tone:** ${realismLevel}
-**Generate Backstory:** ${gameSetup.generateBackstory}
+**Professional Role:** ${era}
+**Learning Focus:** ${theme}
+**Your Name:** ${character.name}
+**Complexity:** ${complexityLevel}
+**Generate Background:** ${gameSetup.generateBackstory}
 
 ${gameSetup.generateBackstory ? 
-  `First, write a rich backstory for ${character.name} (4-5 substantial paragraphs) that establishes:
-- Their background and position in this setting
-- Their motivations and goals
-- How they fit into the world context
-- Their connection to the theme: ${theme}
-- Initial relationships and reputation
-- Their skills and knowledge relevant to the era` :
-  `Create a brief backstory (2-3 paragraphs) that introduces ${character.name} in the context of ${era}.`}
+  `First, write a rich professional background for ${character.name} (4-5 substantial paragraphs) that establishes:
+- Their professional background and current position
+- Their career motivations and business goals
+- How they fit into the professional context
+- Their connection to the learning focus: ${theme}
+- Initial professional relationships and reputation
+- Their skills and experience relevant to this role` :
+  `Create a brief professional background (2-3 paragraphs) that introduces ${character.name} in the context of ${era}.`}
 
-Then, write an engaging opening segment that:
+Then, write an engaging opening scenario that:
 - Is substantial narrative text (6-8 full paragraphs minimum - this is CRITICAL)
-- Immediately immerses the reader in the setting with vivid details
-- Introduces a compelling situation or conflict
-- Shows the character in action or facing a decision
-- Establishes world systems (politics, economics, social structures)
-- Ends with exactly 3 meaningful choices that reflect the theme
-- Creates opportunities for inventory, relationships, and world interaction
-- Uses rich, literary language appropriate for a historical chronicle
+- Immediately presents a realistic business situation
+- Introduces a compelling challenge or decision point
+- Shows the professional in action or facing a business decision
+- Establishes business systems (financial, operational, strategic, relationships)
+- Ends with exactly 3 meaningful business decisions that reflect the learning focus
+- Creates opportunities for skill development, relationship building, and learning
+- Uses clear, professional language appropriate for business education
 
-CRITICAL: The opening segment must be substantial narrative text (6-8 full paragraphs) that sets the scene and creates an engaging story moment. Do not summarize - write the full scene with rich detail.
+CRITICAL: The opening scenario must be substantial narrative text (6-8 full paragraphs) that sets the business context and creates an engaging learning moment. Do not summarize - write the full scenario with realistic detail.
 
 Respond with ONLY this JSON structure (no markdown, no code blocks):
 {
-  "backstory": "Character backstory here (4-5 substantial paragraphs)...",
+  "backstory": "Professional background here (4-5 substantial paragraphs)...",
   "segment": {
-    "text": "Opening narrative here (6-8 substantial paragraphs)...",
+    "text": "Opening scenario here (6-8 substantial paragraphs)...",
     "choices": [
-      {"id": "1", "text": "First choice description"},
-      {"id": "2", "text": "Second choice description"},
-      {"id": "3", "text": "Third choice description"}
+      {"id": "1", "text": "First business decision"},
+      {"id": "2", "text": "Second business decision"},
+      {"id": "3", "text": "Third business decision"}
     ]
   }
 }`;
@@ -556,10 +556,10 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
       });
     }
 
-    const realismLevel = difficulty <= 0.2 ? "hyper-realistic" : 
-                         difficulty <= 0.4 ? "historically accurate" :
+    const complexityLevel = difficulty <= 0.2 ? "highly realistic" : 
+                         difficulty <= 0.4 ? "realistic" :
                          difficulty <= 0.6 ? "balanced" : 
-                         difficulty <= 0.8 ? "dramatic" : "pure fantasy";
+                         difficulty <= 0.8 ? "simplified" : "beginner-friendly";
 
     // Create context from recent segments and memories
     const recentSegments = pastSegments.slice(-2); // Last 2 segments
@@ -573,51 +573,51 @@ export async function generateNextSegment(gameState: GameState, selectedChoice: 
       `${memory.title}: ${memory.description}`
     ).join("\n");
 
-    const systemPrompt = `You are Kronos, the Weaver of Chronicles, continuing an interactive chronicle in Chronicle Weaver. Maintain narrative consistency and character development while advancing the story based on the player's choice.
+    const systemPrompt = `You are Kronos, an expert AI educator, continuing an interactive business learning experience in Chronicle Weaver. Maintain scenario consistency and professional development while progressing based on the learner's decision.
 
-Setting: ${era}
-Theme: ${theme}
-Realism Level: ${realismLevel}
-Character: ${character.name}
+Professional Role: ${era}
+Learning Focus: ${theme}
+Complexity Level: ${complexityLevel}
+Your Name: ${character.name}
 
 CRITICAL REQUIREMENTS:
 1. ALWAYS respond with ONLY valid JSON - no markdown, no extra text, no code blocks
-2. The segment MUST be substantial (5-7 full paragraphs minimum)
-3. Include exactly 3 meaningful choices that advance the story
-4. Show clear consequences of the player's choice
-5. The narrative must be complete and engaging
-6. Use rich, literary language appropriate for a historical chronicle
+2. The scenario MUST be substantial (5-7 full paragraphs minimum)
+3. Include exactly 3 meaningful business decisions that advance learning
+4. Show clear consequences of the previous decision
+5. The narrative must be complete and educational
+6. Use clear, professional language for business education
 
 Focus on:
-- Advancing the narrative meaningfully
-- Integrating world systems naturally
-- Creating opportunities for character growth
-- Maintaining the chosen realism level
-- Providing engaging, diverse choices`;
+- Advancing the learning experience meaningfully
+- Integrating business systems naturally
+- Creating opportunities for skill development
+- Maintaining the chosen complexity level
+- Providing diverse, realistic business decisions`;
 
-    const userPrompt = `Continue the chronicle based on the player's choice. Here is the context:
+    const userPrompt = `Continue the business scenario based on the professional's decision. Here is the context:
 
-**Recent Chronicle Context:**
+**Recent Scenario Context:**
 ${contextSummary}
 
-**Recent Memories:**
+**Recent Experiences:**
 ${memorySummary}
 
-**Player's Choice:** "${selectedChoice.text}"
+**Your Decision:** "${selectedChoice.text}"
 
-Write the next segment that:
+Write the next scenario that:
 - Is substantial narrative text (5-7 full paragraphs minimum - this is CRITICAL)
-- Shows the immediate consequences of the player's choice
-- Advances the plot meaningfully
-- Maintains consistency for the ${realismLevel} level
-- Develops the character and their relationships
-- Integrates world systems (politics, economics, war, inventory)
-- Ends with exactly 3 new meaningful choices that advance the story
-- Uses rich, literary language befitting a historical chronicle
+- Shows the immediate consequences of your business decision
+- Advances the learning experience meaningfully
+- Maintains consistency for the ${complexityLevel} level
+- Develops professional skills and relationships
+- Integrates business systems (finance, operations, strategy, relationships)
+- Ends with exactly 3 new meaningful business decisions that advance learning
+- Uses clear, professional language appropriate for business education
 
 Respond with ONLY this JSON structure (no markdown, no code blocks):
 {
-  "text": "Next segment narrative here (5-7 substantial paragraphs)...",
+  "text": "Next scenario narrative here (5-7 substantial paragraphs)...",
   "choices": [
     {"id": "1", "text": "First choice description"},
     {"id": "2", "text": "Second choice description"},

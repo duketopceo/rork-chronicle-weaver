@@ -184,9 +184,9 @@ export default function HomeScreen() {
           >
             <View style={styles.heroContent}>
               <Crown size={48} color={colors.primary} />
-              <Text style={styles.heroTitle}>Weave Your Legend</Text>
+              <Text style={styles.heroTitle}>Build Your Business Skills</Text>
               <Text style={styles.heroSubtitle}>
-                Through the tapestry of history, your choices shape the world
+                Learn real-world business principles through AI-powered interactive scenarios
               </Text>
             </View>
           </LinearGradient>
@@ -203,8 +203,8 @@ export default function HomeScreen() {
               <View style={styles.actionContent}>
                 <Play size={24} color={colors.background} />
                 <View style={styles.actionText}>
-                  <Text style={styles.actionTitle}>New Chronicle</Text>
-                  <Text style={styles.actionSubtitle}>Begin a new adventure</Text>
+                  <Text style={styles.actionTitle}>New Scenario</Text>
+                  <Text style={styles.actionSubtitle}>Start a new learning session</Text>
                 </View>
                 <ArrowRight size={20} color={colors.background} />
               </View>
@@ -218,9 +218,9 @@ export default function HomeScreen() {
                 <View style={styles.actionContent}>
                   <BookOpen size={24} color={colors.primary} />
                   <View style={styles.actionText}>
-                    <Text style={styles.actionTitle}>Continue Game</Text>
+                    <Text style={styles.actionTitle}>Continue Learning</Text>
                     <Text style={styles.actionSubtitle}>
-                      {savedGames[0].characterName} in {savedGames[0].era}
+                      {savedGames[0].characterName} - {savedGames[0].era}
                     </Text>
                   </View>
                   <ChevronRight size={20} color={colors.primary} />
@@ -326,32 +326,32 @@ export default function HomeScreen() {
 
         {/* Feature Highlights */}
         <View style={styles.featuresSection}>
-          <Text style={styles.sectionTitle}>What Makes Chronicle Weaver Special</Text>
+          <Text style={styles.sectionTitle}>Learn Through Real-World Scenarios</Text>
           <View style={styles.featuresList}>
             <View style={styles.featureItem}>
               <History size={20} color={colors.primary} />
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Historical Accuracy</Text>
+                <Text style={styles.featureTitle}>Business Management</Text>
                 <Text style={styles.featureDescription}>
-                  Experience authentic historical periods with AI-powered accuracy
+                  Experience authentic business scenarios with AI-powered guidance
                 </Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Sparkles size={20} color={colors.gold} />
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>AI-Powered Narrative</Text>
+                <Text style={styles.featureTitle}>AI-Powered Scenarios</Text>
                 <Text style={styles.featureDescription}>
-                  Every choice creates unique, personalized storylines
+                  Every choice creates unique, educational learning experiences
                 </Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Crown size={20} color={colors.accent} />
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Character Development</Text>
+                <Text style={styles.featureTitle}>Skill Development</Text>
                 <Text style={styles.featureDescription}>
-                  Watch your character grow through meaningful choices
+                  Build practical skills through meaningful business decisions
                 </Text>
               </View>
             </View>
