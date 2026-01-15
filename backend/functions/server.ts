@@ -19,16 +19,29 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin SDK for standalone use
 if (getApps().length === 0) {
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:21',message:'Firebase init start',data:{hasProjectId:!!process.env.FIREBASE_PROJECT_ID,hasClientEmail:!!process.env.FIREBASE_CLIENT_EMAIL,hasPrivateKey:!!process.env.FIREBASE_PRIVATE_KEY,privateKeyLength:process.env.FIREBASE_PRIVATE_KEY?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+  // #endregion
   try {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:25',message:'Firebase private key processed',data:{hasPrivateKey:!!privateKey,keyStartsWith:privateKey?.substring(0,30),keyLength:privateKey?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     initializeApp({
       credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey: privateKey,
       }),
     });
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:33',message:'Firebase init success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     console.log('✅ Firebase Admin SDK initialized');
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:36',message:'Firebase init failed',data:{error:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     console.error('❌ Failed to initialize Firebase Admin SDK:', error);
     process.exit(1);
   }
@@ -38,14 +51,25 @@ if (getApps().length === 0) {
 import { api } from './hono';
 import aiHandler from './ai-handler';
 
+// #region agent log
+fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:38',message:'Importing modules',data:{hasApi:!!api,hasAiHandler:!!aiHandler},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+// #endregion
+
 // Create main server app
 const app = api;
 
 // Mount AI handler at /ai path
 app.route('/ai', aiHandler);
 
+// #region agent log
+fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:46',message:'AI handler mounted',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+// #endregion
+
 // Get port from environment or default to 8080
 const port = parseInt(process.env.PORT || '8080', 10);
+// #region agent log
+fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server.ts:50',message:'Port configured',data:{port,portEnv:process.env.PORT},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+// #endregion
 
 // Start server
 const server = serve({

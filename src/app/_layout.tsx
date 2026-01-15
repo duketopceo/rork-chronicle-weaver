@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
 
 export default function RootLayout() {
   const [initTimer] = useState(() => startTimer('App Initialization'));
-  const [showUltraDebug, setShowUltraDebug] = useState(Platform.OS === 'web');
+  const [showUltraDebug, setShowUltraDebug] = useState(__DEV__ && Platform.OS === 'web');
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const auth = getAuth();
   const googleProvider = new GoogleAuthProvider();
@@ -369,13 +369,15 @@ export default function RootLayout() {
                 />
               </Stack>
               
-              {/* Debug Toggle Button */}
-              <TouchableOpacity 
-                style={styles.debugButton}
-                onPress={() => setShowUltraDebug(!showUltraDebug)}
-              >
-                <Text style={{ color: 'white', fontWeight: 'bold' }}>⚙️</Text>
-              </TouchableOpacity>
+              {/* Debug Toggle Button - Only in development */}
+              {__DEV__ && (
+                <TouchableOpacity 
+                  style={styles.debugButton}
+                  onPress={() => setShowUltraDebug(!showUltraDebug)}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>⚙️</Text>
+                </TouchableOpacity>
+              )}
 
               {/* Auth Button */}
               <TouchableOpacity 
@@ -387,11 +389,13 @@ export default function RootLayout() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Debug Panel */}
-              <UltraDebugPanel 
-                visible={showUltraDebug}
-                onClose={() => setShowUltraDebug(false)}
-              />
+              {/* Debug Panel - Only in development */}
+              {__DEV__ && (
+                <UltraDebugPanel 
+                  visible={showUltraDebug}
+                  onClose={() => setShowUltraDebug(false)}
+                />
+              )}
             </ErrorBoundary>
           </View>
         </QueryClientProvider>

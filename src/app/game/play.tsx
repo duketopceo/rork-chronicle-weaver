@@ -47,6 +47,7 @@ import ChoiceButton from "../../components/ChoiceButton";
 import CustomChoiceInput from "../../components/CustomChoiceInput";
 import { UltraDebugPanel } from "../../components/UltraDebugPanel";
 import Button from "../../components/Button";
+import ErrorState from "../../components/ErrorState";
 import { generateInitialStory, generateNextSegment } from "../../services/aiService";
 import { User, ArrowLeft, MessageCircle, Crown, Feather, Bug } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -423,11 +424,13 @@ What will you do to begin your chronicle?`,
           >
             <Bug size={20} color={colors.text} />
           </TouchableOpacity>
-        )}        {/* Ultra Debug Panel */}
-        <UltraDebugPanel 
-          visible={showUltraDebug} 
-          onClose={() => setShowUltraDebug(false)}
-        />
+        )}
+        {__DEV__ && (
+          <UltraDebugPanel 
+            visible={showUltraDebug} 
+            onClose={() => setShowUltraDebug(false)}
+          />
+        )}
       </SafeAreaView>
     );
   }
@@ -464,29 +467,40 @@ What will you do to begin your chronicle?`,
           >
             <Bug size={20} color={colors.text} />
           </TouchableOpacity>
-        )}        {/* Ultra Debug Panel */}
-        <UltraDebugPanel 
-          visible={showUltraDebug} 
-          onClose={() => setShowUltraDebug(false)}
-        />
+        )}
+        {__DEV__ && (
+          <UltraDebugPanel 
+            visible={showUltraDebug} 
+            onClose={() => setShowUltraDebug(false)}
+          />
+        )}
       </SafeAreaView>
     );
   }
 
   if (error) {
+    // Determine error type from error message
+    let errorType: 'network' | 'server' | 'validation' | 'auth' | 'generic' = 'generic';
+    if (error.toLowerCase().includes('network') || error.toLowerCase().includes('connection') || error.toLowerCase().includes('fetch')) {
+      errorType = 'network';
+    } else if (error.toLowerCase().includes('server') || error.toLowerCase().includes('500')) {
+      errorType = 'server';
+    } else if (error.toLowerCase().includes('auth') || error.toLowerCase().includes('sign in') || error.toLowerCase().includes('unauthorized')) {
+      errorType = 'auth';
+    } else if (error.toLowerCase().includes('validation') || error.toLowerCase().includes('invalid')) {
+      errorType = 'validation';
+    }
+
     return (
       <SafeAreaView style={styles.errorContainer}>
-        <Crown size={Platform.select({ ios: 56, android: 48, default: 48 })} color={colors.error} />
-        <Text style={styles.errorTitle}>Chronicle Interrupted</Text>
-        <Text style={styles.errorMessage}>{error}</Text>
-        <View style={styles.errorButtonsContainer}>
-          <Button 
-            title="Retry" 
-            onPress={retryInitialization} 
-            style={styles.retryButton} 
-          />
-          <Button title="Return Home" onPress={navigateToHome} style={styles.errorButton} />
-        </View>
+        <ErrorState
+          type={errorType}
+          title="Chronicle Interrupted"
+          message={error}
+          onRetry={retryInitialization}
+          onDismiss={navigateToHome}
+          retryText="Try Again"
+        />
         
         {/* Debug controls during error */}
         {__DEV__ && (
@@ -494,25 +508,19 @@ What will you do to begin your chronicle?`,
             <TouchableOpacity style={styles.debugButton} onPress={forceShowUIElements}>
               <Text style={styles.debugButtonText}>🔧 Force Show UI</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.debugToggle}
+              onPress={() => setShowUltraDebug(!showUltraDebug)}
+              activeOpacity={0.8}
+            >
+              <Bug size={20} color={colors.text} />
+            </TouchableOpacity>
+            <UltraDebugPanel 
+              visible={showUltraDebug} 
+              onClose={() => setShowUltraDebug(false)} 
+            />
           </View>
         )}
-        
-        {/* Debug toggle for development */}
-        {__DEV__ && (
-          <TouchableOpacity
-            style={styles.debugToggle}
-            onPress={() => setShowUltraDebug(!showUltraDebug)}
-            activeOpacity={0.8}
-          >
-            <Bug size={20} color={colors.text} />
-          </TouchableOpacity>
-        )}
-
-        {/* Ultra Debug Panel */}
-        <UltraDebugPanel 
-          visible={showUltraDebug} 
-          onClose={() => setShowUltraDebug(false)} 
-        />
       </SafeAreaView>
     );
   }
@@ -649,10 +657,12 @@ What will you do to begin your chronicle?`,
                 <Bug size={20} color={colors.text} />
               </TouchableOpacity>
             )}
-            <UltraDebugPanel 
-              visible={showUltraDebug} 
-              onClose={() => setShowUltraDebug(false)} 
-            />
+            {__DEV__ && (
+              <UltraDebugPanel 
+                visible={showUltraDebug} 
+                onClose={() => setShowUltraDebug(false)} 
+              />
+            )}
           </View>
         )}
       </View>
@@ -667,10 +677,12 @@ What will you do to begin your chronicle?`,
           <Bug size={20} color={colors.text} />
         </TouchableOpacity>
       )}
-      <UltraDebugPanel 
-        visible={showUltraDebug} 
-        onClose={() => setShowUltraDebug(false)} 
-      />
+      {__DEV__ && (
+        <UltraDebugPanel 
+          visible={showUltraDebug} 
+          onClose={() => setShowUltraDebug(false)} 
+        />
+      )}
     </SafeAreaView>
   );
 }

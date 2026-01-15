@@ -18,17 +18,13 @@ COPY functions/package*.json ./functions/
 
 # Install dependencies
 WORKDIR /app/functions
-RUN npm ci --only=production=false
+RUN npm ci --legacy-peer-deps
 
-# Copy source code (from backend/ context, Docker build context is backend/)
-# We're in /app, so copy to maintain structure: /app/functions/ and /app/trpc/
-COPY functions/ ./functions/
-COPY trpc/ ./trpc/
+# Copy source code
+COPY functions/ /app/functions/
+COPY trpc/ /app/trpc/
 
-# Build TypeScript
-# With rootDir: "../", this compiles:
-# - functions/*.ts -> lib/functions/
-# - trpc/**/*.ts -> lib/trpc/
+# Build TypeScript (from functions/ directory, rootDir="../" will compile both)
 WORKDIR /app/functions
 RUN npm run build
 
@@ -53,7 +49,7 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY functions/package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && \
+RUN npm ci --omit=dev --legacy-peer-deps && \
     npm cache clean --force
 
 # Copy compiled JavaScript from builder

@@ -20,9 +20,10 @@ import { z } from 'zod';
 
 // AI Service Configuration
 const AI_CONFIG = {
-  provider: process.env.AI_PROVIDER || 'openai', // 'openai', 'anthropic', or 'gemini'
+  provider: process.env.AI_PROVIDER || 'openai', // 'openai', 'anthropic', 'gemini', or 'ollama'
   apiKey: process.env.AI_API_KEY,
   model: process.env.AI_MODEL || 'gpt-4',
+  ollamaBaseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   maxTokens: 4000,
   temperature: 0.7,
   maxRetries: 3,
@@ -68,23 +69,41 @@ function generateCacheKey(messages: any[], userId: string): string {
  * Check if user has exceeded rate limits
  */
 function checkRateLimit(userId: string, subscriptionTier: string): boolean {
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:70',message:'checkRateLimit entry',data:{userId,subscriptionTier,validTiers:Object.keys(RATE_LIMITS)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   const now = Date.now();
   const userUsage = usageTracker.get(userId);
   
+  // #region agent log
+  if (!(subscriptionTier in RATE_LIMITS)) {
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:76',message:'Invalid subscription tier',data:{subscriptionTier,validTiers:Object.keys(RATE_LIMITS)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  }
+  // #endregion
+  
   if (!userUsage) {
-    usageTracker.set(userId, { count: 1, resetTime: now + RATE_LIMITS[subscriptionTier].windowMs });
+    const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
+    usageTracker.set(userId, { count: 1, resetTime: now + rateLimit.windowMs });
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:81',message:'Rate limit initialized',data:{userId,subscriptionTier,resetTime:now + rateLimit.windowMs},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return true;
   }
 
   // Reset if window has passed
   if (now > userUsage.resetTime) {
-    usageTracker.set(userId, { count: 1, resetTime: now + RATE_LIMITS[subscriptionTier].windowMs });
+    const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
+    usageTracker.set(userId, { count: 1, resetTime: now + rateLimit.windowMs });
     return true;
   }
 
   // Check if limit exceeded
-  const limit = RATE_LIMITS[subscriptionTier].daily;
+  const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
+  const limit = rateLimit.daily;
   if (userUsage.count >= limit) {
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:89',message:'Rate limit exceeded',data:{userId,subscriptionTier,count:userUsage.count,limit},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return false;
   }
 
@@ -145,16 +164,89 @@ async function callAnthropic(messages: any[]): Promise<any> {
 }
 
 /**
+ * Call Ollama API
+ */
+async function callOllama(messages: any[]): Promise<any> {
+  if (!AI_CONFIG.model) {
+    throw new Error('AI_MODEL is required for Ollama provider');
+  }
+
+  // Convert messages format for Ollama (expects role and content)
+  const ollamaMessages = messages.map(msg => ({
+    role: msg.role === 'assistant' ? 'assistant' : 'user',
+    content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+  }));
+
+  const url = `${AI_CONFIG.ollamaBaseUrl}/api/chat`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: AI_CONFIG.model,
+      messages: ollamaMessages,
+      options: {
+        temperature: AI_CONFIG.temperature,
+        num_predict: AI_CONFIG.maxTokens,
+      },
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Ollama API error: ${response.status} ${response.statusText} - ${errorText}`);
+  }
+
+  const data = await response.json();
+
+  // Transform Ollama response to match expected format
+  return {
+    choices: [{
+      message: {
+        content: data.message?.content || ''
+      }
+    }],
+    usage: {
+      prompt_tokens: data.prompt_eval_count || 0,
+      completion_tokens: data.eval_count || 0,
+      total_tokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
+    }
+  };
+}
+
+/**
  * Call Google Gemini API
  */
 async function callGemini(messages: any[]): Promise<any> {
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:150',message:'callGemini entry',data:{messageCount:messages.length,hasApiKey:!!AI_CONFIG.apiKey,model:AI_CONFIG.model},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  
+  if (!AI_CONFIG.apiKey) {
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:155',message:'Missing AI_API_KEY',data:{provider:AI_CONFIG.provider},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
+    throw new Error('AI_API_KEY is not configured');
+  }
+  
   // Convert messages format for Gemini
   const geminiMessages = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: msg.content }]
   }));
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:163',message:'Gemini message conversion',data:{originalCount:messages.length,convertedCount:geminiMessages.length,firstMessageRole:geminiMessages[0]?.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_CONFIG.model}:generateContent?key=${AI_CONFIG.apiKey}`;
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:170',message:'Gemini API request',data:{url:url.replace(AI_CONFIG.apiKey,'[REDACTED]'),model:AI_CONFIG.model},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   
   const response = await fetch(url, {
     method: 'POST',
@@ -172,10 +264,17 @@ async function callGemini(messages: any[]): Promise<any> {
 
   if (!response.ok) {
     const errorText = await response.text();
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:178',message:'Gemini API error',data:{status:response.status,statusText:response.statusText,errorText:errorText.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
   const data = await response.json();
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:185',message:'Gemini API response',data:{hasCandidates:!!data.candidates,candidateCount:data.candidates?.length,hasContent:!!data.candidates?.[0]?.content?.parts?.[0]?.text},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   
   // Transform Gemini response to match expected format
   return {
@@ -251,11 +350,15 @@ app.post('/process', async (c) => {
     }
 
     // Check rate limits
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:256',message:'Checking rate limit',data:{userId,subscriptionTier},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     if (!checkRateLimit(userId, subscriptionTier)) {
+      const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
       return c.json({ 
         error: 'Rate limit exceeded',
         message: 'You have reached your daily AI request limit. Upgrade to continue.',
-        limit: RATE_LIMITS[subscriptionTier].daily,
+        limit: rateLimit.daily,
       }, 429);
     }
 
@@ -286,6 +389,8 @@ app.post('/process', async (c) => {
         return await callAnthropic(messages);
       } else if (AI_CONFIG.provider === 'gemini') {
         return await callGemini(messages);
+      } else if (AI_CONFIG.provider === 'ollama') {
+        return await callOllama(messages);
       } else {
         throw new Error(`Unsupported AI provider: ${AI_CONFIG.provider}`);
       }
@@ -298,6 +403,8 @@ app.post('/process', async (c) => {
     } else if (AI_CONFIG.provider === 'anthropic') {
       completion = aiResponse.content[0]?.text || '';
     } else if (AI_CONFIG.provider === 'gemini') {
+      completion = aiResponse.choices[0]?.message?.content || '';
+    } else if (AI_CONFIG.provider === 'ollama') {
       completion = aiResponse.choices[0]?.message?.content || '';
     } else {
       throw new Error('Invalid AI response format');
@@ -376,6 +483,7 @@ app.get('/health', async (c) => {
     status: 'healthy',
     provider: AI_CONFIG.provider,
     model: AI_CONFIG.model,
+    ollamaBaseUrl: AI_CONFIG.provider === 'ollama' ? AI_CONFIG.ollamaBaseUrl : undefined,
     cacheSize: responseCache.size,
     activeUsers: usageTracker.size,
   });

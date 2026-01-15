@@ -397,28 +397,81 @@ async function processAIRequest(requestPayload: any) {
 
     await enforceTurnLimit();
 
-    // Add user ID to the request payload
+    // Get backend URL from environment or use default
+    const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 
+                       process.env.NEXT_PUBLIC_BACKEND_URL || 
+                       'https://us-central1-chronicle-weaver-460713.cloudfunctions.net';
+    
+    // Check if we should use Docker backend (has /ai endpoint) or Firebase Functions
+    const useDockerBackend = backendUrl.includes('localhost') || 
+                            backendUrl.includes('127.0.0.1') || 
+                            backendUrl.includes(':8082') ||
+                            process.env.EXPO_PUBLIC_USE_DOCKER_BACKEND === 'true';
+
+    // Add user ID and subscription tier to the request payload
+    const { userType } = useGameStore.getState();
+    const subscriptionTier = userType === 'paid' ? 'premium' : 'free';
+    
     const payloadWithUser = {
+      messages: requestPayload.messages || [],
+      userId: user.uid,
+      subscriptionTier,
       ...requestPayload,
-      metadata: {
-        ...requestPayload.metadata,
-        userId: user.uid,
-        timestamp: new Date().toISOString()
-      }
     };
 
-    console.log("Processing AI request with payload:", payloadWithUser);
+    console.log("Processing AI request with payload:", { 
+      backendUrl, 
+      useDockerBackend,
+      userId: user.uid 
+    });
 
-    // Route AI request through Firebase Functions
-    const response = await fetchFromFirebaseFunction("processAIRequest", payloadWithUser);
+    let response: Response;
 
-    return response;
+    if (useDockerBackend) {
+      // Call Docker backend AI handler
+      const idToken = await user.getIdToken();
+      const aiHandlerUrl = `${backendUrl}/ai/process`;
+      
+      response = await fetch(aiHandlerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(payloadWithUser),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        throw new Error(errorData.message || errorData.error || `Backend error: ${response.status}`);
+      }
+    } else {
+      // Route AI request through Firebase Functions (legacy)
+      response = await fetchFromFirebaseFunction("processAIRequest", payloadWithUser);
+    }
+
+    const data = await response.json();
+    
+    // Handle both response formats
+    if (data.completion) {
+      return { json: () => Promise.resolve(data) };
+    } else if (data.error) {
+      throw new Error(data.message || data.error);
+    }
+
+    return { json: () => Promise.resolve(data) };
   } catch (error) {
     console.error("Error in processAIRequest:", error);
 
     // Handle specific error cases
     if (error instanceof Error) {
-      if (error.message.includes("not authenticated")) {
+      if (error.message.includes("not authenticated") || error.message.includes("sign in")) {
         // Trigger sign-in flow if in browser environment
         if (typeof window !== 'undefined') {
           const signInEvent = new CustomEvent('show-sign-in');
