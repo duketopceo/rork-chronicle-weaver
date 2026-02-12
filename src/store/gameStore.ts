@@ -28,6 +28,9 @@ import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, C
 import { gameDataService } from "../services/gameDataService";
 import { analyticsService } from "../services/analyticsService";
 
+/** Minimum character name length for validation. */
+const MIN_CHARACTER_NAME_LENGTH = 2;
+
 /** Clamp a stat value to the valid 0–100 range. */
 function clampStat(value: number): number {
   return Math.max(0, Math.min(100, value));
@@ -161,7 +164,7 @@ export const useGameStore = create<GameStore>()(
           return;
         }
 
-        if (characterName.trim().length < 2) {
+        if (characterName.trim().length < MIN_CHARACTER_NAME_LENGTH) {
           console.error("[GameStore] ❌ Character name too short");
           set({ error: "Character name must be at least 2 characters" });
           return;
