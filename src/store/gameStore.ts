@@ -28,6 +28,14 @@ import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, C
 import { gameDataService } from "../services/gameDataService";
 import { analyticsService } from "../services/analyticsService";
 
+/** Minimum character name length for validation. */
+const MIN_CHARACTER_NAME_LENGTH = 2;
+
+/** Clamp a stat value to the valid 0–100 range. */
+function clampStat(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
 /**
  * Game Store Interface
  * 
@@ -153,6 +161,12 @@ export const useGameStore = create<GameStore>()(
         if (!era || !theme || !characterName) {
           console.error("[GameStore] ❌ Game setup is incomplete:", gameSetup);
           set({ error: "Game setup is incomplete" });
+          return;
+        }
+
+        if (characterName.trim().length < MIN_CHARACTER_NAME_LENGTH) {
+          console.error("[GameStore] ❌ Character name too short");
+          set({ error: "Character name must be at least 2 characters" });
           return;
         }
 
@@ -285,6 +299,7 @@ export const useGameStore = create<GameStore>()(
 
         if (!currentGame) {
           console.error("[GameStore] ❌ No current game to make a choice");
+          set({ error: "No active game session" });
           return;
         }
 
@@ -293,6 +308,13 @@ export const useGameStore = create<GameStore>()(
         if (currentGame.turnCount >= turnLimit) {
           console.error(`[GameStore] ❌ Turn limit reached for ${userType} user`);
           set({ error: "Turn limit reached" });
+          return;
+        }
+
+        // Validate choiceId is non-empty
+        if (!choiceId || choiceId.trim().length === 0) {
+          console.error("[GameStore] ❌ Invalid choice ID");
+          set({ error: "Invalid choice" });
           return;
         }
 
@@ -305,7 +327,7 @@ export const useGameStore = create<GameStore>()(
           updatedAt: Date.now(),
         };
 
-        set({ currentGame: updatedGame });
+        set({ currentGame: updatedGame, error: null });
       },
 
       updateGameSegment: (segment) => set((state) => {
@@ -389,6 +411,14 @@ export const useGameStore = create<GameStore>()(
 
         console.log("[GameStore] 📊 Updating character stats:", stats);
 
+        // Clamp all incoming stat values to 0–100
+        const clampedStats: Partial<CharacterStats> = {};
+        for (const [key, value] of Object.entries(stats)) {
+          if (value !== undefined) {
+            clampedStats[key as keyof CharacterStats] = clampStat(value);
+          }
+        }
+
         return {
           currentGame: {
             ...state.currentGame,
@@ -396,7 +426,7 @@ export const useGameStore = create<GameStore>()(
               ...state.currentGame.character,
               stats: {
                 ...state.currentGame.character.stats,
-                ...stats
+                ...clampedStats
               }
             },
             updatedAt: Date.now()
