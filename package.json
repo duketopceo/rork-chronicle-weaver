@@ -54,7 +54,7 @@
     "expo-web-browser": "^14.2.0",
     "firebase": "^11.9.1",
     "hermes-engine": "^0.11.0",
-    "hono": "^4.9.6",
+    "hono": "^4.11.7",
     "lucide-react-native": "^0.522.0",
     "nativewind": "^4.1.23",
     "react": "^19.1.0",
@@ -67,7 +67,7 @@
     "react-native-web": "^0.20.0",
     "superjson": "^2.2.2",
     "ts-loader": "^9.5.2",
-    "webpack": "^5.99.9",
+    "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "zod": "^3.25.67",
     "zustand": "^5.0.2"
