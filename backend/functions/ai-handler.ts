@@ -447,11 +447,10 @@ async function retryWithBackoffAndFailsafe<T>(
       logDebug(`Backing off for ${delay}ms before retry`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-  }
+    }
   
   // This should never be reached due to throw in loop, but TypeScript requires it
   throw lastError || new Error('Unexpected error in retry logic');
-}
 }
 
 /**
