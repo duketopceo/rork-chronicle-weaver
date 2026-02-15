@@ -87,7 +87,13 @@ class AILogger {
   private consoleOutput(entry: LogEntry): void {
     const levelStr = LogLevel[entry.level];
     const timestamp = new Date(entry.timestamp).toISOString();
-    const contextStr = entry.context ? JSON.stringify(entry.context, null, 2) : '';
+    
+    // Format context based on environment for performance
+    const contextStr = entry.context 
+      ? (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+        ? JSON.stringify(entry.context, null, 2)
+        : JSON.stringify(entry.context))
+      : '';
     
     const prefix = `[${timestamp}] [${levelStr}]`;
     

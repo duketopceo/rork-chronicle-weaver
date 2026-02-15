@@ -118,7 +118,8 @@ ollama serve
 Add to your `.env.local` file:
 
 ```bash
-# Enable Ollama failsafe (enabled by default)
+# Enable Ollama failsafe (MUST be explicitly enabled)
+# Set to 'true' to enable automatic failover to Ollama
 ENABLE_OLLAMA_FAILSAFE=true
 
 # Ollama server URL (default: http://localhost:11434)
@@ -127,6 +128,8 @@ OLLAMA_BASE_URL=http://localhost:11434
 # Ollama model to use (default: llama2)
 OLLAMA_MODEL=llama2
 ```
+
+**Important**: The Ollama failsafe requires explicit opt-in. You must set `ENABLE_OLLAMA_FAILSAFE=true` to enable it. This prevents unexpected behavior in production environments where Ollama may not be installed.
 
 ### How It Works
 
@@ -152,11 +155,12 @@ Check logs for failover events:
 
 ### Disabling Failsafe
 
-To disable the Ollama failsafe:
+The Ollama failsafe is disabled by default and must be explicitly enabled. To ensure it's disabled:
 
 ```bash
-# In .env.local
+# In .env.local - either omit the variable or set it to false
 ENABLE_OLLAMA_FAILSAFE=false
+# OR simply don't set the variable at all
 ```
 
 ## Context Management

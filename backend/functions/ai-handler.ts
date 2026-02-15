@@ -64,12 +64,17 @@ const AI_CONFIG = {
   model: process.env.AI_MODEL || 'gpt-4',
   ollamaBaseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   ollamaModel: process.env.OLLAMA_MODEL || 'llama2', // Default Ollama model for failsafe
-  enableOllamaFailsafe: process.env.ENABLE_OLLAMA_FAILSAFE !== 'false', // Enable by default
+  // IMPORTANT: Ollama failsafe requires explicit opt-in to avoid unexpected behavior
+  // Set ENABLE_OLLAMA_FAILSAFE=true in your environment to enable
+  enableOllamaFailsafe: process.env.ENABLE_OLLAMA_FAILSAFE === 'true', 
   maxTokens: 4000,
   temperature: 0.7,
   maxRetries: 3,
   retryDelay: 1000,
 };
+
+// Provider response format configuration (module-level constant for performance)
+const CHOICE_PROVIDERS = new Set(['openai', 'gemini', 'ollama']);
 
 logInfo('AI Handler initialized', {
   provider: AI_CONFIG.provider,
@@ -579,11 +584,9 @@ app.post('/process', async (c) => {
     usedFailsafe = failsafeUsed;
 
     // Extract completion text
-    // Providers that return choices array: openai, gemini, ollama
-    const choiceProviders = new Set(['openai', 'gemini', 'ollama']);
     let completion: string;
     
-    if (choiceProviders.has(AI_CONFIG.provider) || usedFailsafe) {
+    if (CHOICE_PROVIDERS.has(AI_CONFIG.provider) || usedFailsafe) {
       completion = aiResponse.choices[0]?.message?.content || '';
     } else if (AI_CONFIG.provider === 'anthropic') {
       completion = aiResponse.content[0]?.text || '';
