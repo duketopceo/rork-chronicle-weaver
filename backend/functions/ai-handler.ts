@@ -401,8 +401,8 @@ async function retryWithBackoffAndFailsafe<T>(
   fn: () => Promise<T>,
   messages: any[],
   maxRetries: number = AI_CONFIG.maxRetries
-): Promise<{ result: T; usedFailsafe: boolean }> {
-  let lastError: Error;
+): Promise<{ result: T; failoverOccurred: boolean }> {
+  let lastError: Error | undefined;
   
   logDebug('Starting retry with backoff', { maxRetries, ollamaFailsafeEnabled: AI_CONFIG.enableOllamaFailsafe });
   
@@ -411,7 +411,7 @@ async function retryWithBackoffAndFailsafe<T>(
       logDebug(`Attempt ${attempt + 1}/${maxRetries + 1}`);
       const result = await fn();
       logInfo('Primary API call successful', { attempt: attempt + 1 });
-      return { result, usedFailsafe: false };
+      return { result, failoverOccurred: false };
     } catch (error) {
       lastError = error as Error;
       logWarn(`Attempt ${attempt + 1} failed`, { error: lastError.message, attemptsLeft: maxRetries - attempt });
@@ -427,7 +427,7 @@ async function retryWithBackoffAndFailsafe<T>(
           try {
             const ollamaResult = await callOllama(messages) as T;
             logInfo('Ollama failsafe successful', { primaryProvider: AI_CONFIG.provider });
-            return { result: ollamaResult, usedFailsafe: true };
+            return { result: ollamaResult, failoverOccurred: true };
           } catch (ollamaError) {
             logError('Ollama failsafe also failed', ollamaError, { 
               primaryError: lastError.message,
@@ -449,7 +449,9 @@ async function retryWithBackoffAndFailsafe<T>(
     }
   }
   
-  throw lastError!;
+  // This should never be reached due to throw in loop, but TypeScript requires it
+  throw lastError || new Error('Unexpected error in retry logic');
+}
 }
 
 /**
@@ -498,7 +500,7 @@ function moderateContent(content: string): boolean {
  */
 app.post('/process', async (c) => {
   const requestStartTime = Date.now();
-  let usedFailsafe = false;
+  let failoverOccurred = false;
   
   try {
     const body = await c.req.json();
@@ -564,7 +566,7 @@ app.post('/process', async (c) => {
     }
 
     // Call AI API with retry logic and Ollama failsafe
-    const { result: aiResponse, usedFailsafe: failsafeUsed } = await retryWithBackoffAndFailsafe(async () => {
+    const { result: aiResponse, failoverOccurred: didFailover } = await retryWithBackoffAndFailsafe(async () => {
       // Provider routing with improved maintainability
       const providers = {
         openai: callOpenAI,
@@ -581,12 +583,12 @@ app.post('/process', async (c) => {
       return await providerFn(enhancedMessages);
     }, enhancedMessages);
 
-    usedFailsafe = failsafeUsed;
+    failoverOccurred = didFailover;
 
     // Extract completion text
     let completion: string;
     
-    if (CHOICE_PROVIDERS.has(AI_CONFIG.provider) || usedFailsafe) {
+    if (CHOICE_PROVIDERS.has(AI_CONFIG.provider) || failoverOccurred) {
       completion = aiResponse.choices[0]?.message?.content || '';
     } else if (AI_CONFIG.provider === 'anthropic') {
       completion = aiResponse.content[0]?.text || '';
@@ -612,7 +614,7 @@ app.post('/process', async (c) => {
     logInfo('AI request completed successfully', { 
       userId, 
       duration, 
-      usedFailsafe,
+      failoverOccurred,
       tokensUsed: usage.totalTokens 
     });
 
@@ -620,18 +622,18 @@ app.post('/process', async (c) => {
       success: true,
       completion,
       usage,
-      usedFailsafe,
-      provider: usedFailsafe ? 'ollama' : AI_CONFIG.provider,
+      failoverOccurred,
+      provider: failoverOccurred ? 'ollama' : AI_CONFIG.provider,
       duration,
     });
 
   } catch (error) {
     const duration = Date.now() - requestStartTime;
-    logError('AI Handler Error', error, { duration, usedFailsafe });
+    logError('AI Handler Error', error, { duration, failoverOccurred });
     return c.json({
       error: 'Failed to process AI request',
       message: error instanceof Error ? error.message : 'Unknown error',
-      usedFailsafe,
+      failoverOccurred,
     }, 500);
   }
 });
