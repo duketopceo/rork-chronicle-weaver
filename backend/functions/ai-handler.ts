@@ -23,22 +23,35 @@ import { z } from 'zod';
 // Enhanced logging utility
 function logDebug(message: string, data?: any) {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [DEBUG] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  // Only format data in development mode for performance
+  const formattedData = process.env.NODE_ENV === 'development' && data 
+    ? JSON.stringify(data, null, 2) 
+    : (data ? JSON.stringify(data) : '');
+  console.log(`[${timestamp}] [DEBUG] ${message}`, formattedData);
 }
 
 function logInfo(message: string, data?: any) {
   const timestamp = new Date().toISOString();
-  console.info(`[${timestamp}] [INFO] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  const formattedData = process.env.NODE_ENV === 'development' && data 
+    ? JSON.stringify(data, null, 2) 
+    : (data ? JSON.stringify(data) : '');
+  console.info(`[${timestamp}] [INFO] ${message}`, formattedData);
 }
 
 function logWarn(message: string, data?: any) {
   const timestamp = new Date().toISOString();
-  console.warn(`[${timestamp}] [WARN] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  const formattedData = process.env.NODE_ENV === 'development' && data 
+    ? JSON.stringify(data, null, 2) 
+    : (data ? JSON.stringify(data) : '');
+  console.warn(`[${timestamp}] [WARN] ${message}`, formattedData);
 }
 
 function logError(message: string, error?: any, data?: any) {
   const timestamp = new Date().toISOString();
-  console.error(`[${timestamp}] [ERROR] ${message}`, data ? JSON.stringify(data, null, 2) : '', error);
+  const formattedData = process.env.NODE_ENV === 'development' && data 
+    ? JSON.stringify(data, null, 2) 
+    : (data ? JSON.stringify(data) : '');
+  console.error(`[${timestamp}] [ERROR] ${message}`, formattedData, error);
   if (error?.stack) {
     console.error('Stack trace:', error.stack);
   }
@@ -547,24 +560,30 @@ app.post('/process', async (c) => {
 
     // Call AI API with retry logic and Ollama failsafe
     const { result: aiResponse, usedFailsafe: failsafeUsed } = await retryWithBackoffAndFailsafe(async () => {
-      if (AI_CONFIG.provider === 'openai') {
-        return await callOpenAI(enhancedMessages);
-      } else if (AI_CONFIG.provider === 'anthropic') {
-        return await callAnthropic(enhancedMessages);
-      } else if (AI_CONFIG.provider === 'gemini') {
-        return await callGemini(enhancedMessages);
-      } else if (AI_CONFIG.provider === 'ollama') {
-        return await callOllama(enhancedMessages);
-      } else {
+      // Provider routing with improved maintainability
+      const providers = {
+        openai: callOpenAI,
+        anthropic: callAnthropic,
+        gemini: callGemini,
+        ollama: callOllama,
+      };
+      
+      const providerFn = providers[AI_CONFIG.provider as keyof typeof providers];
+      if (!providerFn) {
         throw new Error(`Unsupported AI provider: ${AI_CONFIG.provider}`);
       }
+      
+      return await providerFn(enhancedMessages);
     }, enhancedMessages);
 
     usedFailsafe = failsafeUsed;
 
     // Extract completion text
+    // Providers that return choices array: openai, gemini, ollama
+    const choiceProviders = new Set(['openai', 'gemini', 'ollama']);
     let completion: string;
-    if (AI_CONFIG.provider === 'openai' || AI_CONFIG.provider === 'gemini' || AI_CONFIG.provider === 'ollama' || usedFailsafe) {
+    
+    if (choiceProviders.has(AI_CONFIG.provider) || usedFailsafe) {
       completion = aiResponse.choices[0]?.message?.content || '';
     } else if (AI_CONFIG.provider === 'anthropic') {
       completion = aiResponse.content[0]?.text || '';

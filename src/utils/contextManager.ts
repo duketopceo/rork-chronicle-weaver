@@ -64,7 +64,7 @@ class ContextManager {
         characterName: gameState.character.name,
         turnCount: gameState.turnCount,
         health: gameState.character.stats.health,
-        wealth: gameState.character.stats.resources,
+        wealth: gameState.character.stats.resources, // Note: 'wealth' maps to 'resources' from game state
       },
       recentChoices: [],
       narrativeSummary: [],
