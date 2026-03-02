@@ -309,14 +309,11 @@ export default function GameSetupScreen() {
           </Text>
           <View style={styles.sliderContainer}>
             <CustomSlider
-              value={formData.difficulty}
+              value={typeof formData.difficulty === 'number' ? formData.difficulty : 0.5}
               onValueChange={(value) => handleInputChange('difficulty', value)}
               minimumValue={0}
               maximumValue={1}
               step={0.1}
-              thumbStyle={{ backgroundColor: colors.primary }}
-              trackStyle={{ backgroundColor: colors.border }}
-              minimumTrackTintColor={colors.primary}
             />
             <View style={styles.sliderLabels}>
               <Text style={styles.sliderLabel}>Hyper Real</Text>
@@ -372,8 +369,8 @@ export default function GameSetupScreen() {
             onPress={handleBeginChronicle}
             disabled={!isValid}
             style={
-              !isValid 
-                ? [styles.beginButton, styles.beginButtonDisabled] 
+              !isValid
+                ? { ...styles.beginButton, ...styles.beginButtonDisabled }
                 : styles.beginButton
             }
             textStyle={styles.beginButtonText}
