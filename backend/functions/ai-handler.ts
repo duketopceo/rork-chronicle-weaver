@@ -69,24 +69,12 @@ function generateCacheKey(messages: any[], userId: string): string {
  * Check if user has exceeded rate limits
  */
 function checkRateLimit(userId: string, subscriptionTier: string): boolean {
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:70',message:'checkRateLimit entry',data:{userId,subscriptionTier,validTiers:Object.keys(RATE_LIMITS)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   const now = Date.now();
   const userUsage = usageTracker.get(userId);
-  
-  // #region agent log
-  if (!(subscriptionTier in RATE_LIMITS)) {
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:76',message:'Invalid subscription tier',data:{subscriptionTier,validTiers:Object.keys(RATE_LIMITS)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  }
-  // #endregion
   
   if (!userUsage) {
     const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
     usageTracker.set(userId, { count: 1, resetTime: now + rateLimit.windowMs });
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:81',message:'Rate limit initialized',data:{userId,subscriptionTier,resetTime:now + rateLimit.windowMs},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return true;
   }
 
@@ -101,9 +89,6 @@ function checkRateLimit(userId: string, subscriptionTier: string): boolean {
   const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
   const limit = rateLimit.daily;
   if (userUsage.count >= limit) {
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:89',message:'Rate limit exceeded',data:{userId,subscriptionTier,count:userUsage.count,limit},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return false;
   }
 
@@ -221,14 +206,7 @@ async function callOllama(messages: any[]): Promise<any> {
  * Call Google Gemini API
  */
 async function callGemini(messages: any[]): Promise<any> {
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:150',message:'callGemini entry',data:{messageCount:messages.length,hasApiKey:!!AI_CONFIG.apiKey,model:AI_CONFIG.model},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-  
   if (!AI_CONFIG.apiKey) {
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:155',message:'Missing AI_API_KEY',data:{provider:AI_CONFIG.provider},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
     throw new Error('AI_API_KEY is not configured');
   }
   
@@ -238,15 +216,7 @@ async function callGemini(messages: any[]): Promise<any> {
     parts: [{ text: msg.content }]
   }));
   
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:163',message:'Gemini message conversion',data:{originalCount:messages.length,convertedCount:geminiMessages.length,firstMessageRole:geminiMessages[0]?.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_CONFIG.model}:generateContent?key=${AI_CONFIG.apiKey}`;
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:170',message:'Gemini API request',data:{url:url.replace(AI_CONFIG.apiKey,'[REDACTED]'),model:AI_CONFIG.model},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
   
   const response = await fetch(url, {
     method: 'POST',
@@ -264,18 +234,11 @@ async function callGemini(messages: any[]): Promise<any> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:178',message:'Gemini API error',data:{status:response.status,statusText:response.statusText,errorText:errorText.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
   const data = await response.json();
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:185',message:'Gemini API response',data:{hasCandidates:!!data.candidates,candidateCount:data.candidates?.length,hasContent:!!data.candidates?.[0]?.content?.parts?.[0]?.text},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-  
+
   // Transform Gemini response to match expected format
   return {
     choices: [{
@@ -350,9 +313,6 @@ app.post('/process', async (c) => {
     }
 
     // Check rate limits
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/dead119f-f43b-4b6c-98f2-917f26109bf6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ai-handler.ts:256',message:'Checking rate limit',data:{userId,subscriptionTier},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     if (!checkRateLimit(userId, subscriptionTier)) {
       const rateLimit = RATE_LIMITS[subscriptionTier as keyof typeof RATE_LIMITS] || RATE_LIMITS.free;
       return c.json({ 

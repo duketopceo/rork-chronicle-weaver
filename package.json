@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "description": "A historical role-playing game with AI-powered narrative generation",
-  "author": "Rork <duketopceo@gmail.com>",
+  "author": "Luke Kimball",
   "license": "Private",
   "scripts": {
     "start": "expo start",

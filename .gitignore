@@ -141,6 +141,13 @@ ui-debug.log
 expo-env.d.ts
 web-build/
 
+# IDE and dev tool configs
+.claude/
+.cursorrules
+
+# Scratch/temp development files
+jules-scratch/
+
 # Important: Keep documentation and context files
 !PROJECT_CONTEXT.md
 !CODE_DOCUMENTATION.md
