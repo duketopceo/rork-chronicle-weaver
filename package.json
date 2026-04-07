@@ -38,7 +38,7 @@
     "@trpc/server": "^11.8.0",
     "expo": "^53.0.12",
     "expo-blur": "~14.1.4",
-    "expo-constants": "~17.1.4",
+    "expo-constants": "~55.0.9",
     "expo-font": "~13.3.0",
     "expo-haptics": "~14.1.4",
     "expo-image": "^2.3.0",
