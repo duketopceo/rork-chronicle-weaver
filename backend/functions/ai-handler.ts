@@ -476,6 +476,20 @@ app.post('/cache/clear', async (c) => {
 });
 
 /**
+ * Proxy available Ollama models to avoid CORS issues on web clients
+ */
+app.get('/api/models', async (c) => {
+  try {
+    const res = await fetch(`${AI_CONFIG.ollamaBaseUrl}/api/tags`);
+    if (!res.ok) return c.json({ models: [] }, 200);
+    const data = await res.json();
+    return c.json({ models: data.models ?? [] });
+  } catch {
+    return c.json({ models: [] }, 200);
+  }
+});
+
+/**
  * Health check
  */
 app.get('/health', async (c) => {
