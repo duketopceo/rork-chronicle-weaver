@@ -1,3 +1,16 @@
+# rork-chronicle-weaver — Agent Instructions
+
+## Gospel Rules
+
+**READ FIRST**: All agents and contributors must follow [luke-agents](https://github.com/duketopceo/luke-agents) — Karpathy principles, code standards, testing, security, guardrails, integrations, and deployment patterns. That repo is the source of truth.
+
+**Precedence**:
+1. `luke-agents` (gospel)
+2. This `CLAUDE.md` (repo-specific overrides)
+3. Runtime agent instructions
+
+---
+
 # CLAUDE.md
 
 Behavioral guidelines to reduce common LLM coding mistakes. Derived from Andrej Karpathy's observations on LLM coding pitfalls.
