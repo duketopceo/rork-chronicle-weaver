@@ -24,7 +24,7 @@ All code has been committed locally and is ready for deployment:
 **You need to authenticate and push manually:**
 
 ```bash
-cd /Users/lukekimball/Documents/GitHub/rork-chronicle-weaver
+cd /Users/lukekimball/Documents/GitHub/projects/rork-chronicle-weaver
 
 # Option 1: Use GitHub CLI (if installed)
 gh auth login
