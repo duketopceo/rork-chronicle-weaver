@@ -32,6 +32,7 @@ import { useGameStore } from "../store/gameStore";
 import { fetchFromFirebaseFunction, auth } from "./firebaseUtils";
 import { getAuth } from "firebase/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { modelRouter } from "./ai/ModelRouter";
 
 /**
  * Content Part Type
@@ -297,6 +298,16 @@ const parseAIResponse = (rawResponse: string): any => {
     throw new Error(`Failed to parse AI response: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
+
+/**
+ * Returns the ModelRouter singleton, initialised with the current processAIRequest function.
+ * Call this once at app startup (or lazily) to enable Ollama auto-detection.
+ */
+export async function initModelRouter(): Promise<void> {
+  await modelRouter.init(processAIRequest);
+}
+
+export { modelRouter as getModelRouter };
 
 export async function processKronosMessage(gameState: GameState, message: string): Promise<string> {
   try {

@@ -206,12 +206,7 @@ export default function RootLayout() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      setUser({
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-      });
+      setUser(user);
       logStep('AUTH', `User signed in: ${user.email}`, 'success');
     } catch (error) {
       logError(error as Error, 'Google Sign In', 'high');

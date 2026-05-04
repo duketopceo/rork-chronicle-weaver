@@ -25,6 +25,7 @@ export type GameSegment = {
   audioUrl?: string; // Optional URL for background audio
   consequences?: string[]; // Consequences of the previous choice
   isEnding?: boolean; // Whether this segment concludes the story
+  customChoiceEnabled?: boolean; // Whether to show the custom choice input
 };
 
 /** Character statistics and attributes. */

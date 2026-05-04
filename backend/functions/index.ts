@@ -31,10 +31,10 @@ setGlobalOptions({
 });
 
 // Import the Hono server
-import { api } from './hono';
+import { api as honoApp } from './hono';
 
 // Import AI handler
-import aiHandler from './ai-handler';
+import aiHandlerApp from './ai-handler';
 
 // === MAIN API FUNCTION ===
 // Exports the Hono server as a Firebase Function
@@ -42,7 +42,7 @@ export const api = onRequest({
   memory: '2GiB',
   timeoutSeconds: 540,
   cors: true,
-}, api);
+}, honoApp);
 
 // === AI HANDLER FUNCTION ===
 // Dedicated function for AI processing
@@ -50,7 +50,7 @@ export const aiHandler = onRequest({
   memory: '2GiB',
   timeoutSeconds: 540,
   cors: true,
-}, aiHandler);
+}, aiHandlerApp);
 
 // === STRIPE WEBHOOK FUNCTION ===
 // Handles Stripe webhook events for subscription updates
@@ -70,7 +70,8 @@ export const stripeWebhooks = onRequest({
       event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
-      return res.status(400).send('Webhook signature verification failed');
+      res.status(400).send('Webhook signature verification failed');
+      return;
     }
 
     const db = getFirestore();
@@ -307,10 +308,10 @@ export const cleanupOldGames = onDocumentUpdated(
   async (event) => {
     const db = getFirestore();
     const userId = event.params.userId;
-    const userData = event.data.after.data();
+    const userData = event.data?.after.data();
     
     // Only cleanup for free users with old games
-    if (userData.subscriptionTier === 'free') {
+    if (userData?.subscriptionTier === 'free') {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 days ago
       

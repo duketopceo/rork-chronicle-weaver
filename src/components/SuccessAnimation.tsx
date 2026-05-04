@@ -90,13 +90,13 @@ export default function SuccessAnimation({
   const getIcon = () => {
     switch (type) {
       case 'save':
-        return <CheckCircle size={64} color={colors.accent.success} />;
+        return <CheckCircle size={64} color={colors.success} />;
       case 'achievement':
-        return <Star size={64} color={colors.accent.warning} />;
+        return <Star size={64} color={colors.warning} />;
       case 'levelup':
         return <Crown size={64} color={colors.primary} />;
       default:
-        return <CheckCircle size={64} color={colors.accent.success} />;
+        return <CheckCircle size={64} color={colors.success} />;
     }
   };
 
