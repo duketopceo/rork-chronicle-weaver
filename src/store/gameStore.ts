@@ -26,6 +26,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "../types/game";
 import { gameDataService } from "../services/gameDataService";
+import { supabaseService } from "../services/supabaseService";
 import { analyticsService } from "../services/analyticsService";
 
 /** Minimum character name length for validation. */
@@ -35,6 +36,7 @@ const MIN_CHARACTER_NAME_LENGTH = 2;
 function clampStat(value: number): number {
   return Math.max(0, Math.min(100, value));
 }
+const useSupabase = process.env.EXPO_PUBLIC_USE_SUPABASE === 'true';
 
 /**
  * Game Store Interface
@@ -240,7 +242,9 @@ export const useGameStore = create<GameStore>()(
       loadGameById: async (gameId: string) => {
         try {
           set({ isLoading: true, error: null });
-          const loaded = await gameDataService.loadGame(gameId);
+          const loaded = useSupabase
+            ? await supabaseService.loadGame(gameId)
+            : await gameDataService.loadGame(gameId);
           if (!loaded) {
             set({ isLoading: false, error: "Saved game not found" });
             return false;
@@ -264,7 +268,9 @@ export const useGameStore = create<GameStore>()(
             return false;
           }
           set({ isLoading: true, error: null });
-          const games = await gameDataService.listGames(userId);
+          const games = useSupabase
+            ? await supabaseService.listGames(userId)
+            : await gameDataService.listGames(userId);
           if (!games || games.length === 0) {
             set({ isLoading: false, error: "No saved games found" });
             return false;
@@ -283,7 +289,9 @@ export const useGameStore = create<GameStore>()(
       deleteGameById: async (gameId: string) => {
         try {
           set({ isLoading: true, error: null });
-          const ok = await gameDataService.deleteGame(gameId);
+          const ok = useSupabase
+            ? await supabaseService.deleteGame(gameId)
+            : await gameDataService.deleteGame(gameId);
           if (ok) {
             const current = get().currentGame;
             if (current?.id === gameId) {

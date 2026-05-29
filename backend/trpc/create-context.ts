@@ -36,7 +36,7 @@ export interface Context {
     email: string | null;
     isAnonymous: boolean;
   } | null;
-  db: FirebaseFirestore.Firestore;
+  db: any;
   auth: any;
   req: Request;
 }

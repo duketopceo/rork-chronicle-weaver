@@ -331,7 +331,7 @@ class StripeService {
       useGameStore.getState().setSubscription({
         plan: status.tier,
         status: status.status,
-        current_period_end: status.currentPeriodEnd?.getTime() / 1000,
+        current_period_end: (status.currentPeriodEnd?.getTime() ?? 0) / 1000,
       });
 
     } catch (error) {

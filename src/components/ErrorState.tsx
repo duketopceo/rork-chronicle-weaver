@@ -54,7 +54,7 @@ export default function ErrorState({
           icon: Server,
           defaultTitle: 'Server Error',
           defaultMessage: 'Something went wrong on our end. Please try again later.',
-          iconColor: colors.accent.error,
+          iconColor: colors.error,
         };
       case 'validation':
         return {
@@ -68,14 +68,14 @@ export default function ErrorState({
           icon: Shield,
           defaultTitle: 'Authentication Error',
           defaultMessage: 'Please sign in again to continue.',
-          iconColor: colors.accent.error,
+          iconColor: colors.error,
         };
       default:
         return {
           icon: AlertCircle,
           defaultTitle: 'Something Went Wrong',
           defaultMessage: 'An unexpected error occurred. Please try again.',
-          iconColor: colors.accent.error,
+          iconColor: colors.error,
         };
     }
   };
@@ -99,7 +99,6 @@ export default function ErrorState({
               title={retryText}
               onPress={onRetry}
               style={styles.retryButton}
-              icon={<RefreshCw size={16} color={colors.background} />}
             />
             {onDismiss && (
               <Button

@@ -132,7 +132,7 @@ const gameRouter = router({
           });
         }
 
-        const gameData = gameDoc.data();
+        const gameData = gameDoc.data()!;
         if (gameData.userId !== ctx.user.uid) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -251,7 +251,7 @@ const gameRouter = router({
           });
         }
 
-        const gameData = gameDoc.data();
+        const gameData = gameDoc.data()!;
         if (gameData.userId !== ctx.user.uid) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -290,7 +290,7 @@ const gameRouter = router({
           });
         }
 
-        const gameData = gameDoc.data();
+        const gameData = gameDoc.data()!;
         if (gameData.userId !== ctx.user.uid) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -302,7 +302,7 @@ const gameRouter = router({
         const turnsSnapshot = await ctx.db.collection('games').doc(input.gameId)
           .collection('turns').orderBy('turnNumber', 'desc').limit(10).get();
         
-        const turns = turnsSnapshot.docs.map(doc => doc.data());
+        const turns = turnsSnapshot.docs.map((doc: any) => doc.data());
 
         return {
           game: gameData,
@@ -327,7 +327,7 @@ const gameRouter = router({
           .orderBy('lastPlayedAt', 'desc')
           .get();
 
-        const games = gamesSnapshot.docs.map(doc => ({
+        const games = gamesSnapshot.docs.map((doc: any) => ({
           id: doc.id,
           ...doc.data(),
         }));
@@ -357,7 +357,7 @@ const gameRouter = router({
           });
         }
 
-        const gameData = gameDoc.data();
+        const gameData = gameDoc.data()!;
         if (gameData.userId !== ctx.user.uid) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -372,7 +372,7 @@ const gameRouter = router({
         // Delete turns subcollection
         const turnsSnapshot = await ctx.db.collection('games').doc(input.gameId)
           .collection('turns').get();
-        turnsSnapshot.docs.forEach(doc => batch.delete(doc.ref));
+        turnsSnapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
         
         await batch.commit();
 
@@ -549,7 +549,7 @@ const billingRouter = router({
         const usageDoc = await ctx.db.collection('users').doc(ctx.user.uid)
           .collection('usage').doc(today).get();
         
-        const currentUsage = usageDoc.exists ? usageDoc.data() : { aiCalls: 0, gameSaves: 0 };
+        const currentUsage = usageDoc.exists ? usageDoc.data()! : { aiCalls: 0, gameSaves: 0 };
         
         const newUsage = {
           ...currentUsage,

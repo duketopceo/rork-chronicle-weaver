@@ -213,7 +213,7 @@ async function callAnthropic(messages: any[]): Promise<any> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'x-api-key': AI_CONFIG.apiKey,
+        'x-api-key': AI_CONFIG.apiKey ?? '',
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
       },
@@ -674,6 +674,20 @@ app.post('/cache/clear', async (c) => {
 });
 
 /**
+ * Proxy available Ollama models to avoid CORS issues on web clients
+ */
+app.get('/api/models', async (c) => {
+  try {
+    const res = await fetch(`${AI_CONFIG.ollamaBaseUrl}/api/tags`);
+    if (!res.ok) return c.json({ models: [] }, 200);
+    const data = await res.json();
+    return c.json({ models: data.models ?? [] });
+  } catch {
+    return c.json({ models: [] }, 200);
+  }
+});
+
+/**
  * Health check
  */
 app.get('/health', async (c) => {
@@ -688,4 +702,3 @@ app.get('/health', async (c) => {
 });
 
 export default app;
-
