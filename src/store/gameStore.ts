@@ -26,7 +26,17 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GameState, GameSetupState, GameSegment, Memory, LoreEntry, Character, CharacterStats, InventoryItem, WorldSystems, ChronosMessage } from "../types/game";
 import { gameDataService } from "../services/gameDataService";
+import { supabaseService } from "../services/supabaseService";
 import { analyticsService } from "../services/analyticsService";
+
+/** Minimum character name length for validation. */
+const MIN_CHARACTER_NAME_LENGTH = 2;
+
+/** Clamp a stat value to the valid 0–100 range. */
+function clampStat(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+const useSupabase = process.env.EXPO_PUBLIC_USE_SUPABASE === 'true';
 
 /**
  * Game Store Interface
@@ -156,6 +166,12 @@ export const useGameStore = create<GameStore>()(
           return;
         }
 
+        if (characterName.trim().length < MIN_CHARACTER_NAME_LENGTH) {
+          console.error("[GameStore] ❌ Character name too short");
+          set({ error: "Character name must be at least 2 characters" });
+          return;
+        }
+
         const defaultStats: CharacterStats = {
           health: 100,
           strength: 5,
@@ -226,7 +242,9 @@ export const useGameStore = create<GameStore>()(
       loadGameById: async (gameId: string) => {
         try {
           set({ isLoading: true, error: null });
-          const loaded = await gameDataService.loadGame(gameId);
+          const loaded = useSupabase
+            ? await supabaseService.loadGame(gameId)
+            : await gameDataService.loadGame(gameId);
           if (!loaded) {
             set({ isLoading: false, error: "Saved game not found" });
             return false;
@@ -250,7 +268,9 @@ export const useGameStore = create<GameStore>()(
             return false;
           }
           set({ isLoading: true, error: null });
-          const games = await gameDataService.listGames(userId);
+          const games = useSupabase
+            ? await supabaseService.listGames(userId)
+            : await gameDataService.listGames(userId);
           if (!games || games.length === 0) {
             set({ isLoading: false, error: "No saved games found" });
             return false;
@@ -269,7 +289,9 @@ export const useGameStore = create<GameStore>()(
       deleteGameById: async (gameId: string) => {
         try {
           set({ isLoading: true, error: null });
-          const ok = await gameDataService.deleteGame(gameId);
+          const ok = useSupabase
+            ? await supabaseService.deleteGame(gameId)
+            : await gameDataService.deleteGame(gameId);
           if (ok) {
             const current = get().currentGame;
             if (current?.id === gameId) {
@@ -291,6 +313,7 @@ export const useGameStore = create<GameStore>()(
 
         if (!currentGame) {
           console.error("[GameStore] ❌ No current game to make a choice");
+          set({ error: "No active game session" });
           return;
         }
 
@@ -302,6 +325,13 @@ export const useGameStore = create<GameStore>()(
           return;
         }
 
+        // Validate choiceId is non-empty
+        if (!choiceId || choiceId.trim().length === 0) {
+          console.error("[GameStore] ❌ Invalid choice ID");
+          set({ error: "Invalid choice" });
+          return;
+        }
+
         // Proceed with choice logic
         console.log(`[GameStore] ✅ Making choice: ${choiceId}`);
 
@@ -310,7 +340,7 @@ export const useGameStore = create<GameStore>()(
           turnCount: currentGame.turnCount + 1,
         };
 
-        set({ currentGame: updatedGame });
+        set({ currentGame: updatedGame, error: null });
       },
 
       updateGameSegment: (segment) => set((state) => {
@@ -392,6 +422,12 @@ export const useGameStore = create<GameStore>()(
 
         console.log("[GameStore] 📊 Updating character stats:", stats);
 
+        // Clamp all incoming stat values to 0–100
+        const clampedEntries = Object.entries(stats).flatMap(([key, value]) =>
+          typeof value === 'number' ? [[key, clampStat(value)] as const] : []
+        );
+        const clampedStats = Object.fromEntries(clampedEntries) as Partial<CharacterStats>;
+
         return {
           currentGame: {
             ...state.currentGame,
@@ -399,7 +435,7 @@ export const useGameStore = create<GameStore>()(
               ...state.currentGame.character,
               stats: {
                 ...state.currentGame.character.stats,
-                ...stats
+                ...clampedStats
               }
             },
           }

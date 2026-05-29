@@ -43,7 +43,8 @@
   "exclude": [
     "node_modules",
     "dist",
-    "build"
+    "build",
+    "backend/**"
   ],
   "extends": "expo/tsconfig.base"
 }

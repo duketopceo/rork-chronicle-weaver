@@ -17,7 +17,6 @@ import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/fire
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -31,10 +30,10 @@ setGlobalOptions({
 });
 
 // Import the Hono server
-import { api } from './hono';
+import { api as honoApp } from './hono';
 
 // Import AI handler
-import aiHandler from './ai-handler';
+import aiHandlerApp from './ai-handler';
 
 // === MAIN API FUNCTION ===
 // Exports the Hono server as a Firebase Function
@@ -42,7 +41,7 @@ export const api = onRequest({
   memory: '2GiB',
   timeoutSeconds: 540,
   cors: true,
-}, api);
+}, honoApp);
 
 // === AI HANDLER FUNCTION ===
 // Dedicated function for AI processing
@@ -50,7 +49,7 @@ export const aiHandler = onRequest({
   memory: '2GiB',
   timeoutSeconds: 540,
   cors: true,
-}, aiHandler);
+}, aiHandlerApp);
 
 // === STRIPE WEBHOOK FUNCTION ===
 // Handles Stripe webhook events for subscription updates
@@ -60,7 +59,8 @@ export const stripeWebhooks = onRequest({
   cors: true,
 }, async (req, res) => {
   try {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -70,38 +70,44 @@ export const stripeWebhooks = onRequest({
       event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
-      return res.status(400).send('Webhook signature verification failed');
+      res.status(400).send('Webhook signature verification failed');
+      return;
     }
 
     const db = getFirestore();
 
     // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object;
         await handleCheckoutCompleted(session, db);
         break;
+      }
 
       case 'customer.subscription.created':
-      case 'customer.subscription.updated':
+      case 'customer.subscription.updated': {
         const subscription = event.data.object;
         await handleSubscriptionUpdate(subscription, db);
         break;
+      }
 
-      case 'customer.subscription.deleted':
+      case 'customer.subscription.deleted': {
         const deletedSubscription = event.data.object;
         await handleSubscriptionDeleted(deletedSubscription, db);
         break;
+      }
 
-      case 'invoice.payment_succeeded':
+      case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
         await handlePaymentSucceeded(invoice, db);
         break;
+      }
 
-      case 'invoice.payment_failed':
+      case 'invoice.payment_failed': {
         const failedInvoice = event.data.object;
         await handlePaymentFailed(failedInvoice, db);
         break;
+      }
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
@@ -307,10 +313,10 @@ export const cleanupOldGames = onDocumentUpdated(
   async (event) => {
     const db = getFirestore();
     const userId = event.params.userId;
-    const userData = event.data.after.data();
+    const userData = event.data?.after.data();
     
     // Only cleanup for free users with old games
-    if (userData.subscriptionTier === 'free') {
+    if (userData?.subscriptionTier === 'free') {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 days ago
       
@@ -333,5 +339,4 @@ export const cleanupOldGames = onDocumentUpdated(
     }
   }
 );
-
 

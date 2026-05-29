@@ -71,7 +71,7 @@ class AnalyticsService {
         console.warn('[Analytics] Analytics not available (SSR)');
         return;
       }
-      setUserProperties(analytics, properties);
+      setUserProperties(analytics, properties as any);
       console.log('[Analytics] User properties set:', properties);
     } catch (error) {
       console.error('[Analytics] Failed to set user properties:', error);

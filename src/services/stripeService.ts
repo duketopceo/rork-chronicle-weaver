@@ -95,6 +95,10 @@ class StripeService {
         throw new Error('Failed to create checkout session');
       }
 
+      if (!result.url) {
+        throw new Error('Checkout session URL was not returned');
+      }
+
       return {
         sessionId: result.sessionId,
         url: result.url,
@@ -331,7 +335,7 @@ class StripeService {
       useGameStore.getState().setSubscription({
         plan: status.tier,
         status: status.status,
-        current_period_end: status.currentPeriodEnd?.getTime() / 1000,
+        current_period_end: (status.currentPeriodEnd?.getTime() ?? 0) / 1000,
       });
 
     } catch (error) {
@@ -353,4 +357,3 @@ export const stripeService = new StripeService();
 
 // Initialize on module load
 stripeService.initialize().catch(console.error);
-

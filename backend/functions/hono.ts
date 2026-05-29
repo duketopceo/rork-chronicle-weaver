@@ -22,8 +22,6 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { secureHeaders } from 'hono/secure-headers';
-import { rateLimiter } from 'hono/rate-limiter';
-import { onError } from 'hono/on-error';
 import { HTTPException } from 'hono/http-exception';
 
 // Import tRPC router and integration
@@ -68,30 +66,22 @@ if (process.env.NODE_ENV === 'development') {
   app.use('*', prettyJSON());
 }
 
-// Rate limiting
-app.use('*', rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: 'draft-6',
-  legacyHeaders: false,
-}));
-
 // Error handling middleware
-app.onError(onError((err, c) => {
+app.onError((err: Error, c) => {
   console.error('Server Error:', err);
-  
+
   if (err instanceof HTTPException) {
     return c.json({
       error: err.message,
       status: err.status
     }, err.status);
   }
-  
+
   return c.json({
     error: 'Internal Server Error',
     status: 500
   }, 500);
-}));
+});
 
 // === HEALTH CHECK ENDPOINT ===
 app.get('/health', (c) => {
@@ -121,10 +111,6 @@ app.all('/api/trpc/*', async (c) => {
         : undefined,
   });
 });
-
-// === API VERSIONING ===
-// Legacy API routes for backward compatibility
-app.route('/api/v1', appRouter);
 
 // === ROOT ENDPOINT ===
 app.get('/', (c) => {
