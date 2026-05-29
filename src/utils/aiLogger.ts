@@ -40,7 +40,7 @@ class AILogger {
   private sessionId: string;
 
   private constructor() {
-    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    this.sessionId = `session_${Date.now()}_${this.generateSessionSuffix()}`;
     this.log(LogLevel.INFO, 'AILogger initialized', { sessionId: this.sessionId });
   }
 
@@ -54,6 +54,19 @@ class AILogger {
   public setLogLevel(level: LogLevel): void {
     this.logLevel = level;
     this.log(LogLevel.INFO, `Log level set to ${LogLevel[level]}`);
+  }
+
+  private generateSessionSuffix(): string {
+    if (globalThis.crypto?.randomUUID) {
+      return globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 9);
+    }
+
+    if (globalThis.crypto?.getRandomValues) {
+      const values = globalThis.crypto.getRandomValues(new Uint32Array(2));
+      return Array.from(values, value => value.toString(36)).join('').slice(0, 9);
+    }
+
+    return Date.now().toString(36);
   }
 
   private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
