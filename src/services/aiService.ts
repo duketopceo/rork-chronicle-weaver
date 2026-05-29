@@ -10,6 +10,9 @@
  * - Character personality and behavior modeling
  * - Dynamic world state management
  * - Performance metrics and error handling
+ * - Comprehensive logging and debugging
+ * - Context management for conversation continuity
+ * - Ollama failsafe for redundancy
  * 
  * Referenced by: 
  * - src/app/game/play.tsx (main game loop)
@@ -22,8 +25,10 @@
  * - src/types/global.d.ts (ChronicleDebugState, ApiCompletion types)
  * - src/store/gameStore.ts (game state management)
  * - src/services/firebaseUtils.ts (cloud function calls)
+ * - src/utils/aiLogger.ts (AI logging utility)
+ * - src/utils/contextManager.ts (Context management utility)
  * 
- * Last updated: 2025-06-24
+ * Last updated: 2025-02-15
  */
 
 import { GameState, GameChoice, GameSegment, InventoryItem, PoliticalFaction, LoreEntry, Memory, GameSetupState, PerformanceMetrics } from "../types/game";
@@ -32,6 +37,8 @@ import { useGameStore } from "../store/gameStore";
 import { fetchFromFirebaseFunction, auth } from "./firebaseUtils";
 import { getAuth } from "firebase/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { aiLogger, logAIDebug, logAIInfo, logAIWarn, logAIError } from "../utils/aiLogger";
+import { contextManager } from "../utils/contextManager";
 
 /**
  * Content Part Type
@@ -130,13 +137,14 @@ function ensureDebugState(): ChronicleDebugState {
   return g.__CHRONICLE_DEBUG__;
 }
 
-// --- Logging utilities ---
+// --- Logging utilities (using aiLogger) ---
 function logDebug(message: string, ...optionalParams: any[]) {
-  console.debug(message, ...optionalParams);
+  logAIDebug(message, { details: optionalParams });
 }
 
 function logError(message: string, ...optionalParams: any[]) {
-  console.error(message, ...optionalParams);
+  const error = optionalParams.find(p => p instanceof Error);
+  logAIError(message, { details: optionalParams.filter(p => !(p instanceof Error)) }, error);
 }
 
 // Enhanced global debug state for tracking
@@ -299,8 +307,13 @@ const parseAIResponse = (rawResponse: string): any => {
 };
 
 export async function processKronosMessage(gameState: GameState, message: string): Promise<string> {
+  const sessionId = `game_${gameState.character.id || Date.now()}`;
+  
   try {
-    logDebug("Processing Kronos message:", message);
+    logAIInfo('Processing Kronos message', { sessionId, message: message.substring(0, 100) });
+
+    // Get or create context
+    contextManager.getOrCreateContext(sessionId, gameState);
 
     const systemPrompt = `You are Kronos, the Weaver of Chronicles, the AI storyteller managing an interactive chronicle in Chronicle Weaver. The player is communicating directly with you to request changes, improvements, or clarifications about their story world.
 
@@ -323,20 +336,30 @@ Respond as Kronos in a helpful, knowledgeable way. Acknowledge their request and
       { role: "user", content: message }
     ];
 
-    logDebug("Sending Kronos message to API...");
+    // Add user message to context
+    contextManager.addUserMessage(sessionId, message);
+
+    logAIDebug('Sending Kronos message to API', { sessionId });
 
     // Use retry logic for API call
     const response = await retryApiCall(async () => {
+      // Get formatted context
+      const formattedContext = contextManager.getFormattedContext(sessionId, gameState);
       // Route through secure Firebase Function
-      return await processAIRequest({ messages });
+      return await processAIRequest({ messages, context: formattedContext });
     });
 
     const data = await response.json();
-    logDebug("Kronos response received");
+    logAIInfo('Kronos response received', { sessionId, hasCompletion: !!data.completion });
 
-    return data.completion || "I apologize, but I am having trouble responding right now. Please try again later.";
+    const completion = data.completion || "I apologize, but I am having trouble responding right now. Please try again later.";
+    
+    // Add assistant response to context
+    contextManager.addAssistantMessage(sessionId, completion);
+
+    return completion;
   } catch (error) {
-    logError("Error processing Kronos message:", error);
+    logAIError('Error processing Kronos message', { sessionId }, error instanceof Error ? error : undefined);
     // Re-throw the error to be handled by the UI layer
     throw new Error(`Failed to process message to Kronos: ${isError(error) ? error.message : 'Unknown error'}`);
   }
@@ -378,13 +401,16 @@ async function enforceTurnLimit() {
 }
 
 async function processAIRequest(requestPayload: any) {
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  logAIInfo('Processing AI request', { requestId, hasMessages: !!requestPayload.messages });
+  
   try {
     // Check if user is authenticated
     const authInstance = getAuth();
     const user = authInstance.currentUser;
 
     if (!user) {
-      console.log("User not authenticated, redirecting to sign-in...");
+      logAIWarn('User not authenticated', { requestId });
       // Store the current path to redirect back after sign-in
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('returnUrl', window.location.pathname);
@@ -416,21 +442,29 @@ async function processAIRequest(requestPayload: any) {
       messages: requestPayload.messages || [],
       userId: user.uid,
       subscriptionTier,
+      context: requestPayload.context, // Include context if provided
       ...requestPayload,
     };
 
-    console.log("Processing AI request with payload:", { 
+    logAIDebug('AI request prepared', { 
+      requestId,
       backendUrl, 
       useDockerBackend,
-      userId: user.uid 
+      userId: user.uid,
+      subscriptionTier,
+      messageCount: payloadWithUser.messages.length,
+      hasContext: !!payloadWithUser.context,
     });
 
+    const startTime = Date.now();
     let response: Response;
 
     if (useDockerBackend) {
       // Call Docker backend AI handler
       const idToken = await user.getIdToken();
       const aiHandlerUrl = `${backendUrl}/ai/process`;
+      
+      logAIDebug('Calling Docker backend', { requestId, url: aiHandlerUrl });
       
       response = await fetch(aiHandlerUrl, {
         method: 'POST',
@@ -441,6 +475,8 @@ async function processAIRequest(requestPayload: any) {
         body: JSON.stringify(payloadWithUser),
       });
 
+      const duration = Date.now() - startTime;
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorData;
@@ -449,14 +485,30 @@ async function processAIRequest(requestPayload: any) {
         } catch {
           errorData = { error: errorText };
         }
+        logAIError('Backend returned error', { requestId, status: response.status, duration }, new Error(errorData.message || errorData.error));
         throw new Error(errorData.message || errorData.error || `Backend error: ${response.status}`);
       }
+      
+      logAIInfo('Backend response received', { requestId, duration, status: response.status });
     } else {
       // Route AI request through Firebase Functions (legacy)
+      logAIDebug('Calling Firebase Functions', { requestId });
       response = await fetchFromFirebaseFunction("processAIRequest", payloadWithUser);
+      const duration = Date.now() - startTime;
+      logAIInfo('Firebase Functions response received', { requestId, duration });
     }
 
     const data = await response.json();
+    
+    // Log response details
+    logAIDebug('Response data parsed', { 
+      requestId,
+      hasCompletion: !!data.completion,
+      hasError: !!data.error,
+      usedFailsafe: data.usedFailsafe,
+      provider: data.provider,
+      cached: data.cached,
+    });
     
     // Handle both response formats
     if (data.completion) {
@@ -467,7 +519,7 @@ async function processAIRequest(requestPayload: any) {
 
     return { json: () => Promise.resolve(data) };
   } catch (error) {
-    console.error("Error in processAIRequest:", error);
+    logAIError('Error in processAIRequest', { requestId }, error instanceof Error ? error : new Error(String(error)));
 
     // Handle specific error cases
     if (error instanceof Error) {
@@ -489,8 +541,19 @@ async function processAIRequest(requestPayload: any) {
 
 export async function generateInitialStory(gameState: GameState, gameSetup: GameSetupState): Promise<{ backstory: string, firstSegment: GameSegment }> {
   const startTime = Date.now();
+  const sessionId = `game_${gameState.character.id || Date.now()}`;
 
   try {
+    logAIInfo('Generating initial story', { 
+      sessionId, 
+      era: gameSetup.era, 
+      theme: gameSetup.theme,
+      characterName: gameSetup.characterName 
+    });
+    
+    // Initialize context for this game session
+    const context = contextManager.getOrCreateContext(sessionId, gameState);
+    
     // Check for Gemini API Key
     const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
@@ -525,10 +588,13 @@ The choices should be meaningful and distinct.`;
 
     const userPrompt = `Create a new chronicle for a character named ${gameSetup.characterName} in the ${gameSetup.era} era.`;
 
+    // Add to context
+    contextManager.addUserMessage(sessionId, userPrompt);
+
     let response;
 
     if (apiKey) {
-      logDebug("Using Gemini API for initial story generation");
+      logAIDebug('Using Gemini API for initial story generation', { sessionId });
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -536,27 +602,38 @@ The choices should be meaningful and distinct.`;
       const text = result.response.text();
       response = parseAIResponse(text);
     } else {
-      logDebug("Using Firebase Function for initial story generation");
+      logAIDebug('Using Firebase Function for initial story generation', { sessionId });
       const messages: CoreMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ];
 
       const apiResponse = await retryApiCall(async () => {
-        return await processAIRequest({ messages });
+        // Get formatted context for the request
+        const formattedContext = contextManager.getFormattedContext(sessionId, gameState);
+        return await processAIRequest({ messages, context: formattedContext });
       });
 
       response = await apiResponse.json();
       if (response.completion) {
+        // Add AI response to context
+        contextManager.addAssistantMessage(sessionId, response.completion);
         response = parseAIResponse(response.completion);
       }
     }
 
     if (!validateAIResponse(response, true)) {
+      logAIError('Invalid AI response format', { sessionId });
       throw new Error("Invalid AI response format");
     }
 
+    // Add narrative summary to context
+    contextManager.addNarrativeSummary(sessionId, response.backstory);
+
     updatePerformanceMetrics(Date.now() - startTime);
+
+    const duration = Date.now() - startTime;
+    logAIInfo('Initial story generated successfully', { sessionId, duration });
 
     return {
       backstory: response.backstory,
@@ -577,8 +654,22 @@ The choices should be meaningful and distinct.`;
 
 export async function generateNextSegment(gameState: GameState, selectedChoice: GameChoice): Promise<GameSegment> {
   const startTime = Date.now();
+  const sessionId = `game_${gameState.character.id || Date.now()}`;
 
   try {
+    logAIInfo('Generating next segment', {
+      sessionId,
+      turnCount: gameState.turnCount,
+      choice: selectedChoice.text,
+      health: gameState.character.stats.health,
+    });
+    
+    // Get or create context
+    const context = contextManager.getOrCreateContext(sessionId, gameState);
+    
+    // Add choice to context
+    contextManager.addChoice(sessionId, selectedChoice, gameState.turnCount);
+    
     const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
     const systemPrompt = `You are the Weaver, continuing the chronicle of ${gameState.character.name}.
@@ -610,11 +701,14 @@ Structure:
 `;
 
     const userPrompt = `Continue the story based on the choice: ${selectedChoice.text}`;
+    
+    // Add user message to context
+    contextManager.addUserMessage(sessionId, userPrompt);
 
     let response;
 
     if (apiKey) {
-      logDebug("Using Gemini API for next segment generation");
+      logAIDebug('Using Gemini API for next segment generation', { sessionId });
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -629,20 +723,31 @@ Structure:
       ];
 
       const apiResponse = await retryApiCall(async () => {
-        return await processAIRequest({ messages });
+        // Get formatted context
+        const formattedContext = contextManager.getFormattedContext(sessionId, gameState);
+        return await processAIRequest({ messages, context: formattedContext });
       });
 
       response = await apiResponse.json();
       if (response.completion) {
+        // Add AI response to context
+        contextManager.addAssistantMessage(sessionId, response.completion);
         response = parseAIResponse(response.completion);
       }
     }
 
     if (!validateAIResponse(response, false)) {
+      logAIError('Invalid AI response format', { sessionId });
       throw new Error("Invalid AI response format");
     }
 
+    // Add narrative summary to context
+    contextManager.addNarrativeSummary(sessionId, response.text.substring(0, 200));
+
     updatePerformanceMetrics(Date.now() - startTime);
+
+    const duration = Date.now() - startTime;
+    logAIInfo('Next segment generated successfully', { sessionId, duration, turnCount: gameState.turnCount + 1 });
 
     return {
       id: `segment_${gameState.turnCount + 1}`,
@@ -653,7 +758,7 @@ Structure:
     };
 
   } catch (error) {
-    logError("Error generating next segment:", error);
+    logAIError('Error generating next segment', { sessionId, turnCount: gameState.turnCount }, error instanceof Error ? error : undefined);
     throw error;
   }
 }
