@@ -17,7 +17,6 @@ import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/fire
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -60,7 +59,8 @@ export const stripeWebhooks = onRequest({
   cors: true,
 }, async (req, res) => {
   try {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -78,31 +78,36 @@ export const stripeWebhooks = onRequest({
 
     // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object;
         await handleCheckoutCompleted(session, db);
         break;
+      }
 
       case 'customer.subscription.created':
-      case 'customer.subscription.updated':
+      case 'customer.subscription.updated': {
         const subscription = event.data.object;
         await handleSubscriptionUpdate(subscription, db);
         break;
+      }
 
-      case 'customer.subscription.deleted':
+      case 'customer.subscription.deleted': {
         const deletedSubscription = event.data.object;
         await handleSubscriptionDeleted(deletedSubscription, db);
         break;
+      }
 
-      case 'invoice.payment_succeeded':
+      case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
         await handlePaymentSucceeded(invoice, db);
         break;
+      }
 
-      case 'invoice.payment_failed':
+      case 'invoice.payment_failed': {
         const failedInvoice = event.data.object;
         await handlePaymentFailed(failedInvoice, db);
         break;
+      }
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
@@ -334,5 +339,4 @@ export const cleanupOldGames = onDocumentUpdated(
     }
   }
 );
-
 

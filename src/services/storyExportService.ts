@@ -6,6 +6,10 @@ export interface TrainingExample {
 }
 
 export async function exportStoryAsTrainingData(storyId: string): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured');
+  }
+
   const { data: turns, error } = await supabase
     .from('turns')
     .select('turn_number, player_input, ai_response')

@@ -420,7 +420,8 @@ const billingRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       try {
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const { default: Stripe } = await import('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
         
         // Get or create Stripe customer
         let customerId = null;
@@ -431,7 +432,7 @@ const billingRouter = router({
           customerId = userData.stripeCustomerId;
         } else {
           const customer = await stripe.customers.create({
-            email: ctx.user.email,
+            email: ctx.user.email ?? undefined,
             metadata: {
               userId: ctx.user.uid,
             },
@@ -483,7 +484,8 @@ const billingRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       try {
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const { default: Stripe } = await import('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
         
         // Get user's Stripe customer ID
         const userDoc = await ctx.db.collection('users').doc(ctx.user.uid).get();

@@ -37,7 +37,7 @@ export interface UsageAlert {
 class UsageTracker {
   private cache = new Map<string, UsageData>();
   private alertCallbacks: ((alert: UsageAlert) => void)[] = [];
-  private resetInterval: NodeJS.Timeout | null = null;
+  private resetInterval: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.setupDailyReset();
@@ -340,4 +340,3 @@ if (typeof window !== 'undefined') {
     usageTracker.destroy();
   });
 }
-

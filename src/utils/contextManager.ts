@@ -64,7 +64,7 @@ class ContextManager {
         characterName: gameState.character.name,
         turnCount: gameState.turnCount,
         health: gameState.character.stats.health,
-        wealth: gameState.character.stats.resources, // Note: 'wealth' maps to 'resources' from game state
+        wealth: gameState.character.stats.resources ?? 0, // Note: 'wealth' maps to 'resources' from game state
       },
       recentChoices: [],
       narrativeSummary: [],
@@ -95,7 +95,7 @@ class ContextManager {
         characterName: gameState.character.name,
         turnCount: gameState.turnCount,
         health: gameState.character.stats.health,
-        wealth: gameState.character.stats.resources,
+        wealth: gameState.character.stats.resources ?? 0,
       };
     }
 
@@ -117,8 +117,8 @@ CHARACTER CONTEXT:
 - Name: ${gameState.character.name}
 - Current Turn: ${gameState.turnCount}
 - Health: ${gameState.character.stats.health}/100
-- Wealth: ${gameState.character.stats.resources}
-- Social Standing: ${gameState.character.stats.socialStanding}
+- Wealth: ${gameState.character.stats.resources ?? 0}
+- Social Standing: ${gameState.character.stats.reputation ?? 0}
 
 NARRATIVE GUIDELINES:
 1. Maintain historical authenticity for the ${gameState.era} period

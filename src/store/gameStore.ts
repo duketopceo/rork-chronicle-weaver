@@ -423,12 +423,10 @@ export const useGameStore = create<GameStore>()(
         console.log("[GameStore] 📊 Updating character stats:", stats);
 
         // Clamp all incoming stat values to 0–100
-        const clampedStats: Partial<CharacterStats> = {};
-        for (const [key, value] of Object.entries(stats)) {
-          if (value !== undefined) {
-            clampedStats[key as keyof CharacterStats] = clampStat(value);
-          }
-        }
+        const clampedEntries = Object.entries(stats).flatMap(([key, value]) =>
+          typeof value === 'number' ? [[key, clampStat(value)] as const] : []
+        );
+        const clampedStats = Object.fromEntries(clampedEntries) as Partial<CharacterStats>;
 
         return {
           currentGame: {

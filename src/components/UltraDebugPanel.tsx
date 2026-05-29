@@ -40,12 +40,20 @@ export const UltraDebugPanel: React.FC<UltraDebugPanelProps> = ({ visible, onClo
   // Mode switching between Simple and Advanced
   const [isAdvancedMode, setIsAdvancedMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'monitoring' | 'errors' | 'performance' | 'game' | 'system'>('dashboard');
+  const [, setRefreshCounter] = useState(0);
   
   // Data hooks
   const steps = useDebugSteps();
   const errors = useDebugErrors();
   const metrics = useDebugMetrics();
   const { currentGame, gameSetup, isLoading, user } = useGameStore();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshCounter(prev => prev + 1);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Check if user is admin
   const isAdmin = user?.email === 'duketopceo@gmail.com';
@@ -62,14 +70,6 @@ export const UltraDebugPanel: React.FC<UltraDebugPanelProps> = ({ visible, onClo
   const avgStepTime = steps.length > 0 ? steps.reduce((acc, s) => acc + (s.duration || 0), 0) / steps.length : 0;
 
   // Auto-refresh every 2 seconds
-  const [refreshCounter, setRefreshCounter] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshCounter(prev => prev + 1);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleExportData = () => {
     const data = debugSystem.exportDebugData();
     console.log('📊 Ultra Debug Panel - Data exported to console');

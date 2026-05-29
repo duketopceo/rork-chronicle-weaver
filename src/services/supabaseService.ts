@@ -24,6 +24,7 @@ export interface LoadGameData {
 class SupabaseService {
   async saveGame(data: SaveGameData): Promise<boolean> {
     try {
+      if (!supabase) return false;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
@@ -60,6 +61,7 @@ class SupabaseService {
 
   async loadGame(gameId: string): Promise<LoadGameData | null> {
     try {
+      if (!supabase) return null;
       const { data: story, error: storyErr } = await supabase
         .from('stories')
         .select('*')
@@ -86,6 +88,7 @@ class SupabaseService {
 
   async listGames(userId: string): Promise<any[]> {
     try {
+      if (!supabase) return [];
       const { data, error } = await supabase
         .from('stories')
         .select('id, title, era, status, updated_at')
@@ -100,6 +103,7 @@ class SupabaseService {
 
   async deleteGame(gameId: string): Promise<boolean> {
     try {
+      if (!supabase) return false;
       const { error } = await supabase.from('stories').delete().eq('id', gameId);
       return !error;
     } catch {
@@ -114,6 +118,7 @@ class SupabaseService {
     aiResponse: string,
   ): Promise<boolean> {
     try {
+      if (!supabase) return false;
       const { error } = await supabase.from('turns').insert({
         story_id: storyId,
         turn_number: turnNumber,
