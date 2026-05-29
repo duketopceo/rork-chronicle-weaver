@@ -45,7 +45,13 @@ export const UltraDebugPanel: React.FC<UltraDebugPanelProps> = ({ visible, onClo
   const steps = useDebugSteps();
   const errors = useDebugErrors();
   const metrics = useDebugMetrics();
-  const { currentGame, gameSetup, isLoading } = useGameStore();
+  const { currentGame, gameSetup, isLoading, user } = useGameStore();
+
+  // Check if user is admin
+  const isAdmin = user?.email === 'duketopceo@gmail.com';
+  
+  // Only show to admin users
+  if (!isAdmin) return null;
 
   // Computed data
   const recentSteps = steps.slice(-5);
